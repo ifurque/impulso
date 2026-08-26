@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('content')
-<section class="profile wrap">
+@php($palette = $palettes[$business->public_palette ?? 'mint'] ?? $palettes['mint'])
+<section class="profile public-page public-background-{{ $business->public_background ?? 'plain' }} wrap" style="--public-accent: {{ $palette['accent'] }}; --public-soft: {{ $palette['soft'] }}; --public-ink: {{ $palette['ink'] }}; --public-paper: {{ $palette['paper'] }}; --public-line: {{ $palette['line'] }};">
   <a class="back" href="{{ route('discover') }}">← Volver a explorar</a>
   <div class="profile-hero"{{ $business->cover_photo ? ' style="background-image: linear-gradient(90deg, rgba(24,37,34,.82), rgba(24,37,34,.2)), url(\'' . asset('storage/'.$business->cover_photo) . '\'); background-size: cover; background-position: center; color: white;"' : '' }}>
     <div class="profile-logo">
@@ -13,11 +14,11 @@
     <div>
       <p class="eyebrow">{{ $business->category }}</p>
       <h1>{{ $business->name }}</h1>
-      <p class="muted">⌖ {{ $business->location }} @if($business->phone) · {{ $business->phone }} @endif</p>
+      <p class="muted">⌖ {{ $business->location }} · Creado por {{ $business->owner->name }}</p>
     </div>
     <div class="profile-rating">
-      <strong>★ 4.9</strong>
-      <span>Comunidad</span>
+      <strong>★ {{ $business->reviews->count() ? number_format($business->reviews->avg('rating'), 1) : '0,0' }}</strong>
+      <span>({{ $business->reviews->count() }} {{ $business->reviews->count() === 1 ? 'opinión' : 'opiniones' }})</span>
     </div>
   </div>
   <div class="profile-grid">
@@ -69,8 +70,9 @@
     </div>
 
     <aside class="contact-box">
+      @if($business->appointments_enabled)
       <h3>Solicitar turno</h3>
-      <form method="POST" action="{{ route('appointments.store', $business) }}" class="form">
+      <form method="POST" action="{{ route('appointments.store', $business) }}" class="form" id="appointment-form">
         @csrf
         @guest
           <label>Nombre<input name="guest_name" required maxlength="100"></label>
@@ -85,12 +87,20 @@
             @endforeach
           </select>
         </label>
-        <label>Fecha<input name="appointment_date" type="date" min="{{ now()->format('Y-m-d') }}" required></label>
-        <label>Hora<input name="start_time" type="time" required></label>
+        <label>Fecha<input name="appointment_date" id="appointment-date" type="date" min="{{ now()->format('Y-m-d') }}" required></label>
+        <label>Hora
+          <select name="start_time" id="appointment-time" required disabled>
+            <option value="">Elegí primero una fecha</option>
+          </select>
+        </label>
         <label>Notas<textarea name="notes" rows="2"></textarea></label>
         <button class="button full">Solicitar turno <span>→</span></button>
         <small class="muted">Te enviaremos un enlace para confirmar el turno por email.</small>
       </form>
+      <p class="muted appointment-empty" id="appointment-empty" hidden>No hay horarios disponibles para esta fecha.</p>
+      @else
+        <p class="muted">Este emprendimiento todavía no tiene habilitada la agenda de turnos.</p>
+      @endif
 
       <hr>
 
@@ -129,4 +139,25 @@
     </aside>
   </div>
 </section>
+@if($business->appointments_enabled)
+<script>
+  const appointmentDate = document.querySelector('#appointment-date');
+  const appointmentTime = document.querySelector('#appointment-time');
+  const appointmentEmpty = document.querySelector('#appointment-empty');
+  const slotsUrl = @json(route('appointments.available', $business));
+
+  appointmentDate.addEventListener('change', async () => {
+    appointmentTime.disabled = true;
+    appointmentTime.innerHTML = '<option value="">Buscando horarios...</option>';
+    appointmentEmpty.hidden = true;
+
+    const response = await fetch(`${slotsUrl}?date=${encodeURIComponent(appointmentDate.value)}`);
+    const data = await response.json();
+    appointmentTime.innerHTML = '<option value="">Seleccioná un horario</option>';
+    data.slots.forEach(slot => appointmentTime.add(new Option(slot, slot)));
+    appointmentTime.disabled = data.slots.length === 0;
+    appointmentEmpty.hidden = data.slots.length > 0;
+  });
+</script>
+@endif
 @endsection

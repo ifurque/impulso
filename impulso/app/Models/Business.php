@@ -13,11 +13,17 @@ class Business extends Model
     protected $fillable = [
         'owner_id', 'name', 'slug', 'category', 'description', 'location',
         'phone', 'email', 'logo', 'profile_photo', 'cover_photo', 'opening_hours', 'is_public',
+        'appointments_enabled', 'appointment_slot_duration', 'public_palette', 'public_background',
     ];
 
     protected function casts(): array
     {
-        return ['opening_hours' => 'array', 'is_public' => 'boolean'];
+        return [
+            'opening_hours' => 'array',
+            'is_public' => 'boolean',
+            'appointments_enabled' => 'boolean',
+            'appointment_slot_duration' => 'integer',
+        ];
     }
 
     protected static function booted(): void
@@ -81,5 +87,16 @@ class Business extends Model
     public function availabilityHours()
     {
         return $this->hasMany(BusinessAvailabilityHours::class);
+    }
+
+    public function canBeManagedBy(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        return $this->owner_id === $user->id
+            || $user->role === 'superadmin'
+            || $this->members()->whereKey($user->id)->wherePivotIn('role', ['owner', 'administrator'])->exists();
     }
 }

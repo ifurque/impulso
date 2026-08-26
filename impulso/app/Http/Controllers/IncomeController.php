@@ -29,6 +29,6 @@ class IncomeController extends Controller
 
     private function ownerOnly(Business $business): void
     {
-        abort_unless($business->owner_id === Auth::id() || Auth::user()?->role === 'superadmin', 403);
+        abort_unless($business->canBeManagedBy(Auth::user()), 403);
     }
 }

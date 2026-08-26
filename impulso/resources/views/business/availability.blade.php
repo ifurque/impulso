@@ -23,6 +23,16 @@
         <p class="muted" style="font-size: 0.85rem; margin-top: 8px;">Los clientes podrán solicitar turnos cuando esta opción esté habilitada.</p>
       </div>
 
+      <div class="form-section slot-duration-field">
+        <label for="appointment_slot_duration">Duración de cada turno</label>
+        <select id="appointment_slot_duration" name="appointment_slot_duration" required>
+          @foreach([15 => '15 minutos', 30 => '30 minutos', 60 => '1 hora'] as $duration => $label)
+            <option value="{{ $duration }}" @selected(($business->appointment_slot_duration ?? 30) == $duration)>{{ $label }}</option>
+          @endforeach
+        </select>
+        <p class="muted" style="font-size: 0.85rem; margin-top: 8px;">La agenda se generará automáticamente dentro del horario de cada día.</p>
+      </div>
+
       <hr>
 
       <h3 style="margin: 20px 0 16px;">Días y horarios de atención</h3>

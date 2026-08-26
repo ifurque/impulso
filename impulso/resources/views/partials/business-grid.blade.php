@@ -11,7 +11,7 @@
       <span class="tag">{{ $business->category }}</span>
     </div>
     <div class="business-body">
-      <div class="rating">★ 4.9</div>
+      <div class="rating">★ {{ $business->visible_reviews_count ? number_format($business->visible_rating, 1) : '0,0' }} ({{ $business->visible_reviews_count }})</div>
       <h2>{{ $business->name }}</h2>
       <p>{{ Str::limit($business->description, 110) }}</p>
       <small>⌖ {{ $business->location }} · {{ $business->products_count }} propuestas</small>

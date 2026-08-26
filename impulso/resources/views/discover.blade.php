@@ -43,7 +43,7 @@
               <span class="tag">{{ $business->category }}</span>
             </div>
             <div class="business-body">
-              <div class="rating">★ 4.9</div>
+              <div class="rating">★ {{ $business->visible_reviews_count ? number_format($business->visible_rating, 1) : '0,0' }} ({{ $business->visible_reviews_count }})</div>
               <h2>{{ $business->name }}</h2>
               <p>{{ Str::limit($business->description, 110) }}</p>
               <small>⌖ {{ $business->location }} · {{ $business->products_count }} propuestas</small>
@@ -75,21 +75,34 @@
   const categoryFilter = document.getElementById('category-filter');
   const businessesContainer = document.getElementById('businesses-container');
   let searchTimeout;
+  let searchController;
+  let latestSearch = '';
 
   function performSearch() {
     const search = searchInput.value;
     const category = categoryFilter.value;
+    latestSearch = `${search}|${category}`;
+    const currentSearch = latestSearch;
     const params = new URLSearchParams();
     
     if (search) params.append('search', search);
     if (category) params.append('category', category);
 
-    fetch(`/explorar?${params}&ajax=1`)
-      .then(response => response.json())
+    searchController?.abort();
+    searchController = new AbortController();
+
+    fetch(`/explorar?${params}&ajax=1`, { signal: searchController.signal, headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+      .then(response => {
+        if (!response.ok) throw new Error(`Search failed with status ${response.status}`);
+        return response.json();
+      })
       .then(data => {
+        if (currentSearch !== latestSearch) return;
         businessesContainer.innerHTML = `<div class="business-grid" id="business-grid">${data.html}</div><div class="pagination" id="pagination">${data.pagination}</div>`;
       })
-      .catch(error => console.error('Error:', error));
+      .catch(error => {
+        if (error.name !== 'AbortError') console.error('Error:', error);
+      });
   }
 
   searchInput.addEventListener('input', (e) => {

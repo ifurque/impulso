@@ -11,7 +11,7 @@ class AvailabilityController extends Controller
 {
     public function index(Business $business)
     {
-        abort_unless($business->owner_id === Auth::id() || $business->members()->whereKey(Auth::id())->exists(), 403);
+        abort_unless($business->canBeManagedBy(Auth::user()), 403);
 
         $days = ['monday' => 'Lunes', 'tuesday' => 'Martes', 'wednesday' => 'Miércoles', 'thursday' => 'Jueves', 'friday' => 'Viernes', 'saturday' => 'Sábado', 'sunday' => 'Domingo'];
         
@@ -38,17 +38,27 @@ class AvailabilityController extends Controller
 
     public function update(Request $request, Business $business)
     {
-        abort_unless($business->owner_id === Auth::id() || $business->members()->whereKey(Auth::id())->exists(), 403);
+        abort_unless($business->canBeManagedBy(Auth::user()), 403);
 
         $data = $request->validate([
             'appointments_enabled' => 'boolean',
+            'appointment_slot_duration' => 'required|in:15,30,60',
             'hours.*.day_of_week' => 'required|string',
             'hours.*.is_closed' => 'boolean',
             'hours.*.opening_time' => 'nullable|date_format:H:i',
             'hours.*.closing_time' => 'nullable|date_format:H:i',
         ]);
 
-        $business->update(['appointments_enabled' => $data['appointments_enabled']]);
+        foreach ($data['hours'] ?? [] as $hours) {
+            if (!($hours['is_closed'] ?? false) && $hours['opening_time'] >= $hours['closing_time']) {
+                return back()->withErrors(['hours' => 'La hora de cierre debe ser posterior a la de apertura.'])->withInput();
+            }
+        }
+
+        $business->update([
+            'appointments_enabled' => $data['appointments_enabled'] ?? false,
+            'appointment_slot_duration' => $data['appointment_slot_duration'],
+        ]);
 
         foreach ($data['hours'] as $hours) {
             $is_closed = $hours['is_closed'] ?? false;

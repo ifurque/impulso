@@ -17,7 +17,11 @@ Route::view('/', 'home')->name('home');
 Route::get('/explorar', [DiscoveryController::class, 'index'])->name('discover');
 Route::get('/emprendimientos/{business:slug}', [BusinessController::class, 'show'])->name('business.show');
 Route::post('/emprendimientos/{business:slug}/turnos', [ManagementController::class, 'appointment'])->name('appointments.store');
+Route::get('/emprendimientos/{business:slug}/turnos-disponibles', [ManagementController::class, 'availableSlots'])->name('appointments.available');
 Route::get('/turnos/confirmar/{token}', [ManagementController::class, 'confirmAppointment'])->name('appointments.confirm');
+Route::get('/turnos/gestionar/{token}', [ManagementController::class, 'manageAppointment'])->name('appointments.manage');
+Route::post('/turnos/gestionar/{token}/cancelar', [ManagementController::class, 'cancelAppointment'])->name('appointments.cancel');
+Route::post('/turnos/gestionar/{token}/reprogramar', [ManagementController::class, 'rescheduleAppointment'])->name('appointments.reschedule');
 Route::post('/emprendimientos/{business:slug}/reseñas', [ReviewController::class, 'store'])->name('reviews.store');
 Route::middleware('guest')->group(function () {
     Route::get('/ingresar', [AuthController::class, 'showLogin'])->name('login');
@@ -29,6 +33,9 @@ Route::post('/salir', [AuthController::class, 'logout'])->middleware('auth')->na
 Route::middleware('auth')->group(function () {
     Route::get('/crear-emprendimiento', [BusinessController::class, 'create'])->name('business.create');
     Route::post('/crear-emprendimiento', [BusinessController::class, 'store'])->name('business.store');
+    Route::get('/paneles', [BusinessController::class, 'panels'])->name('business.panels');
+    Route::get('/panel/{business:slug}/personalizacion', [BusinessController::class, 'customization'])->name('business.customization');
+    Route::post('/panel/{business:slug}/personalizacion', [BusinessController::class, 'updateCustomization'])->name('business.customization.update');
     Route::get('/panel/{business:slug}', DashboardController::class)->name('dashboard');
     Route::post('/panel/{business:slug}/productos', [ProductController::class, 'store'])->name('products.store');
     Route::delete('/panel/{business:slug}/productos/{product}', [ProductController::class, 'destroy'])->name('products.destroy');

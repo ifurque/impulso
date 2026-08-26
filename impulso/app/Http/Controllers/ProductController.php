@@ -10,7 +10,7 @@ class ProductController extends Controller
 {
     public function store(Request $request, Business $business)
     {
-        abort_unless($business->owner_id === Auth::id(), 403);
+        abort_unless($business->canBeManagedBy(Auth::user()), 403);
         $data = $request->validate(['name' => ['required', 'string', 'max:120'], 'description' => ['nullable', 'string', 'max:500'], 'photo' => ['nullable', 'image', 'max:5120'], 'type' => ['required', 'in:product,service'], 'price' => ['nullable', 'numeric', 'min:0'], 'duration' => ['nullable', 'integer', 'min:1']]);
         if ($request->hasFile('photo')) {
             $data['photo'] = $request->file('photo')->store('products', 'public');
@@ -21,7 +21,7 @@ class ProductController extends Controller
 
     public function destroy(Business $business, $product)
     {
-        abort_unless($business->owner_id === Auth::id(), 403);
+        abort_unless($business->canBeManagedBy(Auth::user()), 403);
         $business->products()->findOrFail($product)->delete();
         return back()->with('success', 'Propuesta eliminada.');
     }

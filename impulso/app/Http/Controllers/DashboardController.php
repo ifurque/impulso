@@ -10,7 +10,7 @@ class DashboardController extends Controller
 {
     public function __invoke(Business $business)
     {
-        abort_unless($business->owner_id === Auth::id() || $business->members()->whereKey(Auth::id())->exists(), 403);
+        abort_unless($business->canBeManagedBy(Auth::user()), 403);
         $from = now()->subDays(30)->startOfDay();
         $expenses = $business->expenses()->where('expense_date', '>=', $from)->with('category')->get();
         $categoryTotals = $expenses->groupBy(fn ($expense) => $expense->category->name)

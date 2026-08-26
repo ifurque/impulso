@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
 <section class="dashboard wrap"><div class="dashboard-top"><div><p class="eyebrow">Panel de {{ $business->name }}</p><h1>Hola, {{ Str::before(auth()->user()->name, ' ') }}.</h1><p class="muted">Aquí tienes una mirada rápida de lo que está pasando.</p></div><a class="button" href="{{ route('business.show', $business) }}">Ver perfil público <span>↗</span></a></div>
-<div class="metric-grid"><div class="metric-card accent"><span>Pagos entrantes · 30 días</span><strong>$ {{ number_format($totalIncomes, 0, ',', '.') }}</strong><small>Todo lo que ingresó a tu negocio.</small></div><div class="metric-card"><span>Gastos · 30 días</span><strong>$ {{ number_format($totalExpenses, 0, ',', '.') }}</strong><small>Movimientos registrados</small></div><div class="metric-card"><span>Turnos próximos</span><strong>{{ $appointments }}</strong><small class="positive">● En seguimiento</small></div></div>
+<div class="metric-grid"><div class="metric-card accent"><span>Pagos entrantes · 30 días</span><strong>$ {{ number_format($totalIncomes, 0, ',', '.') }}</strong><small>Todo lo que ingresó a tu negocio.</small></div><div class="metric-card"><span>Gastos · 30 días</span><strong>$ {{ number_format($totalExpenses, 0, ',', '.') }}</strong><small>Movimientos registrados</small></div>@if($business->appointments_enabled)<div class="metric-card"><span>Turnos próximos</span><strong>{{ $appointments }}</strong><small class="positive">● En seguimiento</small></div>@endif</div>
 <div class="dashboard-grid">
   <div class="dashboard-main">
     <div class="panel">
@@ -70,13 +70,14 @@
           <small>Gastos e ingresos</small>
         </div>
       </a>
-      <a href="{{ route('management.index', $business) }}" class="quick-link">
+      @if($business->appointments_enabled)<a href="{{ route('management.index', $business) }}" class="quick-link">
         <span>◷</span>
         <div>
           <strong>Ver turnos</strong>
           <small>Gestiona citas y consultas</small>
         </div>
       </a>
+      @endif
       <a href="{{ route('posts.index', $business) }}" class="quick-link">
         <span>✦</span>
         <div>
@@ -96,6 +97,13 @@
         <div>
           <strong>Horarios</strong>
           <small>Configure días y horarios</small>
+        </div>
+      </a>
+      <a href="{{ route('business.customization', $business) }}" class="quick-link">
+        <span>◈</span>
+        <div>
+          <strong>Personalizar página</strong>
+          <small>Colores y fondos del perfil público</small>
         </div>
       </a>
     </div>
