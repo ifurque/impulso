@@ -49,37 +49,40 @@ class AvailabilityController extends Controller
             'customer_payment_methods.*' => 'string|in:efectivo,transferencia,tarjeta,mercado_pago,qr,cuenta_corriente',
             'business_payment_methods' => 'nullable|array',
             'business_payment_methods.*' => 'string|in:transferencia,mercado_pago,efectivo,tarjeta,qr',
-            'appointment_slot_duration' => 'required|in:15,30,60',
+            'appointment_slot_duration' => 'nullable|in:15,30,60',
             'hours.*.day_of_week' => 'required|string',
             'hours.*.is_closed' => 'boolean',
             'hours.*.opening_time' => 'nullable|date_format:H:i',
             'hours.*.closing_time' => 'nullable|date_format:H:i',
         ]);
 
+        $appointmentsEnabled = (bool) ($data['appointments_enabled'] ?? false);
+        $deliveryEnabled = (bool) ($data['delivery_enabled'] ?? false);
+
         foreach ($data['hours'] ?? [] as $hours) {
-            if (!($hours['is_closed'] ?? false) && $hours['opening_time'] >= $hours['closing_time']) {
+            if ($appointmentsEnabled && !($hours['is_closed'] ?? false) && !empty($hours['opening_time']) && !empty($hours['closing_time']) && $hours['opening_time'] >= $hours['closing_time']) {
                 return back()->withErrors(['hours' => 'La hora de cierre debe ser posterior a la de apertura.'])->withInput();
             }
         }
 
         $business->update([
-            'appointments_enabled' => $data['appointments_enabled'] ?? false,
-            'delivery_enabled' => $data['delivery_enabled'] ?? false,
-            'delivery_radius_km' => $data['delivery_radius_km'] ?? 0,
-            'delivery_cost' => $data['delivery_cost'] ?? 0,
-            'payment_methods_customer' => $data['customer_payment_methods'] ?? [],
-            'payment_methods_business' => $data['business_payment_methods'] ?? [],
-            'appointment_slot_duration' => $data['appointment_slot_duration'],
+            'appointments_enabled' => $appointmentsEnabled,
+            'delivery_enabled' => $deliveryEnabled,
+            'delivery_radius_km' => $deliveryEnabled ? (int) ($data['delivery_radius_km'] ?? 0) : 0,
+            'delivery_cost' => $deliveryEnabled ? (int) ($data['delivery_cost'] ?? 0) : 0,
+            'payment_methods_customer' => $deliveryEnabled ? ($data['customer_payment_methods'] ?? []) : [],
+            'payment_methods_business' => $deliveryEnabled ? ($data['business_payment_methods'] ?? []) : [],
+            'appointment_slot_duration' => $appointmentsEnabled ? (int) ($data['appointment_slot_duration'] ?? 30) : 30,
         ]);
 
         foreach ($data['hours'] as $hours) {
-            $is_closed = $hours['is_closed'] ?? false;
+            $is_closed = $appointmentsEnabled ? ($hours['is_closed'] ?? false) : true;
             
             BusinessAvailabilityHours::updateOrCreate(
                 ['business_id' => $business->id, 'day_of_week' => $hours['day_of_week']],
                 [
-                    'opening_time' => $is_closed ? null : $hours['opening_time'],
-                    'closing_time' => $is_closed ? null : $hours['closing_time'],
+                    'opening_time' => $is_closed ? null : ($hours['opening_time'] ?? null),
+                    'closing_time' => $is_closed ? null : ($hours['closing_time'] ?? null),
                     'is_closed' => $is_closed,
                 ]
             );

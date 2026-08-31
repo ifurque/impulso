@@ -22,6 +22,7 @@ class ManagementController extends Controller
             'appointments' => $business->appointments()->with(['client', 'product'])->latest('appointment_date')->limit(12)->get(),
             'deliveryOrders' => $business->orders()->with('product')->where('delivery_method', 'delivery')->latest()->limit(12)->get(),
             'pickupOrders' => $business->orders()->with('product')->where('delivery_method', 'pickup')->latest()->limit(12)->get(),
+            'inquiries' => $business->inquiries()->with('client')->latest()->limit(20)->get(),
         ]);
     }
 
@@ -134,8 +135,25 @@ class ManagementController extends Controller
     public function inquiryStatus(Request $request, Business $business, $inquiry)
     {
         $this->ownerOnly($business);
-        $data = $request->validate(['status' => ['required', 'in:pending,answered,closed']]);
-        $business->inquiries()->findOrFail($inquiry)->update($data + ($data['status'] === 'answered' ? ['answered_at' => now()] : []));
+        $data = $request->validate([
+            'status' => ['required', 'in:pending,answered,closed'],
+            'response' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $inquiryModel = $business->inquiries()->findOrFail($inquiry);
+        $status = $data['status'];
+        $response = trim((string) ($data['response'] ?? ''));
+
+        if ($status === 'answered' && $response === '') {
+            return back()->withErrors(['response' => 'Escribe una respuesta antes de marcar la consulta como respondida.']);
+        }
+
+        $inquiryModel->update([
+            'status' => $status,
+            'response' => $response !== '' ? $response : null,
+            'answered_at' => $status === 'answered' ? now() : null,
+        ]);
+
         return back()->with('success', 'Consulta actualizada.');
     }
 

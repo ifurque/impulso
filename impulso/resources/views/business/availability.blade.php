@@ -17,12 +17,12 @@
       <div class="form-section">
         <label class="check">
           <input type="hidden" name="delivery_enabled" value="0">
-          <input type="checkbox" name="delivery_enabled" value="1" @if($business->delivery_enabled) checked @endif>
+          <input type="checkbox" id="delivery-enabled" name="delivery_enabled" value="1" @if($business->delivery_enabled) checked @endif>
           <span>Este emprendimiento realiza entregas a domicilio</span>
         </label>
       </div>
 
-      <div class="form-section delivery-grid">
+      <div class="form-section delivery-grid" id="delivery-settings">
         <label>
           Radio de entrega (km)
           <input type="number" name="delivery_radius_km" min="0" max="50" value="{{ old('delivery_radius_km', $business->delivery_radius_km ?? 0) }}">
@@ -33,9 +33,9 @@
         </label>
       </div>
 
-      <div class="form-section payment-grid">
+      <div class="form-section payment-grid" id="payment-settings">
         <div>
-          <label>Pagos que acepta el cliente</label>
+          <p style="margin: 0; font-weight: 600;">Pagos que acepta el cliente</p>
           <div class="choice-list">
             @foreach(['efectivo','transferencia','tarjeta','mercado_pago','qr'] as $method)
               <label class="check small-check">
@@ -46,7 +46,7 @@
           </div>
         </div>
         <div>
-          <label>Pagos que usa el emprendedor</label>
+          <p style="margin: 0; font-weight: 600;">Pagos que usa el emprendedor</p>
           <div class="choice-list">
             @foreach(['transferencia','mercado_pago','efectivo','tarjeta','qr'] as $method)
               <label class="check small-check">
@@ -61,13 +61,13 @@
       <div class="form-section appointment-settings">
         <label class="check">
           <input type="hidden" name="appointments_enabled" value="0">
-          <input type="checkbox" name="appointments_enabled" value="1" @if($business->appointments_enabled) checked @endif>
+          <input type="checkbox" id="appointments-enabled" name="appointments_enabled" value="1" @if($business->appointments_enabled) checked @endif>
           <span>Habilitar turnos y citas para este emprendimiento</span>
         </label>
         <p class="muted" style="font-size: 0.85rem; margin-top: 8px;">Los clientes podrán solicitar turnos cuando esta opción esté habilitada.</p>
       </div>
 
-      <div class="form-section slot-duration-field">
+      <div class="form-section slot-duration-field" id="appointments-settings">
         <label for="appointment_slot_duration">Duración de cada turno</label>
         <select id="appointment_slot_duration" name="appointment_slot_duration" required>
           @foreach([15 => '15 minutos', 30 => '30 minutos', 60 => '1 hora'] as $duration => $label)
@@ -82,11 +82,11 @@
       <h3 style="margin: 20px 0 16px;">Días y horarios de atención</h3>
 
       @foreach($days as $dayKey => $dayLabel)
-        <div class="hours-section">
+        <div class="hours-section" data-hours-section>
           <div class="hours-header">
-            <label class="day-label">
+            <div class="day-label">
               <strong>{{ $dayLabel }}</strong>
-            </label>
+            </div>
             <label class="check closed-check">
               <input type="checkbox" name="hours[{{ $loop->index }}][is_closed]" value="1" @if($availability[$dayKey]->is_closed) checked @endif>
               <span>Cerrado</span>
@@ -97,19 +97,19 @@
 
           <div class="hours-inputs">
             <div class="time-input">
-              <label>Desde</label>
-              <input 
-                type="time" 
-                name="hours[{{ $loop->index }}][opening_time]" 
+              <span>Desde</span>
+              <input
+                type="time"
+                name="hours[{{ $loop->index }}][opening_time]"
                 value="{{ $availability[$dayKey]->opening_time ?? '09:00' }}"
                 @if($availability[$dayKey]->is_closed) disabled @endif
               >
             </div>
             <div class="time-input">
-              <label>Hasta</label>
-              <input 
-                type="time" 
-                name="hours[{{ $loop->index }}][closing_time]" 
+              <span>Hasta</span>
+              <input
+                type="time"
+                name="hours[{{ $loop->index }}][closing_time]"
                 value="{{ $availability[$dayKey]->closing_time ?? '18:00' }}"
                 @if($availability[$dayKey]->is_closed) disabled @endif
               >
@@ -132,6 +132,7 @@
   .small-check { margin-bottom: 6px; }
   .check input { width: auto; }
   .choice-list { display: grid; gap: 8px; margin-top: 10px; }
+  .section-disabled { opacity: 0.55; pointer-events: none; }
   .hours-section { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
   .hours-header { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 15px; margin-bottom: 12px; }
   .day-label { font-weight: 600; margin: 0; }
@@ -146,15 +147,67 @@
 </style>
 
 <script>
+  const deliveryCheckbox = document.querySelector('#delivery-enabled');
+  const deliverySettings = document.querySelector('#delivery-settings');
+  const paymentSettings = document.querySelector('#payment-settings');
+
+  const appointmentsCheckbox = document.querySelector('#appointments-enabled');
+  const appointmentsSettings = document.querySelector('#appointments-settings');
+  const hoursSections = document.querySelectorAll('[data-hours-section]');
+
+  const setSectionState = (section, enabled) => {
+    if (!section) return;
+    section.classList.toggle('section-disabled', !enabled);
+    section.querySelectorAll('input, select, textarea, button').forEach((field) => {
+      field.disabled = !enabled;
+    });
+  };
+
+  const setHoursState = (enabled) => {
+    hoursSections.forEach((section) => {
+      section.classList.toggle('section-disabled', !enabled);
+
+      const closedCheck = section.querySelector('.closed-check input');
+      const timeInputs = section.querySelectorAll('.time-input input');
+
+      if (!closedCheck) {
+        return;
+      }
+
+      closedCheck.disabled = !enabled;
+      timeInputs.forEach((input) => {
+        input.disabled = !enabled || closedCheck.checked;
+      });
+    });
+  };
+
+  const syncDelivery = () => {
+    const enabled = !!deliveryCheckbox?.checked;
+    setSectionState(deliverySettings, enabled);
+    setSectionState(paymentSettings, enabled);
+  };
+
+  const syncAppointments = () => {
+    const enabled = !!appointmentsCheckbox?.checked;
+    setSectionState(appointmentsSettings, enabled);
+    setHoursState(enabled);
+  };
+
+  deliveryCheckbox?.addEventListener('change', syncDelivery);
+  appointmentsCheckbox?.addEventListener('change', syncAppointments);
+
   document.querySelectorAll('.closed-check input').forEach((checkbox, index) => {
     const section = checkbox.closest('.hours-section');
     const timeInputs = section.querySelectorAll('.time-input input');
     
     checkbox.addEventListener('change', () => {
       timeInputs.forEach(input => {
-        input.disabled = checkbox.checked;
+        input.disabled = checkbox.checked || !appointmentsCheckbox?.checked;
       });
     });
   });
+
+  syncDelivery();
+  syncAppointments();
 </script>
 @endsection

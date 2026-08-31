@@ -68,6 +68,7 @@ class BusinessController extends Controller
             'customer_payment_methods.*' => ['string', 'in:efectivo,transferencia,tarjeta,mercado_pago,qr'],
             'business_payment_methods' => ['nullable', 'array'],
             'business_payment_methods.*' => ['string', 'in:transferencia,mercado_pago,efectivo,tarjeta,qr'],
+            'appointment_slot_duration' => ['nullable', 'in:15,30,60'],
             'profile_photo' => ['nullable', 'image', 'max:5120'],
             'cover_photo' => ['nullable', 'image', 'max:8192'],
         ]);
@@ -79,11 +80,11 @@ class BusinessController extends Controller
         $business = $request->user()->ownedBusinesses()->create($data + [
             'appointments_enabled' => $request->boolean('appointments_enabled'),
             'delivery_enabled' => $request->boolean('delivery_enabled'),
-            'delivery_radius_km' => $request->input('delivery_radius_km', 0),
-            'delivery_cost' => $request->input('delivery_cost', 0),
-            'payment_methods_customer' => $request->input('customer_payment_methods', []),
-            'payment_methods_business' => $request->input('business_payment_methods', []),
-            'appointment_slot_duration' => 30,
+            'delivery_radius_km' => $request->boolean('delivery_enabled') ? (int) $request->input('delivery_radius_km', 0) : 0,
+            'delivery_cost' => $request->boolean('delivery_enabled') ? (int) $request->input('delivery_cost', 0) : 0,
+            'payment_methods_customer' => $request->boolean('delivery_enabled') ? $request->input('customer_payment_methods', []) : [],
+            'payment_methods_business' => $request->boolean('delivery_enabled') ? $request->input('business_payment_methods', []) : [],
+            'appointment_slot_duration' => $request->boolean('appointments_enabled') ? (int) $request->input('appointment_slot_duration', 30) : 30,
             'slug' => Str::slug($data['name']).'-'.Str::random(5),
         ]);
         $business->members()->attach($request->user()->id, ['role' => 'owner', 'joined_at' => now()]);

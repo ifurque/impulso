@@ -24,6 +24,38 @@
       <p class="eyebrow">Atención</p><h2>Turnos recientes</h2>
       <div class="expense-list">@forelse($appointments as $appointment)<div><span><strong>{{ $appointment->client?->name ?? $appointment->guest_name }} @if($appointment->product) · {{ $appointment->product->name }} @endif</strong><small>{{ $appointment->appointment_date->format('d/m/Y') }} a las {{ $appointment->start_time }} · {{ ucfirst($appointment->status) }}</small></span><form method="POST" action="{{ route('appointments.status', [$business, $appointment->id]) }}">@csrf<select name="status" onchange="this.form.submit()"><option value="pending" @selected($appointment->status === 'pending')>Pendiente</option><option value="confirmed" @selected($appointment->status === 'confirmed')>Confirmado</option><option value="completed" @selected($appointment->status === 'completed')>Completado</option><option value="cancelled" @selected($appointment->status === 'cancelled')>Cancelado</option></select></form></div>@empty<p class="muted">Todavía no hay turnos solicitados.</p>@endforelse</div>
     </section>
+
+    <section class="panel management-panel">
+      <p class="eyebrow">Mensajes</p><h2>Consultas de clientes</h2>
+      <div class="stack-list">
+        @forelse($inquiries as $inquiry)
+          <article class="mini-item" style="display:block;">
+            <div style="margin-bottom: 10px;">
+              <strong>{{ $inquiry->client?->name ?? 'Cliente' }}</strong>
+              <small>{{ $inquiry->subject }} · {{ $inquiry->created_at->format('d/m/Y H:i') }}</small>
+              <small>{{ $inquiry->message }}</small>
+            </div>
+            <form method="POST" action="{{ route('inquiries.status', [$business, $inquiry->id]) }}" class="form" style="gap:10px;">
+              @csrf
+              <label>
+                Respuesta
+                <textarea name="response" rows="2" maxlength="1000" placeholder="Escribe una respuesta para el cliente">{{ old('response', $inquiry->response) }}</textarea>
+              </label>
+              <div class="inline-form">
+                <select name="status">
+                  <option value="pending" @selected($inquiry->status === 'pending')>Pendiente</option>
+                  <option value="answered" @selected($inquiry->status === 'answered')>Respondida</option>
+                  <option value="closed" @selected($inquiry->status === 'closed')>Cerrada</option>
+                </select>
+                <button class="plain-button">Guardar</button>
+              </div>
+            </form>
+          </article>
+        @empty
+          <p class="muted">Todavía no hay consultas de clientes.</p>
+        @endforelse
+      </div>
+    </section>
   </div>
 </section>
 @endsection
