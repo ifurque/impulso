@@ -24,6 +24,11 @@ class DashboardController extends Controller
             'appointments' => $business->appointments()->whereIn('status', ['pending', 'confirmed'])->count(),
             'inquiries' => $business->inquiries()->where('status', 'pending')->count(),
             'pendingOrders' => $business->orders()->where('status', 'pending')->count(),
+            'inboxInquiries' => $business->inquiries()->with('client')->where('status', 'pending')->latest()->limit(6)->get(),
+            'notifications' => collect([
+                $business->appointments()->whereIn('status', ['pending', 'confirmed'])->latest('appointment_date')->first(),
+                $business->orders()->where('status', 'pending')->latest()->first(),
+            ])->filter(),
             'recentExpenses' => $business->expenses()->with('category')->latest('expense_date')->limit(5)->get(),
             'recentIncomes' => $business->incomes()->latest('income_date')->limit(5)->get(),
         ]);

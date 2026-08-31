@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Business;
-use App\Models\ExpenseCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,12 +19,17 @@ class ManagementController extends Controller
         $this->ownerOnly($business);
         return view('management.index', [
             'business' => $business->load(['products', 'members']),
-            'categories' => ExpenseCategory::orderBy('name')->get(),
             'appointments' => $business->appointments()->with(['client', 'product'])->latest('appointment_date')->limit(12)->get(),
-            'inquiries' => $business->inquiries()->with('client')->latest()->limit(12)->get(),
-            'orders' => $business->orders()->with('product')->latest()->limit(12)->get(),
-            'socialLinks' => $business->socialLinks()->get(),
+            'deliveryOrders' => $business->orders()->with('product')->where('delivery_method', 'delivery')->latest()->limit(12)->get(),
+            'pickupOrders' => $business->orders()->with('product')->where('delivery_method', 'pickup')->latest()->limit(12)->get(),
         ]);
+    }
+
+    public function members(Business $business)
+    {
+        $this->ownerOnly($business);
+
+        return view('management.members', ['business' => $business->load('members')]);
     }
 
     public function appointment(Request $request, Business $business)
@@ -143,18 +147,10 @@ class ManagementController extends Controller
         return back()->with('success', 'Estado del pedido actualizado.');
     }
 
-    public function social(Request $request, Business $business)
-    {
-        $this->ownerOnly($business);
-        $data = $request->validate(['platform' => ['required', 'in:instagram,facebook,whatsapp,tiktok'], 'url' => ['required', 'url', 'max:255']]);
-        $business->socialLinks()->updateOrCreate(['platform' => $data['platform']], $data);
-        return back()->with('success', 'Red social guardada.');
-    }
-
     public function member(Request $request, Business $business)
     {
         $this->ownerOnly($business);
-        $data = $request->validate(['email' => ['required', 'email', 'exists:users,email'], 'role' => ['required', 'in:administrator,employee']]);
+        $data = $request->validate(['email' => ['required', 'email', 'exists:users,email'], 'role' => ['required', 'string', 'max:60']]);
         $user = User::where('email', $data['email'])->firstOrFail();
         $business->members()->syncWithoutDetaching([$user->id => ['role' => $data['role'], 'joined_at' => now()]]);
         return back()->with('success', 'Miembro asociado al emprendimiento.');

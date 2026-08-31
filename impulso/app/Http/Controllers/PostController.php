@@ -12,7 +12,14 @@ class PostController extends Controller
     public function index(Business $business)
     {
         $this->ownerOnly($business);
-        return view('posts.index', ['business' => $business, 'posts' => $business->posts()->latest()->paginate(10)]);
+        return view('posts.index', ['business' => $business, 'posts' => $business->posts()->latest()->paginate(10), 'socialLinks' => $business->socialLinks()->get()]);
+    }
+
+    public function create(Business $business)
+    {
+        $this->ownerOnly($business);
+
+        return view('posts.create', ['business' => $business, 'socialLinks' => $business->socialLinks()->get()]);
     }
 
     public function store(Request $request, Business $business)
@@ -21,18 +28,21 @@ class PostController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:140'],
             'body' => ['required', 'string', 'max:2000'],
-            'photo' => ['nullable', 'image', 'max:5120'],
+            'photos' => ['nullable', 'array', 'max:4'],
+            'photos.*' => ['image', 'max:5120'],
             'type' => ['required', 'in:product,offer,news'],
-            'price' => ['nullable', 'numeric', 'min:0'],
+            'price' => ['required', 'numeric', 'min:0'],
             'discount_price' => ['nullable', 'numeric', 'min:0', 'lte:price'],
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
             'is_published' => ['nullable', 'boolean'],
+            'share_on_social' => ['nullable', 'boolean'],
         ]);
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('posts', 'public');
+        if ($request->hasFile('photos')) {
+            $data['photos'] = collect($request->file('photos'))->map(fn ($photo) => $photo->store('posts', 'public'))->all();
+            $data['photo'] = $data['photos'][0];
         }
-        $business->posts()->create($data + ['created_by' => Auth::id(), 'is_published' => $request->boolean('is_published')]);
+        $business->posts()->create($data + ['created_by' => Auth::id(), 'is_published' => $request->boolean('is_published'), 'share_on_social' => $request->boolean('share_on_social')]);
         return back()->with('success', 'Publicación creada.');
     }
 
@@ -40,11 +50,12 @@ class PostController extends Controller
     {
         $this->ownerOnly($business);
         abort_unless($post->business_id === $business->id, 404);
-        $data = $request->validate(['title' => ['required', 'string', 'max:140'], 'body' => ['required', 'string', 'max:2000'], 'photo' => ['nullable', 'image', 'max:5120'], 'type' => ['required', 'in:product,offer,news'], 'price' => ['nullable', 'numeric', 'min:0'], 'discount_price' => ['nullable', 'numeric', 'min:0', 'lte:price'], 'starts_at' => ['nullable', 'date'], 'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'], 'is_published' => ['nullable', 'boolean']]);
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('posts', 'public');
+        $data = $request->validate(['title' => ['required', 'string', 'max:140'], 'body' => ['required', 'string', 'max:2000'], 'photos' => ['nullable', 'array', 'max:4'], 'photos.*' => ['image', 'max:5120'], 'type' => ['required', 'in:product,offer,news'], 'price' => ['required', 'numeric', 'min:0'], 'discount_price' => ['nullable', 'numeric', 'min:0', 'lte:price'], 'starts_at' => ['nullable', 'date'], 'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'], 'is_published' => ['nullable', 'boolean'], 'share_on_social' => ['nullable', 'boolean']]);
+        if ($request->hasFile('photos')) {
+            $data['photos'] = collect($request->file('photos'))->map(fn ($photo) => $photo->store('posts', 'public'))->all();
+            $data['photo'] = $data['photos'][0];
         }
-        $post->update($data + ['is_published' => $request->boolean('is_published')]);
+        $post->update($data + ['is_published' => $request->boolean('is_published'), 'share_on_social' => $request->boolean('share_on_social')]);
         return back()->with('success', 'Publicación actualizada.');
     }
 
@@ -54,6 +65,15 @@ class PostController extends Controller
         abort_unless($post->business_id === $business->id, 404);
         $post->delete();
         return back()->with('success', 'Publicación eliminada.');
+    }
+
+    public function social(Request $request, Business $business)
+    {
+        $this->ownerOnly($business);
+        $data = $request->validate(['platform' => ['required', 'in:instagram,facebook,whatsapp,tiktok'], 'url' => ['required', 'url', 'max:255']]);
+        $business->socialLinks()->updateOrCreate(['platform' => $data['platform']], $data);
+
+        return back()->with('success', 'Red social guardada.');
     }
 
     private function ownerOnly(Business $business): void

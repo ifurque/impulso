@@ -14,6 +14,7 @@ class Order extends Model
         'product_id',
         'customer_name',
         'customer_phone',
+        'delivery_method',
         'delivery_address',
         'delivery_notes',
         'quantity',

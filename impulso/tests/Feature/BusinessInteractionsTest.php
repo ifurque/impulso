@@ -168,6 +168,7 @@ class BusinessInteractionsTest extends TestCase
             'quantity' => 1,
             'customer_name' => 'Agustina',
             'customer_phone' => '1122334455',
+            'delivery_method' => 'delivery',
             'delivery_address' => 'Av. Siempre Viva 123',
             'delivery_notes' => 'Portón negro',
             'payment_method' => 'efectivo',
@@ -226,6 +227,40 @@ class BusinessInteractionsTest extends TestCase
             ->assertOk()
             ->assertSee('Pedidos con envío')
             ->assertSee('Agustina');
+    }
+
+    public function test_client_can_place_a_pickup_order_without_delivery_address(): void
+    {
+        $business = Business::create([
+            'owner_id' => User::factory()->create()->id,
+            'name' => 'Tienda Centro',
+            'category' => 'Comercio',
+            'description' => 'Prueba de retiro',
+            'location' => 'Centro',
+        ]);
+        $product = $business->products()->create([
+            'name' => 'Bolsa reutilizable',
+            'type' => 'product',
+            'price' => 1200,
+            'is_active' => true,
+        ]);
+
+        $this->post(route('orders.store', $business), [
+            'product_id' => $product->id,
+            'quantity' => 1,
+            'customer_name' => 'Marina',
+            'customer_phone' => '1122334455',
+            'delivery_method' => 'pickup',
+            'payment_method' => 'efectivo',
+        ])->assertSessionHas('success');
+
+        $this->assertDatabaseHas('orders', [
+            'business_id' => $business->id,
+            'customer_name' => 'Marina',
+            'delivery_method' => 'pickup',
+            'delivery_cost' => 0,
+            'total' => 1200,
+        ]);
     }
 
     public function test_owner_can_update_order_status_from_the_panel(): void
@@ -346,11 +381,68 @@ class BusinessInteractionsTest extends TestCase
             'quantity' => 1,
             'customer_name' => 'Agustina',
             'customer_phone' => '1122334455',
+            'delivery_method' => 'delivery',
             'delivery_address' => 'Av. Siempre Viva 123',
             'delivery_notes' => 'Portón negro',
             'payment_method' => 'efectivo',
         ])->assertSessionHas('success');
 
         Mail::assertSent(OrderReceived::class, fn ($mail) => $mail->hasTo('dueno@impulso.local'));
+    }
+
+    public function test_owner_can_open_the_members_page(): void
+    {
+        $owner = User::factory()->create();
+        $business = $owner->ownedBusinesses()->create([
+            'name' => 'Equipo Norte',
+            'category' => 'Servicios',
+            'description' => 'Prueba de miembros',
+            'location' => 'Centro',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('members.index', $business))
+            ->assertOk()
+            ->assertSee('Sumar miembro')
+            ->assertSee($owner->name);
+    }
+
+    public function test_post_requires_price_and_persists_social_sharing_choice(): void
+    {
+        $owner = User::factory()->create();
+        $business = $owner->ownedBusinesses()->create([
+            'name' => 'Publicaciones Norte',
+            'category' => 'Servicios',
+            'description' => 'Prueba de publicaciones',
+            'location' => 'Centro',
+        ]);
+
+        $this->actingAs($owner)
+            ->post(route('posts.store', $business), [
+                'title' => 'Nueva propuesta',
+                'body' => 'Descripción de la propuesta.',
+                'type' => 'product',
+                'is_published' => '1',
+                'share_on_social' => '1',
+            ])
+            ->assertSessionHasErrors('price');
+
+        $this->actingAs($owner)
+            ->post(route('posts.store', $business), [
+                'title' => 'Nueva propuesta',
+                'body' => 'Descripción de la propuesta.',
+                'type' => 'product',
+                'price' => 2500,
+                'is_published' => '1',
+                'share_on_social' => '1',
+            ])
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('posts', [
+            'business_id' => $business->id,
+            'title' => 'Nueva propuesta',
+            'price' => 2500,
+            'share_on_social' => true,
+        ]);
     }
 }

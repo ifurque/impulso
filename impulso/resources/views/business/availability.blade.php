@@ -7,22 +7,13 @@
       <h1>Horarios de atención</h1>
       <p class="muted">Configura cuándo estás disponible para atender turnos.</p>
     </div>
-    <a class="button" href="{{ route('dashboard', $business) }}">← Volver al panel</a>
+    <a class="button secondary" href="{{ route('dashboard', $business) }}">Volver al panel</a>
   </div>
 
   <div class="panel" style="max-width: 800px;">
     <form method="POST" action="{{ route('availability.update', $business) }}" class="form">
       @csrf
       
-      <div class="form-section">
-        <label class="check">
-          <input type="hidden" name="appointments_enabled" value="0">
-          <input type="checkbox" name="appointments_enabled" value="1" @if($business->appointments_enabled) checked @endif>
-          <span>Habilitar turnos y citas para este emprendimiento</span>
-        </label>
-        <p class="muted" style="font-size: 0.85rem; margin-top: 8px;">Los clientes podrán solicitar turnos cuando esta opción esté habilitada.</p>
-      </div>
-
       <div class="form-section">
         <label class="check">
           <input type="hidden" name="delivery_enabled" value="0">
@@ -65,6 +56,15 @@
             @endforeach
           </div>
         </div>
+      </div>
+
+      <div class="form-section appointment-settings">
+        <label class="check">
+          <input type="hidden" name="appointments_enabled" value="0">
+          <input type="checkbox" name="appointments_enabled" value="1" @if($business->appointments_enabled) checked @endif>
+          <span>Habilitar turnos y citas para este emprendimiento</span>
+        </label>
+        <p class="muted" style="font-size: 0.85rem; margin-top: 8px;">Los clientes podrán solicitar turnos cuando esta opción esté habilitada.</p>
       </div>
 
       <div class="form-section slot-duration-field">

@@ -13,29 +13,30 @@ class OrderController extends Controller
 {
     public function store(Request $request, Business $business)
     {
-        abort_unless($business->delivery_enabled, 422, 'Este emprendimiento no está habilitado para entregas.');
-
         $data = $request->validate([
             'product_id' => ['required', 'exists:products,id'],
             'quantity' => ['required', 'integer', 'min:1', 'max:20'],
             'customer_name' => ['required', 'string', 'max:120'],
             'customer_phone' => ['required', 'string', 'max:40'],
-            'delivery_address' => ['required', 'string', 'max:500'],
+            'delivery_method' => ['required', 'in:delivery,pickup'],
+            'delivery_address' => ['nullable', 'required_if:delivery_method,delivery', 'string', 'max:500'],
             'delivery_notes' => ['nullable', 'string', 'max:500'],
             'payment_method' => ['required', 'in:efectivo,transferencia,qr,tarjeta'],
         ]);
+        abort_if($data['delivery_method'] === 'delivery' && ! $business->delivery_enabled, 422, 'Este emprendimiento no está habilitado para entregas.');
 
         $product = $business->products()->whereKey($data['product_id'])->firstOrFail();
 
         $subtotal = (float) $product->price * (int) $data['quantity'];
-        $deliveryCost = (float) ($business->delivery_cost ?? 0);
+        $deliveryCost = $data['delivery_method'] === 'delivery' ? (float) ($business->delivery_cost ?? 0) : 0;
         $total = $subtotal + $deliveryCost;
 
         $order = $business->orders()->create([
             'product_id' => $product->id,
             'customer_name' => $data['customer_name'],
             'customer_phone' => $data['customer_phone'],
-            'delivery_address' => $data['delivery_address'],
+            'delivery_method' => $data['delivery_method'],
+            'delivery_address' => $data['delivery_address'] ?? null,
             'delivery_notes' => $data['delivery_notes'] ?? null,
             'quantity' => $data['quantity'],
             'subtotal' => $subtotal,

@@ -156,10 +156,10 @@
         <a class="button full" href="{{ route('login') }}">Ingresar</a>
       @endauth
 
-      @if($business->delivery_enabled)
+      @if($business->products->where('is_active', true)->isNotEmpty())
         <hr>
-        <h3>Envíos</h3>
-        <p class="muted">Entrega en {{ $business->delivery_radius_km }} km · Costo ${{ number_format($business->delivery_cost ?? 0, 0, ',', '.') }}</p>
+        <h3>Hacer un pedido</h3>
+        @if($business->delivery_enabled)<p class="muted">Podés retirarlo o pedir entrega en {{ $business->delivery_radius_km }} km · Costo ${{ number_format($business->delivery_cost ?? 0, 0, ',', '.') }}</p>@else<p class="muted">Retirá tu pedido directamente en el emprendimiento.</p>@endif
         <form method="POST" action="{{ route('orders.store', $business) }}" class="form">
           @csrf
           <label>
@@ -176,8 +176,8 @@
           <label>Cantidad<input type="number" name="quantity" min="1" value="1" required></label>
           <label>Tu nombre<input name="customer_name" required maxlength="120"></label>
           <label>Teléfono<input name="customer_phone" required maxlength="40"></label>
-          <label>Dirección de entrega<textarea name="delivery_address" rows="2" required></textarea></label>
-          <label>Notas del envío<textarea name="delivery_notes" rows="2"></textarea></label>
+          <label>Método de entrega<select name="delivery_method" id="delivery-method" required><option value="pickup">Retirar en el emprendimiento</option>@if($business->delivery_enabled)<option value="delivery">Envío a domicilio</option>@endif</select></label>
+          <div id="delivery-fields" hidden><label>Dirección de entrega<textarea name="delivery_address" rows="2"></textarea></label><label>Notas del envío<textarea name="delivery_notes" rows="2"></textarea></label></div>
           <label>
             Método de pago
             <select name="payment_method" required>
@@ -214,4 +214,13 @@
   });
 </script>
 @endif
+<script>
+  const deliveryMethod = document.querySelector('#delivery-method');
+  const deliveryFields = document.querySelector('#delivery-fields');
+  if (deliveryMethod && deliveryFields) {
+    const updateDeliveryFields = () => { deliveryFields.hidden = deliveryMethod.value !== 'delivery'; };
+    deliveryMethod.addEventListener('change', updateDeliveryFields);
+    updateDeliveryFields();
+  }
+</script>
 @endsection
