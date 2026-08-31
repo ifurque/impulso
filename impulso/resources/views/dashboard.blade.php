@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
 <section class="dashboard wrap"><div class="dashboard-top"><div><p class="eyebrow">Panel de {{ $business->name }}</p><h1>Hola, {{ Str::before(auth()->user()->name, ' ') }}.</h1><p class="muted">Aquí tienes una mirada rápida de lo que está pasando.</p></div><a class="button" href="{{ route('business.show', $business) }}">Ver perfil público <span>↗</span></a></div>
-<div class="metric-grid"><div class="metric-card accent"><span>Pagos entrantes · 30 días</span><strong>$ {{ number_format($totalIncomes, 0, ',', '.') }}</strong><small>Todo lo que ingresó a tu negocio.</small></div><div class="metric-card"><span>Gastos · 30 días</span><strong>$ {{ number_format($totalExpenses, 0, ',', '.') }}</strong><small>Movimientos registrados</small></div>@if($business->appointments_enabled)<div class="metric-card"><span>Turnos próximos</span><strong>{{ $appointments }}</strong><small class="positive">● En seguimiento</small></div>@endif</div>
+<div class="metric-grid"><div class="metric-card accent"><span>Pagos entrantes · 30 días</span><strong>$ {{ number_format($totalIncomes, 0, ',', '.') }}</strong><small>Todo lo que ingresó a tu negocio.</small></div><div class="metric-card"><span>Gastos · 30 días</span><strong>$ {{ number_format($totalExpenses, 0, ',', '.') }}</strong><small>Movimientos registrados</small></div>@if($business->appointments_enabled)<div class="metric-card"><span>Turnos próximos</span><strong>{{ $appointments }}</strong><small class="positive">● En seguimiento</small></div>@endif @if($business->delivery_enabled)<div class="metric-card"><span>Pedidos pendientes</span><strong>{{ $pendingOrders ?? 0 }}</strong><small class="positive">● Revisión de envíos</small></div>@endif</div>
 <div class="dashboard-grid">
   <div class="dashboard-main">
     <div class="panel">
@@ -62,6 +62,9 @@
   <div class="panel quick-panel">
     <p class="eyebrow">Acciones rápidas</p>
     <h2>Haz avanzar tu día.</h2>
+    @if($business->delivery_enabled && ($pendingOrders ?? 0) > 0)
+      <div class="notice success-box" style="margin-bottom: 16px;">Tienes {{ $pendingOrders }} pedido(s) pendiente(s) con envío.</div>
+    @endif
     <div class="quick-links">
       <a href="{{ route('movements.index', $business) }}" class="quick-link">
         <span>↕</span>

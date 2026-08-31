@@ -23,6 +23,7 @@ class DashboardController extends Controller
             'incomeTotals' => $business->incomes()->where('income_date', '>=', $from)->get()->groupBy(fn ($income) => $income->source)->map(fn ($items) => $items->sum('amount'))->sortDesc(),
             'appointments' => $business->appointments()->whereIn('status', ['pending', 'confirmed'])->count(),
             'inquiries' => $business->inquiries()->where('status', 'pending')->count(),
+            'pendingOrders' => $business->orders()->where('status', 'pending')->count(),
             'recentExpenses' => $business->expenses()->with('category')->latest('expense_date')->limit(5)->get(),
             'recentIncomes' => $business->incomes()->latest('income_date')->limit(5)->get(),
         ]);

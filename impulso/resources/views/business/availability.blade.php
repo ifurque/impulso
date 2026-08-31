@@ -23,6 +23,50 @@
         <p class="muted" style="font-size: 0.85rem; margin-top: 8px;">Los clientes podrán solicitar turnos cuando esta opción esté habilitada.</p>
       </div>
 
+      <div class="form-section">
+        <label class="check">
+          <input type="hidden" name="delivery_enabled" value="0">
+          <input type="checkbox" name="delivery_enabled" value="1" @if($business->delivery_enabled) checked @endif>
+          <span>Este emprendimiento realiza entregas a domicilio</span>
+        </label>
+      </div>
+
+      <div class="form-section delivery-grid">
+        <label>
+          Radio de entrega (km)
+          <input type="number" name="delivery_radius_km" min="0" max="50" value="{{ old('delivery_radius_km', $business->delivery_radius_km ?? 0) }}">
+        </label>
+        <label>
+          Costo de envío
+          <input type="number" name="delivery_cost" min="0" step="50" value="{{ old('delivery_cost', $business->delivery_cost ?? 0) }}">
+        </label>
+      </div>
+
+      <div class="form-section payment-grid">
+        <div>
+          <label>Pagos que acepta el cliente</label>
+          <div class="choice-list">
+            @foreach(['efectivo','transferencia','tarjeta','mercado_pago','qr'] as $method)
+              <label class="check small-check">
+                <input type="checkbox" name="customer_payment_methods[]" value="{{ $method }}" @checked(in_array($method, $business->payment_methods_customer ?? []))>
+                <span>{{ ucfirst(str_replace('_', ' ', $method)) }}</span>
+              </label>
+            @endforeach
+          </div>
+        </div>
+        <div>
+          <label>Pagos que usa el emprendedor</label>
+          <div class="choice-list">
+            @foreach(['transferencia','mercado_pago','efectivo','tarjeta','qr'] as $method)
+              <label class="check small-check">
+                <input type="checkbox" name="business_payment_methods[]" value="{{ $method }}" @checked(in_array($method, $business->payment_methods_business ?? []))>
+                <span>{{ ucfirst(str_replace('_', ' ', $method)) }}</span>
+              </label>
+            @endforeach
+          </div>
+        </div>
+      </div>
+
       <div class="form-section slot-duration-field">
         <label for="appointment_slot_duration">Duración de cada turno</label>
         <select id="appointment_slot_duration" name="appointment_slot_duration" required>
@@ -83,8 +127,11 @@
 
 <style>
   .form-section { margin-bottom: 20px; }
+  .delivery-grid, .payment-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; }
   .check { display: flex !important; align-items: center; font-size: 0.9rem !important; font-weight: 400 !important; gap: 10px; }
+  .small-check { margin-bottom: 6px; }
   .check input { width: auto; }
+  .choice-list { display: grid; gap: 8px; margin-top: 10px; }
   .hours-section { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
   .hours-header { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 15px; margin-bottom: 12px; }
   .day-label { font-weight: 600; margin: 0; }
@@ -95,6 +142,7 @@
   .time-input input { border: 1px solid var(--line); padding: 10px; border-radius: 4px; }
   .time-input input:disabled { background: #f0f0f0; color: #999; }
   h3 { margin: 0 0 16px; font-size: 1.1rem; }
+  @media (max-width: 760px) { .delivery-grid, .payment-grid, .hours-inputs { grid-template-columns:1fr; } .hours-header { grid-template-columns:1fr; gap:8px; } }
 </style>
 
 <script>

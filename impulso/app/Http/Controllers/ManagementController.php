@@ -23,6 +23,7 @@ class ManagementController extends Controller
             'categories' => ExpenseCategory::orderBy('name')->get(),
             'appointments' => $business->appointments()->with(['client', 'product'])->latest('appointment_date')->limit(12)->get(),
             'inquiries' => $business->inquiries()->with('client')->latest()->limit(12)->get(),
+            'orders' => $business->orders()->with('product')->latest()->limit(12)->get(),
             'socialLinks' => $business->socialLinks()->get(),
         ]);
     }
@@ -132,6 +133,14 @@ class ManagementController extends Controller
         $data = $request->validate(['status' => ['required', 'in:pending,answered,closed']]);
         $business->inquiries()->findOrFail($inquiry)->update($data + ($data['status'] === 'answered' ? ['answered_at' => now()] : []));
         return back()->with('success', 'Consulta actualizada.');
+    }
+
+    public function orderStatus(Request $request, Business $business, $order)
+    {
+        $this->ownerOnly($business);
+        $data = $request->validate(['status' => ['required', 'in:pending,confirmed,delivered,cancelled']]);
+        $business->orders()->findOrFail($order)->update($data);
+        return back()->with('success', 'Estado del pedido actualizado.');
     }
 
     public function social(Request $request, Business $business)

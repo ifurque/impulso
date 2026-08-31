@@ -13,7 +13,9 @@ class Business extends Model
     protected $fillable = [
         'owner_id', 'name', 'slug', 'category', 'description', 'location',
         'phone', 'email', 'logo', 'profile_photo', 'cover_photo', 'opening_hours', 'is_public',
-        'appointments_enabled', 'appointment_slot_duration', 'public_palette', 'public_background',
+        'appointments_enabled', 'delivery_enabled', 'delivery_radius_km', 'delivery_cost',
+        'payment_methods_customer', 'payment_methods_business', 'appointment_slot_duration',
+        'public_palette', 'public_background',
     ];
 
     protected function casts(): array
@@ -22,6 +24,11 @@ class Business extends Model
             'opening_hours' => 'array',
             'is_public' => 'boolean',
             'appointments_enabled' => 'boolean',
+            'delivery_enabled' => 'boolean',
+            'delivery_radius_km' => 'integer',
+            'delivery_cost' => 'integer',
+            'payment_methods_customer' => 'array',
+            'payment_methods_business' => 'array',
             'appointment_slot_duration' => 'integer',
         ];
     }
@@ -82,6 +89,11 @@ class Business extends Model
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 
     public function availabilityHours()

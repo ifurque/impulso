@@ -48,6 +48,25 @@
         @endforelse
       </div>
 
+      <h2>Servicio y atención</h2>
+      <div class="info-cards">
+        <div class="info-card">
+          <strong>Entrega</strong>
+          <p>{{ $business->delivery_enabled ? 'Hace envíos a domicilio' : 'No realiza entregas' }}</p>
+          @if($business->delivery_enabled)
+            <small>{{ $business->delivery_radius_km }} km de radio · ${{ number_format($business->delivery_cost ?? 0, 0, ',', '.') }} envío</small>
+          @endif
+        </div>
+        <div class="info-card">
+          <strong>Pagos cliente</strong>
+          <p>{{ $business->payment_methods_customer ? implode(', ', $business->payment_methods_customer) : 'No configurado aún' }}</p>
+        </div>
+        <div class="info-card">
+          <strong>Pagos emprendedor</strong>
+          <p>{{ $business->payment_methods_business ? implode(', ', $business->payment_methods_business) : 'No configurado aún' }}</p>
+        </div>
+      </div>
+
       <h2>Redes y contacto</h2>
       <div class="actions">
         @foreach($business->socialLinks as $link)
@@ -136,6 +155,41 @@
         <p class="muted">Ingresa para enviar una consulta al emprendimiento.</p>
         <a class="button full" href="{{ route('login') }}">Ingresar</a>
       @endauth
+
+      @if($business->delivery_enabled)
+        <hr>
+        <h3>Envíos</h3>
+        <p class="muted">Entrega en {{ $business->delivery_radius_km }} km · Costo ${{ number_format($business->delivery_cost ?? 0, 0, ',', '.') }}</p>
+        <form method="POST" action="{{ route('orders.store', $business) }}" class="form">
+          @csrf
+          <label>
+            Producto
+            <select name="product_id" required>
+              <option value="">Seleccioná un producto</option>
+              @foreach($business->products as $product)
+                @if($product->is_active)
+                  <option value="{{ $product->id }}">{{ $product->name }} · ${{ number_format($product->price ?? 0, 0, ',', '.') }}</option>
+                @endif
+              @endforeach
+            </select>
+          </label>
+          <label>Cantidad<input type="number" name="quantity" min="1" value="1" required></label>
+          <label>Tu nombre<input name="customer_name" required maxlength="120"></label>
+          <label>Teléfono<input name="customer_phone" required maxlength="40"></label>
+          <label>Dirección de entrega<textarea name="delivery_address" rows="2" required></textarea></label>
+          <label>Notas del envío<textarea name="delivery_notes" rows="2"></textarea></label>
+          <label>
+            Método de pago
+            <select name="payment_method" required>
+              <option value="">Elegí un método</option>
+              @foreach($business->payment_methods_customer ?? ['efectivo', 'transferencia', 'qr'] as $method)
+                <option value="{{ $method }}">{{ ucfirst(str_replace('_', ' ', $method)) }}</option>
+              @endforeach
+            </select>
+          </label>
+          <button class="button full">Confirmar pedido</button>
+        </form>
+      @endif
     </aside>
   </div>
 </section>

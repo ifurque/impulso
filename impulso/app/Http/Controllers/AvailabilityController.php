@@ -42,6 +42,13 @@ class AvailabilityController extends Controller
 
         $data = $request->validate([
             'appointments_enabled' => 'boolean',
+            'delivery_enabled' => 'boolean',
+            'delivery_radius_km' => 'nullable|integer|min:0|max:50',
+            'delivery_cost' => 'nullable|integer|min:0',
+            'customer_payment_methods' => 'nullable|array',
+            'customer_payment_methods.*' => 'string|in:efectivo,transferencia,tarjeta,mercado_pago,qr,cuenta_corriente',
+            'business_payment_methods' => 'nullable|array',
+            'business_payment_methods.*' => 'string|in:transferencia,mercado_pago,efectivo,tarjeta,qr',
             'appointment_slot_duration' => 'required|in:15,30,60',
             'hours.*.day_of_week' => 'required|string',
             'hours.*.is_closed' => 'boolean',
@@ -57,6 +64,11 @@ class AvailabilityController extends Controller
 
         $business->update([
             'appointments_enabled' => $data['appointments_enabled'] ?? false,
+            'delivery_enabled' => $data['delivery_enabled'] ?? false,
+            'delivery_radius_km' => $data['delivery_radius_km'] ?? 0,
+            'delivery_cost' => $data['delivery_cost'] ?? 0,
+            'payment_methods_customer' => $data['customer_payment_methods'] ?? [],
+            'payment_methods_business' => $data['business_payment_methods'] ?? [],
             'appointment_slot_duration' => $data['appointment_slot_duration'],
         ]);
 

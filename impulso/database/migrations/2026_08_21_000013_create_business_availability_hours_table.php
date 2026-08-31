@@ -21,7 +21,7 @@ return new class extends Migration
         });
 
         Schema::table('businesses', function (Blueprint $table) {
-            $table->boolean('appointments_enabled')->default(false)->after('is_public');
+            $table->boolean('appointments_enabled')->default(true)->after('is_public');
         });
     }
 
