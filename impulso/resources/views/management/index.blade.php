@@ -132,6 +132,11 @@
       grid-template-columns: 1fr;
     }
   }
+  @media (max-width: 640px) {
+    .management-panel .form .button { width: 100%; }
+    .management-panel .mini-item { gap: 8px; padding: 12px 0; }
+    .management-panel .mini-item form .plain-button { width: 100%; text-align: left; }
+  }
 </style>
 
 <script>

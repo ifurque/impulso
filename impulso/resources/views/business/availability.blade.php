@@ -190,7 +190,7 @@
   const syncAppointments = () => {
     const enabled = !!appointmentsCheckbox?.checked;
     setSectionState(appointmentsSettings, enabled);
-    setHoursState(enabled);
+    setHoursState(true);
   };
 
   deliveryCheckbox?.addEventListener('change', syncDelivery);
@@ -202,7 +202,7 @@
     
     checkbox.addEventListener('change', () => {
       timeInputs.forEach(input => {
-        input.disabled = checkbox.checked || !appointmentsCheckbox?.checked;
+        input.disabled = checkbox.checked;
       });
     });
   });

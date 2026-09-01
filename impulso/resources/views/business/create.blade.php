@@ -200,7 +200,14 @@
   .starter-product-card { border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 14px; }
   .starter-product-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .section-disabled { opacity: 0.6; pointer-events: none; }
-  @media (max-width: 760px) { .payment-row, .starter-product-grid { grid-template-columns: 1fr; } .starter-products-head { flex-direction: column; align-items: stretch; } }
+  @media (max-width: 760px) {
+    .payment-row, .starter-product-grid { grid-template-columns: 1fr; }
+    .starter-products { padding: 12px; }
+    .starter-products-head { flex-direction: column; align-items: stretch; gap: 10px; }
+    .starter-products-head .button { width: 100%; justify-content: center; }
+    .starter-product-card { padding: 12px; }
+    .remove-starter-product { width: 100%; text-align: left; padding-top: 8px; }
+  }
 </style>
 
 <script>
