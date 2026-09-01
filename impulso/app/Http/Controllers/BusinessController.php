@@ -71,12 +71,33 @@ class BusinessController extends Controller
             'appointment_slot_duration' => ['nullable', 'in:15,30,60'],
             'profile_photo' => ['nullable', 'image', 'max:5120'],
             'cover_photo' => ['nullable', 'image', 'max:8192'],
+            'products' => ['nullable', 'array', 'max:20'],
+            'products.*.name' => ['nullable', 'string', 'max:120'],
+            'products.*.type' => ['nullable', 'in:product,service'],
+            'products.*.category' => ['nullable', 'string', 'max:100'],
+            'products.*.unit' => ['nullable', 'in:unidad,kilo,litro'],
+            'products.*.price' => ['nullable', 'numeric', 'min:0'],
+            'products.*.description' => ['nullable', 'string', 'max:500'],
         ]);
         foreach (['profile_photo', 'cover_photo'] as $image) {
             if ($request->hasFile($image)) {
                 $data[$image] = $request->file($image)->store('businesses', 'public');
             }
         }
+
+        foreach (($data['products'] ?? []) as $productInput) {
+            $name = trim((string) ($productInput['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            if (empty($productInput['type']) || empty($productInput['unit']) || !isset($productInput['price']) || $productInput['price'] === '') {
+                return back()->withErrors([
+                    'products' => 'Completa tipo, unidad y precio en cada producto o servicio cargado.',
+                ])->withInput();
+            }
+        }
+
         $business = $request->user()->ownedBusinesses()->create($data + [
             'appointments_enabled' => $request->boolean('appointments_enabled'),
             'delivery_enabled' => $request->boolean('delivery_enabled'),
@@ -88,6 +109,28 @@ class BusinessController extends Controller
             'slug' => Str::slug($data['name']).'-'.Str::random(5),
         ]);
         $business->members()->attach($request->user()->id, ['role' => 'owner', 'joined_at' => now()]);
+
+        foreach (($data['products'] ?? []) as $productInput) {
+            $name = trim((string) ($productInput['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            $type = in_array(($productInput['type'] ?? 'product'), ['product', 'service'], true)
+                ? $productInput['type']
+                : 'product';
+
+            $business->products()->create([
+                'name' => $name,
+                'type' => $type,
+                'category' => trim((string) ($productInput['category'] ?? '')) ?: null,
+                'unit' => $type === 'service' ? 'unidad' : (($productInput['unit'] ?? 'unidad')),
+                'price' => $productInput['price'] ?? null,
+                'description' => trim((string) ($productInput['description'] ?? '')) ?: null,
+                'is_active' => true,
+            ]);
+        }
+
         if ($business->appointments_enabled) {
             foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
                 $business->availabilityHours()->create([

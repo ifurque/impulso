@@ -112,39 +112,5 @@
     </div>
   </div>
 </div>
-<details class="business-inbox">
-  <summary aria-label="Abrir bandeja de consultas y notificaciones">
-    <span aria-hidden="true">▰</span>
-    @if($inboxInquiries->isNotEmpty() || $notifications->isNotEmpty())<b>{{ $inboxInquiries->count() + $notifications->count() }}</b>@endif
-  </summary>
-  <div class="business-inbox-menu">
-    <div class="business-inbox-title"><div><strong>Mensajes</strong><span>Actividad de {{ $business->name }}</span></div><span class="inbox-close">×</span></div>
-    <div class="inbox-tabs" role="tablist"><button class="inbox-tab is-active" type="button" data-inbox-tab="messages">Consultas <b>{{ $inboxInquiries->count() }}</b></button><button class="inbox-tab" type="button" data-inbox-tab="notifications">Notificaciones <b>{{ $notifications->count() }}</b></button></div>
-    <div class="inbox-pane is-active" data-inbox-pane="messages">
-      @forelse($inboxInquiries as $inquiry)
-        <a href="{{ route('management.index', $business) }}" class="inbox-conversation"><span class="inbox-avatar">{{ Str::upper(Str::substr($inquiry->client?->name ?? 'C', 0, 1)) }}</span><span><strong>{{ $inquiry->client?->name ?? 'Cliente' }}</strong><small>{{ $inquiry->subject }}</small><em>{{ Str::limit($inquiry->message, 62) }}</em></span><i>Nuevo</i></a>
-      @empty
-        <div class="inbox-empty"><strong>Tu bandeja está al día.</strong><span>Las consultas de clientes aparecerán acá.</span></div>
-      @endforelse
-    </div>
-    <div class="inbox-pane" data-inbox-pane="notifications">
-      @forelse($notifications as $notification)
-        <a href="{{ route('management.index', $business) }}" class="inbox-notification">
-          <span class="notification-icon">{{ $notification instanceof \App\Models\Appointment ? '◷' : '□' }}</span>
-          <span>@if($notification instanceof \App\Models\Appointment)<strong>Turno pendiente</strong><small>{{ $notification->client?->name ?? $notification->guest_name }} · {{ \Carbon\Carbon::parse($notification->appointment_date)->format('d/m') }} a las {{ $notification->start_time }}</small>@else<strong>Pedido pendiente</strong><small>{{ $notification->customer_name }} · $ {{ number_format($notification->total, 0, ',', '.') }}</small>@endif</span>
-        </a>
-      @empty
-        <div class="inbox-empty"><strong>No hay novedades.</strong><span>Los turnos y pedidos pendientes aparecerán acá.</span></div>
-      @endforelse
-    </div>
-  </div>
-</details>
 </section>
-<script>
-  document.querySelectorAll('.inbox-tab').forEach((tab) => tab.addEventListener('click', () => {
-    document.querySelectorAll('.inbox-tab, .inbox-pane').forEach((item) => item.classList.remove('is-active'));
-    tab.classList.add('is-active');
-    document.querySelector(`[data-inbox-pane="${tab.dataset.inboxTab}"]`).classList.add('is-active');
-  }));
-</script>
 @endsection

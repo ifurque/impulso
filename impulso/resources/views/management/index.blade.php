@@ -3,9 +3,71 @@
 @section('content')
 <section class="dashboard wrap">
   <div class="dashboard-top">
-    <div><p class="eyebrow">Administración</p><h1>Turnos y pedidos.</h1><p class="muted">Organizá la atención, los retiros y las entregas de tu emprendimiento.</p></div>
+    <div><p class="eyebrow">Administración</p><h1>Gestion operativa.</h1><p class="muted">Administra productos, pedidos, turnos y consultas desde un solo lugar.</p></div>
     <a class="button secondary" href="{{ route('dashboard', $business) }}">Volver al panel</a>
   </div>
+
+  <section class="panel management-panel" style="margin-bottom: 22px;">
+    <p class="eyebrow">Catalogo</p>
+    <h2>Productos y servicios</h2>
+    <div class="management-products-grid">
+      <form method="POST" enctype="multipart/form-data" action="{{ route('products.store', $business) }}" class="form">
+        @csrf
+        <label>Tipo
+          <select name="type" id="product-type" required>
+            <option value="product">Producto</option>
+            <option value="service">Servicio</option>
+          </select>
+        </label>
+        <label>Nombre
+          <input name="name" maxlength="120" required>
+        </label>
+        <label>Categoria
+          <input name="category" maxlength="100" placeholder="Ej. Panificados, Limpieza, Consultoria">
+        </label>
+        <label>Unidad de medida
+          <select name="unit" id="product-unit" required>
+            <option value="unidad">Unidad</option>
+            <option value="kilo">Kilo</option>
+            <option value="litro">Litro</option>
+          </select>
+        </label>
+        <label>Precio
+          <input type="number" name="price" step="0.01" min="0" required>
+        </label>
+        <label>Descripcion <span class="label-hint">opcional</span>
+          <textarea name="description" rows="2" maxlength="500"></textarea>
+        </label>
+        <label>Foto <span class="label-hint">opcional</span>
+          <input type="file" name="photo" accept="image/jpeg,image/png,image/webp">
+        </label>
+        <button class="button">Agregar</button>
+      </form>
+
+      <div>
+        <label for="catalog-search" style="display: block; margin-bottom: 8px;">Buscar en catalogo</label>
+        <input id="catalog-search" class="search-input" placeholder="Buscar por nombre, categoria o tipo">
+        <div class="stack-list" id="catalog-list" style="margin-top: 12px;">
+          @forelse($business->products as $product)
+            <article class="mini-item" data-product-card data-filter-text="{{ Str::lower($product->name.' '.($product->category ?? '').' '.($product->type === 'product' ? 'producto' : 'servicio')) }}">
+              <div>
+                <strong>{{ $product->name }}</strong>
+                <small>{{ $product->type === 'product' ? 'Producto' : 'Servicio' }} · {{ $product->category ?: 'Sin categoria' }}</small>
+                <small>Unidad: {{ ucfirst($product->unit ?? 'unidad') }} · $ {{ number_format($product->price ?? 0, 0, ',', '.') }}</small>
+              </div>
+              <form method="POST" action="{{ route('products.destroy', [$business, $product]) }}" onsubmit="return confirm('¿Eliminar este item del catalogo?')">
+                @csrf
+                @method('DELETE')
+                <button class="plain-button">Eliminar</button>
+              </form>
+            </article>
+          @empty
+            <p class="muted">Todavia no hay productos o servicios cargados.</p>
+          @endforelse
+        </div>
+      </div>
+    </div>
+  </section>
 
   <div class="management-grid {{ $business->delivery_enabled ? 'has-delivery' : '' }}">
     @if($business->delivery_enabled)
@@ -58,4 +120,45 @@
     </section>
   </div>
 </section>
+
+<style>
+  .management-products-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 16px;
+  }
+  @media (max-width: 900px) {
+    .management-products-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  const productTypeField = document.querySelector('#product-type');
+  const productUnitField = document.querySelector('#product-unit');
+  const catalogSearchInput = document.querySelector('#catalog-search');
+  const catalogCards = document.querySelectorAll('[data-product-card]');
+
+  const syncUnitWithType = () => {
+    if (!productTypeField || !productUnitField) return;
+    if (productTypeField.value === 'service') {
+      productUnitField.value = 'unidad';
+      productUnitField.disabled = true;
+      return;
+    }
+    productUnitField.disabled = false;
+  };
+
+  productTypeField?.addEventListener('change', syncUnitWithType);
+  syncUnitWithType();
+
+  catalogSearchInput?.addEventListener('input', () => {
+    const search = catalogSearchInput.value.toLowerCase().trim();
+    catalogCards.forEach((card) => {
+      const text = card.dataset.filterText || '';
+      card.style.display = text.includes(search) ? '' : 'none';
+    });
+  });
+</script>
 @endsection

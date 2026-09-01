@@ -109,6 +109,65 @@
         </div>
       </div>
 
+      <div class="wide starter-products" id="starter-products">
+        <div class="starter-products-head">
+          <div>
+            <p class="eyebrow">Catalogo inicial</p>
+            <h2>Carga tus productos o servicios</h2>
+            <p class="muted">Agrega lo principal para que tu emprendimiento salga publicado con precios y unidades.</p>
+          </div>
+          <button type="button" class="button secondary" id="add-starter-product">Agregar item</button>
+        </div>
+
+        <div class="starter-products-list" id="starter-products-list">
+          @php($starterProducts = old('products', [['type' => 'product', 'unit' => 'unidad']]))
+          @foreach($starterProducts as $index => $starter)
+            <article class="starter-product-card" data-starter-row>
+              <div class="starter-product-grid">
+                <label>
+                  Tipo
+                  <select name="products[{{ $index }}][type]" data-product-type>
+                    <option value="product" @selected(($starter['type'] ?? 'product') === 'product')>Producto</option>
+                    <option value="service" @selected(($starter['type'] ?? '') === 'service')>Servicio</option>
+                  </select>
+                </label>
+
+                <label>
+                  Nombre
+                  <input name="products[{{ $index }}][name]" value="{{ $starter['name'] ?? '' }}" maxlength="120" placeholder="Ej. Pan integral o Asesoria contable">
+                </label>
+
+                <label>
+                  Categoria
+                  <input name="products[{{ $index }}][category]" value="{{ $starter['category'] ?? '' }}" maxlength="100" placeholder="Ej. Panificados, Limpieza, Consultoria">
+                </label>
+
+                <label>
+                  Unidad
+                  <select name="products[{{ $index }}][unit]" data-product-unit>
+                    <option value="unidad" @selected(($starter['unit'] ?? 'unidad') === 'unidad')>Unidad</option>
+                    <option value="kilo" @selected(($starter['unit'] ?? '') === 'kilo')>Kilo</option>
+                    <option value="litro" @selected(($starter['unit'] ?? '') === 'litro')>Litro</option>
+                  </select>
+                </label>
+
+                <label>
+                  Precio
+                  <input type="number" name="products[{{ $index }}][price]" value="{{ $starter['price'] ?? '' }}" min="0" step="0.01" placeholder="0.00">
+                </label>
+
+                <label class="wide">
+                  Descripcion <span class="label-hint">opcional</span>
+                  <textarea name="products[{{ $index }}][description]" rows="2" maxlength="500" placeholder="Breve descripcion para mostrar en tu perfil">{{ $starter['description'] ?? '' }}</textarea>
+                </label>
+              </div>
+
+              <button type="button" class="plain-button remove-starter-product">Quitar</button>
+            </article>
+          @endforeach
+        </div>
+      </div>
+
       <label>
         Logo o foto de perfil <span class="label-hint">JPG, PNG o WEBP · max. 5 MB</span>
         <input type="file" name="profile_photo" accept="image/jpeg,image/png,image/webp">
@@ -134,8 +193,14 @@
   .choice-list { display: grid; gap: 8px; margin-top: 8px; }
   .small-check { margin: 0; }
   .payment-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 14px; }
+  .starter-products { border: 1px solid var(--line); border-radius: 8px; padding: 16px; background: #fbfcfa; }
+  .starter-products-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; margin-bottom: 14px; }
+  .starter-products-head h2 { margin: 0 0 4px; font-size: 1.25rem; }
+  .starter-products-list { display: grid; gap: 12px; }
+  .starter-product-card { border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 14px; }
+  .starter-product-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .section-disabled { opacity: 0.6; pointer-events: none; }
-  @media (max-width: 760px) { .payment-row { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) { .payment-row, .starter-product-grid { grid-template-columns: 1fr; } .starter-products-head { flex-direction: column; align-items: stretch; } }
 </style>
 
 <script>
@@ -167,5 +232,71 @@
     appointmentsEnabled.addEventListener('change', syncAppointments);
     syncAppointments();
   }
+
+  const productsList = document.querySelector('#starter-products-list');
+  const addProductButton = document.querySelector('#add-starter-product');
+
+  const normalizeProductRow = (row) => {
+    const typeField = row.querySelector('[data-product-type]');
+    const unitField = row.querySelector('[data-product-unit]');
+    if (!typeField || !unitField) return;
+
+    const syncUnitByType = () => {
+      if (typeField.value === 'service') {
+        unitField.value = 'unidad';
+        unitField.disabled = true;
+      } else {
+        unitField.disabled = false;
+      }
+    };
+
+    typeField.addEventListener('change', syncUnitByType);
+    syncUnitByType();
+  };
+
+  const reindexProductRows = () => {
+    const rows = productsList.querySelectorAll('[data-starter-row]');
+    rows.forEach((row, index) => {
+      row.querySelectorAll('input, select, textarea').forEach((field) => {
+        field.name = field.name.replace(/products\[\d+\]/, `products[${index}]`);
+      });
+    });
+  };
+
+  const registerRemoveButton = (row) => {
+    const removeButton = row.querySelector('.remove-starter-product');
+    if (!removeButton) return;
+    removeButton.addEventListener('click', () => {
+      row.remove();
+      reindexProductRows();
+    });
+  };
+
+  addProductButton?.addEventListener('click', () => {
+    const index = productsList.querySelectorAll('[data-starter-row]').length;
+    const wrapper = document.createElement('article');
+    wrapper.className = 'starter-product-card';
+    wrapper.setAttribute('data-starter-row', 'true');
+    wrapper.innerHTML = `
+      <div class="starter-product-grid">
+        <label>Tipo<select name="products[${index}][type]" data-product-type><option value="product">Producto</option><option value="service">Servicio</option></select></label>
+        <label>Nombre<input name="products[${index}][name]" maxlength="120" placeholder="Ej. Pan integral o Asesoria contable"></label>
+        <label>Categoria<input name="products[${index}][category]" maxlength="100" placeholder="Ej. Panificados, Limpieza, Consultoria"></label>
+        <label>Unidad<select name="products[${index}][unit]" data-product-unit><option value="unidad">Unidad</option><option value="kilo">Kilo</option><option value="litro">Litro</option></select></label>
+        <label>Precio<input type="number" name="products[${index}][price]" min="0" step="0.01" placeholder="0.00"></label>
+        <label class="wide">Descripcion <span class="label-hint">opcional</span><textarea name="products[${index}][description]" rows="2" maxlength="500" placeholder="Breve descripcion para mostrar en tu perfil"></textarea></label>
+      </div>
+      <button type="button" class="plain-button remove-starter-product">Quitar</button>
+    `;
+    productsList.appendChild(wrapper);
+    normalizeProductRow(wrapper);
+    registerRemoveButton(wrapper);
+    reindexProductRows();
+  });
+
+  productsList?.querySelectorAll('[data-starter-row]').forEach((row) => {
+    normalizeProductRow(row);
+    registerRemoveButton(row);
+  });
 </script>
 @endsection

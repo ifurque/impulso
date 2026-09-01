@@ -28,18 +28,22 @@
       @include('business._posts')
       
       <h2>Productos y servicios</h2>
+      <label for="public-product-search" style="display:block; margin: 0 0 10px;">
+        Buscar productos o servicios
+        <input id="public-product-search" class="search-input" placeholder="Ej. pan, litro, limpieza, asesoria">
+      </label>
       <div class="product-list">
         @forelse($business->products as $product)
-          <div>
+          <div data-public-product data-filter-text="{{ Str::lower($product->name.' '.($product->category ?? '').' '.($product->unit ?? '').' '.($product->type === 'product' ? 'producto' : 'servicio')) }}">
             @if($product->photo)
               <img class="product-photo" src="{{ asset('storage/'.$product->photo) }}" alt="Foto de {{ $product->name }}">
             @endif
-            <span>{{ $product->type === 'product' ? 'Producto' : 'Servicio' }}</span>
+            <span>{{ $product->type === 'product' ? 'Producto' : 'Servicio' }} · {{ $product->category ?: 'Sin categoria' }}</span>
             <strong>{{ $product->name }}</strong>
             <small>
               {{ $product->description }}
               @if($product->price)
-                · $ {{ number_format($product->price, 0, ',', '.') }}
+                · $ {{ number_format($product->price, 0, ',', '.') }} / {{ $product->unit ?? 'unidad' }}
               @endif
             </small>
           </div>
@@ -102,7 +106,7 @@
           <select name="product_id">
             <option value="">Selecciona una propuesta</option>
             @foreach($business->products as $product)
-              <option value="{{ $product->id }}">{{ $product->name }}</option>
+              <option value="{{ $product->id }}">{{ $product->name }} @if($product->price)· ${{ number_format($product->price, 0, ',', '.') }} / {{ $product->unit ?? 'unidad' }}@endif</option>
             @endforeach
           </select>
         </label>
@@ -168,7 +172,7 @@
               <option value="">Seleccioná un producto</option>
               @foreach($business->products as $product)
                 @if($product->is_active)
-                  <option value="{{ $product->id }}">{{ $product->name }} · ${{ number_format($product->price ?? 0, 0, ',', '.') }}</option>
+                  <option value="{{ $product->id }}">{{ $product->name }} · ${{ number_format($product->price ?? 0, 0, ',', '.') }} / {{ $product->unit ?? 'unidad' }}</option>
                 @endif
               @endforeach
             </select>
@@ -215,6 +219,16 @@
 </script>
 @endif
 <script>
+  const publicProductSearch = document.querySelector('#public-product-search');
+  const publicProductCards = document.querySelectorAll('[data-public-product]');
+  publicProductSearch?.addEventListener('input', () => {
+    const search = publicProductSearch.value.toLowerCase().trim();
+    publicProductCards.forEach((card) => {
+      const text = card.dataset.filterText || '';
+      card.style.display = text.includes(search) ? '' : 'none';
+    });
+  });
+
   const deliveryMethod = document.querySelector('#delivery-method');
   const deliveryFields = document.querySelector('#delivery-fields');
   if (deliveryMethod && deliveryFields) {
