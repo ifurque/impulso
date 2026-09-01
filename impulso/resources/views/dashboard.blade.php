@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('content')
-<section class="dashboard wrap"><div class="dashboard-top"><div><p class="eyebrow">Panel de {{ $business->name }}</p><h1>Hola, {{ Str::before(auth()->user()->name, ' ') }}.</h1><p class="muted">Aquí tienes una mirada rápida de lo que está pasando.</p><a class="button create-post-action" href="{{ route('posts.create', $business) }}">Crear publicación <span>+</span></a></div><a class="button secondary" href="{{ route('business.show', $business) }}">Ver perfil público <span>↗</span></a></div>
+<section class="dashboard wrap"><div class="dashboard-top"><div><p class="eyebrow">Panel de {{ $business->name }}</p><h1>Hola, {{ Str::before(auth()->user()->name, ' ') }}.</h1><p class="muted">Aquí tienes una mirada rápida de lo que está pasando.</p><div class="page-actions"><a class="button create-post-action" href="{{ route('posts.create', $business) }}">Crear publicación <span>+</span></a><a class="button secondary create-post-action" href="{{ route('management.database', $business) }}">Base de datos <span>↗</span></a></div></div><a class="button secondary" href="{{ route('business.show', $business) }}">Ver perfil público <span>↗</span></a></div>
 <div class="metric-grid"><div class="metric-card accent"><span>Pagos entrantes · 30 días</span><strong>$ {{ number_format($totalIncomes, 0, ',', '.') }}</strong><small>Todo lo que ingresó a tu negocio.</small></div><div class="metric-card"><span>Gastos · 30 días</span><strong>$ {{ number_format($totalExpenses, 0, ',', '.') }}</strong><small>Movimientos registrados</small></div>@if($business->appointments_enabled)<div class="metric-card"><span>Turnos próximos</span><strong>{{ $appointments }}</strong><small class="positive">● En seguimiento</small></div>@endif @if($business->delivery_enabled)<div class="metric-card"><span>Pedidos pendientes</span><strong>{{ $pendingOrders ?? 0 }}</strong><small class="positive">● Revisión de envíos</small></div>@endif</div>
 <div class="dashboard-grid">
   <div class="dashboard-main">
@@ -73,14 +73,20 @@
           <small>Gastos e ingresos</small>
         </div>
       </a>
-      @if($business->appointments_enabled)<a href="{{ route('management.index', $business) }}" class="quick-link">
+      <a href="{{ route('management.index', $business) }}" class="quick-link">
         <span>◷</span>
         <div>
-          <strong>Ver turnos</strong>
-          <small>Gestiona citas y consultas</small>
+          <strong>Gestion operativa</strong>
+          <small>Envios, atencion y mensajes</small>
         </div>
       </a>
-      @endif
+      <a href="{{ route('management.database', $business) }}" class="quick-link">
+        <span>▦</span>
+        <div>
+          <strong>Base de datos</strong>
+          <small>Catalogo y registros</small>
+        </div>
+      </a>
       <a href="{{ route('posts.index', $business) }}" class="quick-link">
         <span>✦</span>
         <div>

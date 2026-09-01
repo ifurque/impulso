@@ -14,15 +14,27 @@ use Carbon\Carbon;
 
 class ManagementController extends Controller
 {
+    private const DATE_NOT_PAST_RULE = 'after_or_equal:today';
+    private const SLOT_UNAVAILABLE_MESSAGE = 'El horario seleccionado ya no está disponible.';
+
     public function index(Business $business)
     {
         $this->ownerOnly($business);
         return view('management.index', [
-            'business' => $business->load(['products', 'members']),
+            'business' => $business,
             'appointments' => $business->appointments()->with(['client', 'product'])->latest('appointment_date')->limit(12)->get(),
             'deliveryOrders' => $business->orders()->with('product')->where('delivery_method', 'delivery')->latest()->limit(12)->get(),
             'pickupOrders' => $business->orders()->with('product')->where('delivery_method', 'pickup')->latest()->limit(12)->get(),
             'inquiries' => $business->inquiries()->with('client')->latest()->limit(20)->get(),
+        ]);
+    }
+
+    public function database(Business $business)
+    {
+        $this->ownerOnly($business);
+
+        return view('management.database', [
+            'business' => $business->load(['products' => fn ($query) => $query->latest()]),
         ]);
     }
 
@@ -35,12 +47,12 @@ class ManagementController extends Controller
 
     public function appointment(Request $request, Business $business)
     {
-        $rules = ['product_id' => ['nullable', 'exists:products,id'], 'appointment_date' => ['required', 'date', 'after_or_equal:today'], 'start_time' => ['required', 'date_format:H:i'], 'notes' => ['nullable', 'string', 'max:500']];
+        $rules = ['product_id' => ['nullable', 'exists:products,id'], 'appointment_date' => ['required', 'date', self::DATE_NOT_PAST_RULE], 'start_time' => ['required', 'date_format:H:i'], 'notes' => ['nullable', 'string', 'max:500']];
         abort_unless($business->appointments_enabled, 422, 'Los turnos no están habilitados para este emprendimiento.');
         $data = $request->validate($rules);
         $date = Carbon::parse($data['appointment_date']);
         $slots = $this->availableSlotTimes($business, $date);
-        abort_unless(in_array($data['start_time'], $slots, true), 422, 'El horario seleccionado ya no está disponible.');
+        abort_unless(in_array($data['start_time'], $slots, true), 422, self::SLOT_UNAVAILABLE_MESSAGE);
         abort_unless(empty($data['product_id']) || $business->products()->whereKey($data['product_id'])->exists(), 422, 'La propuesta seleccionada no pertenece a este emprendimiento.');
         $data['end_time'] = Carbon::createFromFormat('H:i', $data['start_time'])
             ->addMinutes($business->appointment_slot_duration ?? 30)->format('H:i');
@@ -59,7 +71,7 @@ class ManagementController extends Controller
         $appointment = DB::transaction(function () use ($business, $data) {
             $lockedBusiness = Business::whereKey($business->id)->lockForUpdate()->first();
             $date = Carbon::parse($data['appointment_date']);
-            abort_unless(in_array($data['start_time'], $this->availableSlotTimes($lockedBusiness, $date), true), 422, 'El horario seleccionado ya no está disponible.');
+            abort_unless(in_array($data['start_time'], $this->availableSlotTimes($lockedBusiness, $date), true), 422, self::SLOT_UNAVAILABLE_MESSAGE);
 
             return $lockedBusiness->appointments()->create($data + [
                 'confirmation_token' => Str::random(64),
@@ -74,7 +86,7 @@ class ManagementController extends Controller
     public function availableSlots(Business $business, Request $request)
     {
         abort_unless($business->is_public && $business->appointments_enabled, 404);
-        $data = $request->validate(['date' => ['required', 'date', 'after_or_equal:today']]);
+        $data = $request->validate(['date' => ['required', 'date', self::DATE_NOT_PAST_RULE]]);
 
         return response()->json(['slots' => $this->availableSlotTimes($business, Carbon::parse($data['date']))]);
     }
@@ -103,11 +115,11 @@ class ManagementController extends Controller
     {
         $appointment = \App\Models\Appointment::where('management_token', $token)->firstOrFail();
         $data = $request->validate([
-            'appointment_date' => ['required', 'date', 'after_or_equal:today'],
+            'appointment_date' => ['required', 'date', self::DATE_NOT_PAST_RULE],
             'start_time' => ['required', 'date_format:H:i'],
         ]);
         $date = Carbon::parse($data['appointment_date']);
-        abort_unless(in_array($data['start_time'], $this->availableSlotTimes($appointment->business, $date, $appointment->id), true), 422, 'El horario seleccionado ya no está disponible.');
+        abort_unless(in_array($data['start_time'], $this->availableSlotTimes($appointment->business, $date, $appointment->id), true), 422, self::SLOT_UNAVAILABLE_MESSAGE);
         $appointment->update([
             'appointment_date' => $data['appointment_date'],
             'start_time' => $data['start_time'],

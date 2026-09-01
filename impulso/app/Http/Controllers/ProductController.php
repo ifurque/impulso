@@ -15,13 +15,10 @@ class ProductController extends Controller
         abort_unless($business->canBeManagedBy(Auth::user()), 403);
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
-            'description' => ['nullable', 'string', 'max:500'],
-            'photo' => ['nullable', 'image', 'max:5120'],
             'type' => ['required', 'in:product,service'],
             'category' => ['nullable', 'string', 'max:100'],
             'unit' => ['required', 'in:'.implode(',', self::PRODUCT_UNITS)],
             'price' => ['required', 'numeric', 'min:0'],
-            'duration' => ['nullable', 'integer', 'min:1'],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -29,13 +26,9 @@ class ProductController extends Controller
             $data['unit'] = 'unidad';
         }
 
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('products', 'public');
-        }
-
         $data['is_active'] = $request->boolean('is_active', true);
         $business->products()->create($data);
-        return back()->with('success', 'Propuesta agregada a tu perfil.');
+        return back()->with('success', 'Registro guardado en la base de datos.');
     }
 
     public function destroy(Business $business, $product)

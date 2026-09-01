@@ -48,6 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/panel/{business:slug}/movimientos', [IncomeController::class, 'index'])->name('movements.index');
     Route::post('/panel/{business:slug}/ingresos', [IncomeController::class, 'store'])->name('incomes.store');
     Route::get('/panel/{business:slug}/gestion', [ManagementController::class, 'index'])->name('management.index');
+    Route::get('/panel/{business:slug}/base-datos', [ManagementController::class, 'database'])->name('management.database');
     Route::get('/panel/{business:slug}/miembros', [ManagementController::class, 'members'])->name('members.index');
     Route::get('/panel/{business:slug}/horarios', [AvailabilityController::class, 'index'])->name('availability.index');
     Route::post('/panel/{business:slug}/horarios', [AvailabilityController::class, 'update'])->name('availability.update');
