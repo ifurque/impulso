@@ -42,6 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/panel/{business:slug}/personalizacion', [BusinessController::class, 'updateCustomization'])->name('business.customization.update');
     Route::get('/panel/{business:slug}', DashboardController::class)->name('dashboard');
     Route::post('/panel/{business:slug}/productos', [ProductController::class, 'store'])->name('products.store');
+    Route::post('/panel/{business:slug}/productos/ingreso', [ProductController::class, 'addStock'])->name('products.add-stock');
+    Route::put('/panel/{business:slug}/productos/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/panel/{business:slug}/productos/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::get('/panel/{business:slug}/gastos', [ExpenseController::class, 'index'])->name('expenses.index');
     Route::post('/panel/{business:slug}/gastos', [ExpenseController::class, 'store'])->name('expenses.store');
@@ -49,6 +51,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/panel/{business:slug}/ingresos', [IncomeController::class, 'store'])->name('incomes.store');
     Route::get('/panel/{business:slug}/gestion', [ManagementController::class, 'index'])->name('management.index');
     Route::get('/panel/{business:slug}/base-datos', [ManagementController::class, 'database'])->name('management.database');
+    Route::post('/panel/{business:slug}/base-datos/componentes', [ManagementController::class, 'updateDatabaseComponents'])->name('management.database.components');
     Route::get('/panel/{business:slug}/miembros', [ManagementController::class, 'members'])->name('members.index');
     Route::get('/panel/{business:slug}/horarios', [AvailabilityController::class, 'index'])->name('availability.index');
     Route::post('/panel/{business:slug}/horarios', [AvailabilityController::class, 'update'])->name('availability.update');

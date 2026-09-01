@@ -16,6 +16,7 @@ class ManagementController extends Controller
 {
     private const DATE_NOT_PAST_RULE = 'after_or_equal:today';
     private const SLOT_UNAVAILABLE_MESSAGE = 'El horario seleccionado ya no está disponible.';
+    private const DATABASE_OPTIONAL_COMPONENTS = ['producto', 'marca', 'modelo', 'unidad', 'cantidad', 'precio', 'categoria'];
 
     public function index(Business $business)
     {
@@ -33,9 +34,32 @@ class ManagementController extends Controller
     {
         $this->ownerOnly($business);
 
+        $selectedComponents = $business->database_components;
+        if (!$selectedComponents || !is_array($selectedComponents)) {
+            $selectedComponents = self::DATABASE_OPTIONAL_COMPONENTS;
+        }
+
         return view('management.database', [
-            'business' => $business->load(['products' => fn ($query) => $query->latest()]),
+            'business' => $business->load(['products' => fn ($query) => $query->orderByDesc('id')]),
+            'availableComponents' => self::DATABASE_OPTIONAL_COMPONENTS,
+            'selectedComponents' => $selectedComponents,
         ]);
+    }
+
+    public function updateDatabaseComponents(Request $request, Business $business)
+    {
+        $this->ownerOnly($business);
+
+        $data = $request->validate([
+            'components' => ['nullable', 'array'],
+            'components.*' => ['string', 'in:'.implode(',', self::DATABASE_OPTIONAL_COMPONENTS)],
+        ]);
+
+        $selected = collect($data['components'] ?? [])->unique()->values()->all();
+
+        $business->update(['database_components' => $selected]);
+
+        return back()->with('success', 'Componentes de la base de datos actualizados.');
     }
 
     public function members(Business $business)

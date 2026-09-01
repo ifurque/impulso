@@ -15,7 +15,7 @@ class Business extends Model
         'phone', 'email', 'logo', 'profile_photo', 'cover_photo', 'opening_hours', 'is_public',
         'appointments_enabled', 'delivery_enabled', 'delivery_radius_km', 'delivery_cost',
         'payment_methods_customer', 'payment_methods_business', 'appointment_slot_duration',
-        'public_palette', 'public_background',
+        'public_palette', 'public_background', 'database_components',
     ];
 
     protected function casts(): array
@@ -30,6 +30,7 @@ class Business extends Model
             'payment_methods_customer' => 'array',
             'payment_methods_business' => 'array',
             'appointment_slot_duration' => 'integer',
+            'database_components' => 'array',
         ];
     }
 
