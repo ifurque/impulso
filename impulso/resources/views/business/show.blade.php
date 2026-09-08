@@ -1,12 +1,25 @@
 @extends('layouts.app')
-@section('content')
+@section('body_class', 'business-public')
 @php($palette = $palettes[$business->public_palette ?? 'mint'] ?? $palettes['mint'])
-<section class="profile public-page public-background-{{ $business->public_background ?? 'plain' }} wrap" style="--public-accent: {{ $palette['accent'] }}; --public-soft: {{ $palette['soft'] }}; --public-ink: {{ $palette['ink'] }}; --public-paper: {{ $palette['paper'] }}; --public-line: {{ $palette['line'] }};">
+@php($publicNavBg = $business->public_navbar_color ?: $palette['soft'])
+@php($publicPostBg = $business->public_posts_background ?: $palette['soft'])
+@push('head')
+<style>
+  body.business-public .nav {
+    background: {{ $publicNavBg }};
+  }
+  body.business-public .public-posts article {
+    background: {{ $publicPostBg }};
+  }
+</style>
+@endpush
+@section('content')
+<section class="profile public-page public-background-{{ $business->public_background ?? 'plain' }} wrap" style="--public-accent: {{ $palette['accent'] }}; --public-soft: {{ $palette['soft'] }}; --public-ink: {{ $palette['ink'] }}; --public-paper: {{ $palette['paper'] }}; --public-line: {{ $palette['line'] }}; --public-post-bg: {{ $publicPostBg }};">
   <a class="back" href="{{ route('discover') }}">← Volver a explorar</a>
-  <div class="profile-hero"{{ $business->cover_photo ? ' style="background-image: linear-gradient(90deg, rgba(24,37,34,.82), rgba(24,37,34,.2)), url(\'' . asset('storage/'.$business->cover_photo) . '\'); background-size: cover; background-position: center; color: white;"' : '' }}>
+  <div class="profile-hero"{{ $business->cover_photo_url ? ' style="background-image: linear-gradient(90deg, rgba(24,37,34,.82), rgba(24,37,34,.2)), url(\'' . $business->cover_photo_url . '\'); background-size: cover; background-position: center; color: white;"' : '' }}>
     <div class="profile-logo">
-      @if($business->profile_photo)
-        <img src="{{ asset('storage/'.$business->profile_photo) }}" alt="Logo de {{ $business->name }}">
+      @if($business->profile_photo_url)
+        <img src="{{ $business->profile_photo_url }}" alt="Logo de {{ $business->name }}">
       @else
         {{ Str::substr($business->name, 0, 1) }}
       @endif

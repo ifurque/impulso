@@ -32,7 +32,12 @@ class BusinessController extends Controller
     public function updateCustomization(Request $request, Business $business)
     {
         abort_unless($business->canBeManagedBy($request->user()), 403);
-        $data = $request->validate(['public_palette' => ['required', 'in:mint,sun,coral,ocean'], 'public_background' => ['required', 'in:plain,grid,dots,paper']]);
+        $data = $request->validate([
+            'public_palette' => ['required', 'in:mint,sun,coral,ocean'],
+            'public_background' => ['required', 'in:plain,grid,dots,paper'],
+            'public_navbar_color' => ['nullable', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
+            'public_posts_background' => ['nullable', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
+        ]);
         $business->update($data);
         return redirect()->route('business.customization', $business)->with('success', 'Personalización guardada.');
     }

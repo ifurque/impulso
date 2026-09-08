@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Business extends Model
@@ -16,7 +17,7 @@ class Business extends Model
         'phone', 'email', 'logo', 'profile_photo', 'cover_photo', 'opening_hours', 'is_public',
         'appointments_enabled', 'delivery_enabled', 'delivery_radius_km', 'delivery_cost',
         'payment_methods_customer', 'payment_methods_business', 'appointment_slot_duration',
-        'public_palette', 'public_background', 'database_components',
+        'public_palette', 'public_background', 'public_navbar_color', 'public_posts_background', 'database_components',
     ];
 
     protected function casts(): array
@@ -114,5 +115,32 @@ class Business extends Model
         return $this->owner_id === $user->id
             || $user->role === 'superadmin'
             || $this->members()->whereKey($user->id)->wherePivotIn('role', ['owner', 'administrator'])->exists();
+    }
+
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        return $this->resolveMediaUrl($this->profile_photo);
+    }
+
+    public function getCoverPhotoUrlAttribute(): ?string
+    {
+        return $this->resolveMediaUrl($this->cover_photo);
+    }
+
+    protected function resolveMediaUrl(?string $path): ?string
+    {
+        if (!$path) {
+            return null;
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://', '//'])) {
+            return $path;
+        }
+
+        if (Str::startsWith($path, 'storage/')) {
+            return asset($path);
+        }
+
+        return Storage::disk('public')->url($path);
     }
 }

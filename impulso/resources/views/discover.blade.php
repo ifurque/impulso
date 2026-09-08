@@ -32,10 +32,10 @@
       <div class="business-grid" id="business-grid">
         @foreach($businesses as $business)
           <article class="business-card">
-            <div class="business-cover" @if($business->cover_photo) style="background-image: url('{{ asset('storage/'.$business->cover_photo) }}'); background-size: cover; background-position: center;" @endif>
+            <div class="business-cover" @if($business->cover_photo_url) style="background-image: url('{{ $business->cover_photo_url }}'); background-size: cover; background-position: center;" @endif>
               <span class="logo-placeholder">
-                @if($business->profile_photo)
-                  <img src="{{ asset('storage/'.$business->profile_photo) }}" alt="Logo de {{ $business->name }}">
+                @if($business->profile_photo_url)
+                  <img src="{{ $business->profile_photo_url }}" alt="Logo de {{ $business->name }}">
                 @else
                   {{ Str::substr($business->name, 0, 1) }}
                 @endif

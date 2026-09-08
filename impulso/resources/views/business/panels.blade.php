@@ -14,8 +14,8 @@
     @forelse($businesses as $business)
       <a class="business-panel-card" href="{{ route('dashboard', $business) }}">
         <div class="business-panel-logo">
-          @if($business->profile_photo)
-            <img src="{{ asset('storage/'.$business->profile_photo) }}" alt="Logo de {{ $business->name }}">
+          @if($business->profile_photo_url)
+            <img src="{{ $business->profile_photo_url }}" alt="Logo de {{ $business->name }}">
           @else
             {{ Str::substr($business->name, 0, 1) }}
           @endif

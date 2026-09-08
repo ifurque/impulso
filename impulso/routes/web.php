@@ -13,6 +13,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\InboxController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\UserCustomizationController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'home')->name('home');
@@ -35,6 +36,8 @@ Route::middleware('guest')->group(function () {
 Route::post('/salir', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 Route::middleware('auth')->group(function () {
     Route::get('/bandeja', [InboxController::class, 'index'])->name('inbox.index');
+    Route::get('/personalizacion', [UserCustomizationController::class, 'edit'])->name('user.customization');
+    Route::post('/personalizacion', [UserCustomizationController::class, 'update'])->name('user.customization.update');
     Route::get('/crear-emprendimiento', [BusinessController::class, 'create'])->name('business.create');
     Route::post('/crear-emprendimiento', [BusinessController::class, 'store'])->name('business.store');
     Route::get('/paneles', [BusinessController::class, 'panels'])->name('business.panels');

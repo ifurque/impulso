@@ -41,6 +41,7 @@ class User extends Authenticatable
         'avatar',
         'is_entrepreneur',
         'role',
+        'ui_preferences',
         'password',
     ];
 
@@ -64,6 +65,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'is_entrepreneur' => 'boolean',
+            'ui_preferences' => 'array',
             'password' => 'hashed',
         ];
     }
