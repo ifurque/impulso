@@ -164,8 +164,9 @@
         <hr>
         <h3>Hacer un pedido</h3>
         @if($business->delivery_enabled)<p class="muted">Podés retirarlo o pedir entrega en {{ $business->delivery_radius_km }} km · Costo ${{ number_format($business->delivery_cost ?? 0, 0, ',', '.') }}</p>@else<p class="muted">Retirá tu pedido directamente en el emprendimiento.</p>@endif
-        <form method="POST" action="{{ route('orders.store', $business) }}" class="form">
+        <form method="POST" action="{{ route('orders.store', $business) }}" class="form" id="order-form" data-business-latitude="{{ $business->delivery_latitude }}" data-business-longitude="{{ $business->delivery_longitude }}" data-delivery-radius="{{ $business->delivery_radius_km }}">
           @csrf
+          @if($errors->has('customer_location'))<div class="notice error-box">{{ $errors->first('customer_location') }}</div>@endif
           <label>
             Producto
             <select name="product_id" required>
@@ -181,7 +182,14 @@
           <label>Tu nombre<input name="customer_name" required maxlength="120"></label>
           <label>Teléfono<input name="customer_phone" required maxlength="40"></label>
           <label>Método de entrega<select name="delivery_method" id="delivery-method" required><option value="pickup">Retirar en el emprendimiento</option>@if($business->delivery_enabled)<option value="delivery">Envío a domicilio</option>@endif</select></label>
-          <div id="delivery-fields" hidden><label>Dirección de entrega<textarea name="delivery_address" rows="2"></textarea></label><label>Notas del envío<textarea name="delivery_notes" rows="2"></textarea></label></div>
+          <div id="delivery-fields" hidden>
+            <label>Dirección de entrega<textarea name="delivery_address" rows="2"></textarea></label>
+            <label>Notas del envío<textarea name="delivery_notes" rows="2"></textarea></label>
+            <input type="hidden" name="customer_latitude" id="customer-latitude">
+            <input type="hidden" name="customer_longitude" id="customer-longitude">
+            <button type="button" class="button secondary" id="check-delivery-coverage">Comprobar si llegamos a tu ubicación</button>
+            <p class="muted" id="delivery-coverage-status">Necesitamos tu ubicación actual para confirmar la cobertura.</p>
+          </div>
           <label>
             Método de pago
             <select name="payment_method" required>
@@ -236,5 +244,41 @@
     deliveryMethod.addEventListener('change', updateDeliveryFields);
     updateDeliveryFields();
   }
+
+  const orderForm = document.querySelector('#order-form');
+  const coverageButton = document.querySelector('#check-delivery-coverage');
+  const coverageStatus = document.querySelector('#delivery-coverage-status');
+  const customerLatitude = document.querySelector('#customer-latitude');
+  const customerLongitude = document.querySelector('#customer-longitude');
+  coverageButton?.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      coverageStatus.textContent = 'Este navegador no permite obtener la ubicación.';
+      return;
+    }
+    coverageStatus.textContent = 'Calculando cobertura...';
+    navigator.geolocation.getCurrentPosition((position) => {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      customerLatitude.value = latitude;
+      customerLongitude.value = longitude;
+      const businessLatitude = Number(orderForm.dataset.businessLatitude);
+      const businessLongitude = Number(orderForm.dataset.businessLongitude);
+      const radius = Number(orderForm.dataset.deliveryRadius);
+      if (!Number.isFinite(businessLatitude) || !Number.isFinite(businessLongitude)) {
+        coverageStatus.textContent = 'El emprendimiento todavía no configuró la ubicación exacta del local.';
+        return;
+      }
+      const toRadians = (value) => value * Math.PI / 180;
+      const latitudeDelta = toRadians(latitude - businessLatitude);
+      const longitudeDelta = toRadians(longitude - businessLongitude);
+      const a = Math.sin(latitudeDelta / 2) ** 2 + Math.cos(toRadians(businessLatitude)) * Math.cos(toRadians(latitude)) * Math.sin(longitudeDelta / 2) ** 2;
+      const distance = 6371 * 2 * Math.asin(Math.min(1, Math.sqrt(a)));
+      coverageStatus.textContent = distance <= radius
+        ? `Sí, estás dentro del rango (${distance.toFixed(1)} km).`
+        : `No, estás fuera del rango (${distance.toFixed(1)} km de ${radius} km).`;
+    }, () => {
+      coverageStatus.textContent = 'No pudimos obtener tu ubicación. Revisa el permiso del navegador.';
+    }, { enableHighAccuracy: true, timeout: 10000 });
+  });
 </script>
 @endsection

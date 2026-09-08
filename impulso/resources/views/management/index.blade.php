@@ -11,6 +11,19 @@
   </div>
 
   <div class="management-grid {{ $business->delivery_enabled ? 'has-delivery' : '' }}">
+    <section class="panel management-panel">
+      <p class="eyebrow">Sistema de envíos</p><h2>Zona de cobertura</h2>
+      @if($business->delivery_enabled && $business->delivery_latitude !== null && $business->delivery_longitude !== null)
+        <p class="muted">La comprobación automática está activa en un radio de <strong>{{ $business->delivery_radius_km }} km</strong> desde {{ $business->location }}.</p>
+        <span class="notice success-box">Ubicación del local configurada</span>
+      @elseif($business->delivery_enabled)
+        <p class="muted">Falta guardar la ubicación exacta del local para que el sistema pueda decirle al cliente si está dentro del rango.</p>
+        <span class="notice error-box">Cobertura automática pendiente</span>
+      @else
+        <p class="muted">Activa los envíos y define el radio desde el apartado de horarios.</p>
+      @endif
+      <a class="button secondary" href="{{ route('availability.index', $business) }}">Configurar sistema de envíos</a>
+    </section>
     @if($business->delivery_enabled)
       <section class="panel management-panel">
         <p class="eyebrow">Pedidos con envío</p><h2>Entregas a domicilio</h2>

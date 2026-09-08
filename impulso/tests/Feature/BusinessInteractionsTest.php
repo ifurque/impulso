@@ -185,6 +185,68 @@ class BusinessInteractionsTest extends TestCase
         ]);
     }
 
+    public function test_delivery_order_is_rejected_when_customer_is_outside_business_radius(): void
+    {
+        $business = Business::create([
+            'owner_id' => User::factory()->create()->id,
+            'name' => 'Café con cobertura',
+            'category' => 'Gastronomía',
+            'description' => 'Café',
+            'location' => 'Centro',
+            'delivery_enabled' => true,
+            'delivery_radius_km' => 5,
+            'delivery_latitude' => -34.6037,
+            'delivery_longitude' => -58.3816,
+        ]);
+        $product = $business->products()->create(['name' => 'Café', 'type' => 'product', 'price' => 1000, 'is_active' => true]);
+
+        $this->from(route('business.show', $business))
+            ->post(route('orders.store', $business), [
+                'product_id' => $product->id,
+                'quantity' => 1,
+                'customer_name' => 'Cliente',
+                'customer_phone' => '1122334455',
+                'delivery_method' => 'delivery',
+                'delivery_address' => 'Lejos 123',
+                'customer_latitude' => -34.5200,
+                'customer_longitude' => -58.5000,
+                'payment_method' => 'efectivo',
+            ])
+            ->assertSessionHasErrors('customer_location');
+
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_delivery_order_is_accepted_when_customer_is_inside_business_radius(): void
+    {
+        $business = Business::create([
+            'owner_id' => User::factory()->create()->id,
+            'name' => 'Café cercano',
+            'category' => 'Gastronomía',
+            'description' => 'Café',
+            'location' => 'Centro',
+            'delivery_enabled' => true,
+            'delivery_radius_km' => 5,
+            'delivery_latitude' => -34.6037,
+            'delivery_longitude' => -58.3816,
+        ]);
+        $product = $business->products()->create(['name' => 'Café', 'type' => 'product', 'price' => 1000, 'is_active' => true]);
+
+        $this->post(route('orders.store', $business), [
+            'product_id' => $product->id,
+            'quantity' => 1,
+            'customer_name' => 'Cliente',
+            'customer_phone' => '1122334455',
+            'delivery_method' => 'delivery',
+            'delivery_address' => 'Cerca 123',
+            'customer_latitude' => -34.6040,
+            'customer_longitude' => -58.3840,
+            'payment_method' => 'efectivo',
+        ])->assertSessionHas('success');
+
+        $this->assertDatabaseHas('orders', ['business_id' => $business->id, 'delivery_method' => 'delivery']);
+    }
+
     public function test_owner_can_see_recent_delivery_orders_in_management_panel(): void
     {
         $owner = User::factory()->create();

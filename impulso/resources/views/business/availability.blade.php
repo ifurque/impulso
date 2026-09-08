@@ -31,6 +31,12 @@
           Costo de envío
           <input type="number" name="delivery_cost" min="0" step="50" value="{{ old('delivery_cost', $business->delivery_cost ?? 0) }}">
         </label>
+        <div class="delivery-location-control">
+          <input type="hidden" name="delivery_latitude" id="delivery-latitude" value="{{ old('delivery_latitude', $business->delivery_latitude) }}">
+          <input type="hidden" name="delivery_longitude" id="delivery-longitude" value="{{ old('delivery_longitude', $business->delivery_longitude) }}">
+          <button type="button" class="button secondary" id="set-business-location">Actualizar ubicación del local</button>
+          <p class="muted" id="business-location-status">{{ $business->delivery_latitude !== null && $business->delivery_longitude !== null ? 'Ubicación configurada para calcular la cobertura.' : 'Configura la ubicación del local para activar la comprobación automática.' }}</p>
+        </div>
       </div>
 
       <div class="form-section payment-grid" id="payment-settings">
@@ -195,6 +201,25 @@
 
   deliveryCheckbox?.addEventListener('change', syncDelivery);
   appointmentsCheckbox?.addEventListener('change', syncAppointments);
+
+  const locationButton = document.querySelector('#set-business-location');
+  const locationStatus = document.querySelector('#business-location-status');
+  const latitudeInput = document.querySelector('#delivery-latitude');
+  const longitudeInput = document.querySelector('#delivery-longitude');
+  locationButton?.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      locationStatus.textContent = 'Este navegador no permite obtener la ubicación.';
+      return;
+    }
+    locationStatus.textContent = 'Obteniendo ubicación...';
+    navigator.geolocation.getCurrentPosition((position) => {
+      latitudeInput.value = position.coords.latitude;
+      longitudeInput.value = position.coords.longitude;
+      locationStatus.textContent = 'Ubicación del local actualizada para calcular la cobertura.';
+    }, () => {
+      locationStatus.textContent = 'No pudimos obtener la ubicación. Revisa el permiso del navegador.';
+    }, { enableHighAccuracy: true, timeout: 10000 });
+  });
 
   document.querySelectorAll('.closed-check input').forEach((checkbox, index) => {
     const section = checkbox.closest('.hours-section');

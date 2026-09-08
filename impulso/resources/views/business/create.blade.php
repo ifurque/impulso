@@ -81,6 +81,10 @@
             <input type="number" name="delivery_cost" id="delivery-cost" min="0" step="50" value="{{ old('delivery_cost', 0) }}">
           </label>
         </div>
+        <input type="hidden" name="delivery_latitude" id="delivery-latitude" value="{{ old('delivery_latitude') }}">
+        <input type="hidden" name="delivery_longitude" id="delivery-longitude" value="{{ old('delivery_longitude') }}">
+        <button type="button" class="button secondary" id="set-business-location">Usar ubicación actual del local</button>
+        <p class="muted" id="business-location-status">Guarda la ubicación del dispositivo que se encuentre en el local para calcular la cobertura.</p>
 
         <div class="payment-row">
           <fieldset>
@@ -239,6 +243,25 @@
     appointmentsEnabled.addEventListener('change', syncAppointments);
     syncAppointments();
   }
+
+  const locationButton = document.querySelector('#set-business-location');
+  const locationStatus = document.querySelector('#business-location-status');
+  const latitudeInput = document.querySelector('#delivery-latitude');
+  const longitudeInput = document.querySelector('#delivery-longitude');
+  locationButton?.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      locationStatus.textContent = 'Este navegador no permite obtener la ubicación.';
+      return;
+    }
+    locationStatus.textContent = 'Obteniendo ubicación...';
+    navigator.geolocation.getCurrentPosition((position) => {
+      latitudeInput.value = position.coords.latitude;
+      longitudeInput.value = position.coords.longitude;
+      locationStatus.textContent = 'Ubicación del local guardada para calcular la cobertura.';
+    }, () => {
+      locationStatus.textContent = 'No pudimos obtener la ubicación. Revisa el permiso del navegador.';
+    }, { enableHighAccuracy: true, timeout: 10000 });
+  });
 
   const productsList = document.querySelector('#starter-products-list');
   const addProductButton = document.querySelector('#add-starter-product');

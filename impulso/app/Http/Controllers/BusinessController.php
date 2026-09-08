@@ -64,6 +64,8 @@ class BusinessController extends Controller
             'delivery_enabled' => ['boolean'],
             'delivery_radius_km' => ['nullable', 'integer', 'min:0', 'max:50'],
             'delivery_cost' => ['nullable', 'integer', 'min:0'],
+            'delivery_latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'delivery_longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'customer_payment_methods' => ['nullable', 'array'],
             'customer_payment_methods.*' => ['string', 'in:efectivo,transferencia,tarjeta,mercado_pago,qr'],
             'business_payment_methods' => ['nullable', 'array'],

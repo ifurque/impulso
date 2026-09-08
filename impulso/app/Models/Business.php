@@ -12,6 +12,7 @@ class Business extends Model
 
     protected $fillable = [
         'owner_id', 'name', 'slug', 'category', 'description', 'location',
+        'delivery_latitude', 'delivery_longitude',
         'phone', 'email', 'logo', 'profile_photo', 'cover_photo', 'opening_hours', 'is_public',
         'appointments_enabled', 'delivery_enabled', 'delivery_radius_km', 'delivery_cost',
         'payment_methods_customer', 'payment_methods_business', 'appointment_slot_duration',
@@ -27,6 +28,8 @@ class Business extends Model
             'delivery_enabled' => 'boolean',
             'delivery_radius_km' => 'integer',
             'delivery_cost' => 'integer',
+            'delivery_latitude' => 'float',
+            'delivery_longitude' => 'float',
             'payment_methods_customer' => 'array',
             'payment_methods_business' => 'array',
             'appointment_slot_duration' => 'integer',
