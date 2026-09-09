@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -16,8 +17,9 @@ class OrderController extends Controller
     public function store(Request $request, Business $business)
     {
         $data = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
-            'quantity' => ['required', 'integer', 'min:1', 'max:20'],
+            'items' => ['nullable', 'json'],
+            'product_id' => ['nullable', 'exists:products,id'],
+            'quantity' => ['nullable', 'integer', 'min:1', 'max:20'],
             'customer_name' => ['required', 'string', 'max:120'],
             'customer_phone' => ['required', 'string', 'max:40'],
             'delivery_method' => ['required', 'in:delivery,pickup'],
@@ -27,6 +29,32 @@ class OrderController extends Controller
             'customer_longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'payment_method' => ['required', 'in:efectivo,transferencia,qr,tarjeta'],
         ]);
+        $itemsInput = !empty($data['items']) ? json_decode($data['items'], true) : [[
+            'product_id' => $data['product_id'] ?? null,
+            'quantity' => $data['quantity'] ?? null,
+        ]];
+        if (!is_array($itemsInput) || count($itemsInput) === 0 || count($itemsInput) > 50) {
+            return back()->withErrors(['items' => 'Agrega al menos un producto al carrito.'])->withInput();
+        }
+
+        $productIds = collect($itemsInput)->pluck('product_id')->filter()->unique()->values();
+        $products = $business->products()->where('is_active', true)->whereIn('id', $productIds)->get()->keyBy('id');
+        $orderItems = [];
+        foreach ($itemsInput as $item) {
+            $productId = (int) ($item['product_id'] ?? 0);
+            $quantity = (int) ($item['quantity'] ?? 0);
+            if (!$products->has($productId) || $quantity < 1 || $quantity > 20) {
+                return back()->withErrors(['items' => 'Hay un producto inválido o una cantidad fuera de rango.'])->withInput();
+            }
+            $product = $products->get($productId);
+            $unitPrice = (float) ($product->price ?? 0);
+            $orderItems[] = [
+                'product' => $product,
+                'quantity' => $quantity,
+                'unit_price' => $unitPrice,
+                'subtotal' => $unitPrice * $quantity,
+            ];
+        }
         abort_if($data['delivery_method'] === 'delivery' && ! $business->delivery_enabled, 422, 'Este emprendimiento no está habilitado para entregas.');
 
         if ($data['delivery_method'] === 'delivery' && $business->delivery_latitude !== null && $business->delivery_longitude !== null) {
@@ -46,26 +74,35 @@ class OrderController extends Controller
             }
         }
 
-        $product = $business->products()->whereKey($data['product_id'])->firstOrFail();
-
-        $subtotal = (float) $product->price * (int) $data['quantity'];
+        $firstItem = $orderItems[0];
+        $subtotal = collect($orderItems)->sum('subtotal');
         $deliveryCost = $data['delivery_method'] === 'delivery' ? (float) ($business->delivery_cost ?? 0) : 0;
         $total = $subtotal + $deliveryCost;
 
-        $order = $business->orders()->create([
-            'product_id' => $product->id,
+        $order = DB::transaction(function () use ($business, $data, $firstItem, $subtotal, $deliveryCost, $total, $orderItems) {
+            $order = $business->orders()->create([
+            'product_id' => $firstItem['product']->id,
             'customer_name' => $data['customer_name'],
             'customer_phone' => $data['customer_phone'],
             'delivery_method' => $data['delivery_method'],
             'delivery_address' => $data['delivery_address'] ?? null,
             'delivery_notes' => $data['delivery_notes'] ?? null,
-            'quantity' => $data['quantity'],
+            'quantity' => $firstItem['quantity'],
             'subtotal' => $subtotal,
             'delivery_cost' => $deliveryCost,
             'total' => $total,
             'payment_method' => $data['payment_method'],
             'status' => 'pending',
-        ]);
+            ]);
+            $order->items()->createMany(array_map(fn ($item) => [
+                'product_id' => $item['product']->id,
+                'product_name' => $item['product']->name,
+                'unit_price' => $item['unit_price'],
+                'quantity' => $item['quantity'],
+                'subtotal' => $item['subtotal'],
+            ], $orderItems));
+            return $order;
+        });
 
         Mail::to($business->owner->email)->send(new OrderReceived($order));
 

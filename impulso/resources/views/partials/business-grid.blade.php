@@ -1,9 +1,12 @@
 @forelse($businesses as $business)
+  @php($palette = ($palettes ?? \App\Http\Controllers\BusinessController::PUBLIC_PALETTES)[$business->public_palette ?? 'mint'] ?? \App\Http\Controllers\BusinessController::PUBLIC_PALETTES['mint'])
+  @php($businessPrimary = $business->public_primary_color ?: $palette['paper'])
+  @php($businessSecondary = $business->public_secondary_color ?: $palette['accent'])
   <article class="business-card">
-    <div class="business-cover" @if($business->cover_photo_url) style="background-image: url('{{ $business->cover_photo_url }}'); background-size: cover; background-position: center;" @endif>
+    <div class="business-cover" style="--business-cover-bg: {{ $businessPrimary }}; --business-cover-accent: {{ $businessSecondary }}; @if($business->cover_photo_url) background-image: linear-gradient(135deg, {{ $businessSecondary }}66, transparent 70%), url('{{ $business->cover_photo_url }}'); background-size: cover; background-position: center; @endif">
       <span class="logo-placeholder">
         @if($business->profile_photo_url)
-          <img src="{{ $business->profile_photo_url }}" alt="Logo de {{ $business->name }}">
+          <img src="{{ $business->profile_photo_url }}" alt="" aria-hidden="true" data-fallback="{{ Str::substr($business->name, 0, 1) }}" onerror="this.parentElement.textContent=this.dataset.fallback">
         @else
           {{ Str::substr($business->name, 0, 1) }}
         @endif

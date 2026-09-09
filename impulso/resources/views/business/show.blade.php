@@ -3,9 +3,15 @@
 @php($palette = $palettes[$business->public_palette ?? 'mint'] ?? $palettes['mint'])
 @php($publicNavBg = $business->public_navbar_color ?: $palette['soft'])
 @php($publicPostBg = $business->public_posts_background ?: $palette['soft'])
+@php($publicPrimary = $business->public_primary_color ?: $palette['paper'])
+@php($publicSecondary = $business->public_secondary_color ?: $palette['accent'])
+@php($publicText = $business->public_text_color ?: $palette['ink'])
 @push('head')
 <style>
   body.business-public .nav {
+    background: {{ $publicNavBg }};
+  }
+  body.business-public footer {
     background: {{ $publicNavBg }};
   }
   body.business-public .public-posts article {
@@ -14,12 +20,15 @@
 </style>
 @endpush
 @section('content')
-<section class="profile public-page public-background-{{ $business->public_background ?? 'plain' }} wrap" style="--public-accent: {{ $palette['accent'] }}; --public-soft: {{ $palette['soft'] }}; --public-ink: {{ $palette['ink'] }}; --public-paper: {{ $palette['paper'] }}; --public-line: {{ $palette['line'] }}; --public-post-bg: {{ $publicPostBg }};">
+<section class="profile public-page public-background-{{ $business->public_background ?? 'plain' }} public-font-{{ $business->public_font_family ?? 'dm' }} wrap" style="--public-accent: {{ $palette['accent'] }}; --public-soft: {{ $palette['soft'] }}; --public-ink: {{ $publicText }}; --public-paper: {{ $publicPrimary }}; --public-secondary: {{ $publicSecondary }}; --public-post-bg: {{ $publicPostBg }};">
   <a class="back" href="{{ route('discover') }}">← Volver a explorar</a>
-  <div class="profile-hero"{{ $business->cover_photo_url ? ' style="background-image: linear-gradient(90deg, rgba(24,37,34,.82), rgba(24,37,34,.2)), url(\'' . $business->cover_photo_url . '\'); background-size: cover; background-position: center; color: white;"' : '' }}>
+  <div class="profile-hero{{ $business->cover_photo_url ? ' profile-hero-has-cover' : '' }}">
+    @if($business->cover_photo_url)
+      <img class="profile-cover-image" src="{{ $business->cover_photo_url }}" alt="" aria-hidden="true" onerror="this.remove()">
+    @endif
     <div class="profile-logo">
       @if($business->profile_photo_url)
-        <img src="{{ $business->profile_photo_url }}" alt="Logo de {{ $business->name }}">
+        <img src="{{ $business->profile_photo_url }}" alt="Logo de {{ $business->name }}" data-fallback="{{ Str::substr($business->name, 0, 1) }}" onerror="this.parentElement.textContent=this.dataset.fallback">
       @else
         {{ Str::substr($business->name, 0, 1) }}
       @endif
@@ -59,6 +68,9 @@
                 · $ {{ number_format($product->price, 0, ',', '.') }} / {{ $product->unit ?? 'unidad' }}
               @endif
             </small>
+            @if($product->is_active)
+              <button type="button" class="button secondary add-to-cart" data-product-id="{{ $product->id }}" data-product-name="{{ $product->name }}" data-product-price="{{ $product->price ?? 0 }}">Agregar al carrito <span>+</span></button>
+            @endif
           </div>
         @empty
           <p class="muted">Próximamente encontrarás aquí sus propuestas.</p>
@@ -175,48 +187,39 @@
 
       @if($business->products->where('is_active', true)->isNotEmpty())
         <hr>
-        <h3>Hacer un pedido</h3>
-        @if($business->delivery_enabled)<p class="muted">Podés retirarlo o pedir entrega en {{ $business->delivery_radius_km }} km · Costo ${{ number_format($business->delivery_cost ?? 0, 0, ',', '.') }}</p>@else<p class="muted">Retirá tu pedido directamente en el emprendimiento.</p>@endif
-        <form method="POST" action="{{ route('orders.store', $business) }}" class="form" id="order-form" data-business-latitude="{{ $business->delivery_latitude }}" data-business-longitude="{{ $business->delivery_longitude }}" data-delivery-radius="{{ $business->delivery_radius_km }}">
+        <button type="button" class="button full" id="open-cart">Ver carrito <span class="cart-count">0</span> <span>→</span></button>
+        <p class="muted cart-aside-note">Sumá productos y confirmá todo tu pedido desde un solo lugar.</p>
+      @endif
+    </aside>
+  </div>
+
+  @if($business->products->where('is_active', true)->isNotEmpty())
+    <div class="cart-drawer" id="cart-drawer" hidden>
+      <div class="cart-drawer-backdrop" data-close-cart></div>
+      <section class="cart-panel" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+        <div class="cart-panel-head"><div><p class="eyebrow">Tu pedido</p><h2 id="cart-title">Carrito <span class="cart-count">0</span></h2></div><button type="button" class="cart-close" data-close-cart aria-label="Cerrar carrito">×</button></div>
+        <div class="cart-items" id="cart-items"><p class="muted cart-empty">Todavía no agregaste productos.</p></div>
+        <div class="cart-total"><span>Subtotal</span><strong id="cart-subtotal">$ 0</strong></div>
+        <form method="POST" action="{{ route('orders.store', $business) }}" class="form cart-form" id="order-form" data-business-latitude="{{ $business->delivery_latitude }}" data-business-longitude="{{ $business->delivery_longitude }}" data-delivery-radius="{{ $business->delivery_radius_km }}">
           @csrf
-          @if($errors->has('customer_location'))<div class="notice error-box">{{ $errors->first('customer_location') }}</div>@endif
-          <label>
-            Producto
-            <select name="product_id" required>
-              <option value="">Seleccioná un producto</option>
-              @foreach($business->products as $product)
-                @if($product->is_active)
-                  <option value="{{ $product->id }}">{{ $product->name }} · ${{ number_format($product->price ?? 0, 0, ',', '.') }} / {{ $product->unit ?? 'unidad' }}</option>
-                @endif
-              @endforeach
-            </select>
-          </label>
-          <label>Cantidad<input type="number" name="quantity" min="1" value="1" required></label>
+          <input type="hidden" name="items" id="cart-items-input">
+          @if($errors->has('customer_location') || $errors->has('items'))<div class="notice error-box">{{ $errors->first('customer_location') ?: $errors->first('items') }}</div>@endif
           <label>Tu nombre<input name="customer_name" required maxlength="120"></label>
           <label>Teléfono<input name="customer_phone" required maxlength="40"></label>
           <label>Método de entrega<select name="delivery_method" id="delivery-method" required><option value="pickup">Retirar en el emprendimiento</option>@if($business->delivery_enabled)<option value="delivery">Envío a domicilio</option>@endif</select></label>
           <div id="delivery-fields" hidden>
             <label>Dirección de entrega<textarea name="delivery_address" rows="2"></textarea></label>
             <label>Notas del envío<textarea name="delivery_notes" rows="2"></textarea></label>
-            <input type="hidden" name="customer_latitude" id="customer-latitude">
-            <input type="hidden" name="customer_longitude" id="customer-longitude">
-            <button type="button" class="button secondary" id="check-delivery-coverage">Comprobar si llegamos a tu ubicación</button>
+            <input type="hidden" name="customer_latitude" id="customer-latitude"><input type="hidden" name="customer_longitude" id="customer-longitude">
+            <button type="button" class="button secondary" id="check-delivery-coverage">Comprobar cobertura</button>
             <p class="muted" id="delivery-coverage-status">Necesitamos tu ubicación actual para confirmar la cobertura.</p>
           </div>
-          <label>
-            Método de pago
-            <select name="payment_method" required>
-              <option value="">Elegí un método</option>
-              @foreach($business->payment_methods_customer ?? ['efectivo', 'transferencia', 'qr'] as $method)
-                <option value="{{ $method }}">{{ ucfirst(str_replace('_', ' ', $method)) }}</option>
-              @endforeach
-            </select>
-          </label>
-          <button class="button full">Confirmar pedido</button>
+          <label>Método de pago<select name="payment_method" required><option value="">Elegí un método</option>@foreach($business->payment_methods_customer ?? ['efectivo', 'transferencia', 'qr'] as $method)<option value="{{ $method }}">{{ ucfirst(str_replace('_', ' ', $method)) }}</option>@endforeach</select></label>
+          <button class="button full" id="submit-order">Confirmar pedido <span>→</span></button>
         </form>
-      @endif
-    </aside>
-  </div>
+      </section>
+    </div>
+  @endif
 </section>
 @if($business->appointments_enabled)
 <script>
@@ -293,5 +296,65 @@
       coverageStatus.textContent = 'No pudimos obtener tu ubicación. Revisa el permiso del navegador.';
     }, { enableHighAccuracy: true, timeout: 10000 });
   });
+
+    const cartDrawer = document.querySelector('#cart-drawer');
+    const cartItemsContainer = document.querySelector('#cart-items');
+    const cartItemsInput = document.querySelector('#cart-items-input');
+    const cartSubtotal = document.querySelector('#cart-subtotal');
+    const cartCounts = document.querySelectorAll('.cart-count');
+    const cart = [];
+    const money = (value) => `$ ${Number(value).toLocaleString('es-AR', { maximumFractionDigits: 0 })}`;
+
+    const renderCart = () => {
+      const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+      const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+      cartCounts.forEach((count) => { count.textContent = totalItems; });
+      cartSubtotal.textContent = money(subtotal);
+      cartItemsInput.value = JSON.stringify(cart.map(({ product_id, quantity }) => ({ product_id, quantity })));
+      if (!cart.length) {
+        cartItemsContainer.innerHTML = '<p class="muted cart-empty">Todavía no agregaste productos.</p>';
+        return;
+      }
+      cartItemsContainer.innerHTML = cart.map((item) => `
+        <div class="cart-item">
+          <div><strong>${item.name}</strong><small>${money(item.price)} c/u</small></div>
+          <div class="cart-item-actions"><button type="button" data-cart-decrease="${item.product_id}" aria-label="Quitar una unidad">−</button><b>${item.quantity}</b><button type="button" data-cart-increase="${item.product_id}" aria-label="Agregar una unidad">+</button><strong>${money(item.price * item.quantity)}</strong></div>
+        </div>
+      `).join('');
+    };
+
+    document.querySelectorAll('.add-to-cart').forEach((button) => {
+      button.addEventListener('click', () => {
+        const productId = Number(button.dataset.productId);
+        const existing = cart.find((item) => item.product_id === productId);
+        if (existing) existing.quantity = Math.min(existing.quantity + 1, 20);
+        else cart.push({ product_id: productId, name: button.dataset.productName, price: Number(button.dataset.productPrice), quantity: 1 });
+        renderCart();
+        cartDrawer.hidden = false;
+        document.body.classList.add('cart-open');
+      });
+    });
+
+    cartItemsContainer?.addEventListener('click', (event) => {
+      const increase = event.target.closest('[data-cart-increase]');
+      const decrease = event.target.closest('[data-cart-decrease]');
+      const productId = Number((increase || decrease)?.dataset.cartIncrease || (increase || decrease)?.dataset.cartDecrease);
+      const item = cart.find((entry) => entry.product_id === productId);
+      if (!item) return;
+      if (increase) item.quantity = Math.min(item.quantity + 1, 20);
+      if (decrease) item.quantity -= 1;
+      if (item.quantity < 1) cart.splice(cart.indexOf(item), 1);
+      renderCart();
+    });
+
+    document.querySelector('#open-cart')?.addEventListener('click', () => { cartDrawer.hidden = false; document.body.classList.add('cart-open'); });
+    document.querySelectorAll('[data-close-cart]').forEach((element) => element.addEventListener('click', () => { cartDrawer.hidden = true; document.body.classList.remove('cart-open'); }));
+    document.querySelector('#order-form')?.addEventListener('submit', (event) => {
+      if (!cart.length) {
+        event.preventDefault();
+        cartItemsContainer.innerHTML = '<p class="error">Agrega al menos un producto al carrito.</p>';
+      }
+    });
+    renderCart();
 </script>
 @endsection

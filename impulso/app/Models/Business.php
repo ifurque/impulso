@@ -17,7 +17,7 @@ class Business extends Model
         'phone', 'email', 'logo', 'profile_photo', 'cover_photo', 'opening_hours', 'is_public',
         'appointments_enabled', 'delivery_enabled', 'delivery_radius_km', 'delivery_cost',
         'payment_methods_customer', 'payment_methods_business', 'appointment_slot_duration',
-        'public_palette', 'public_background', 'public_navbar_color', 'public_posts_background', 'database_components',
+        'public_palette', 'public_background', 'public_navbar_color', 'public_posts_background', 'public_hero_color', 'public_font_family', 'public_primary_color', 'public_secondary_color', 'public_text_color', 'database_components',
     ];
 
     protected function casts(): array
@@ -137,10 +137,10 @@ class Business extends Model
             return $path;
         }
 
-        if (Str::startsWith($path, 'storage/')) {
-            return asset($path);
+        if (Str::startsWith($path, ['/storage/', 'storage/'])) {
+            return asset(ltrim($path, '/'));
         }
 
-        return Storage::disk('public')->url($path);
+        return asset('storage/'.ltrim($path, '/'));
     }
 }

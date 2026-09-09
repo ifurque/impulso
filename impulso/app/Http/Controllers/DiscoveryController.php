@@ -31,6 +31,7 @@ class DiscoveryController extends Controller
         );
         
         $categories = Business::where('is_public', true)->distinct('category')->pluck('category')->sort();
+        $palettes = BusinessController::PUBLIC_PALETTES;
         
         if ($request->ajax() || $request->boolean('ajax')) {
             return response()->json([
@@ -39,7 +40,7 @@ class DiscoveryController extends Controller
             ]);
         }
         
-        return view('discover', compact('businesses', 'categories'));
+        return view('discover', compact('businesses', 'categories', 'palettes'));
     }
 
     private function matchesSearch(Business $business, string $search): bool

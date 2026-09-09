@@ -44,4 +44,9 @@ class Order extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 }

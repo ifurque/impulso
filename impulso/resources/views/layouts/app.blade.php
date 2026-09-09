@@ -13,12 +13,14 @@
 	$uiFont = $ui['font_family'] ?? 'dm';
 	$uiMode = $ui['theme_mode'] ?? 'day';
 	$uiBackground = $ui['screen_background'] ?? 'paper';
+	$uiPrimary = $ui['primary_color'] ?? ($ui['navbar_color'] ?? '#f7f8f3');
+	$uiSecondary = $ui['secondary_color'] ?? '#dfe5dc';
 	$uiNavbar = $ui['navbar_color'] ?? '#eef1ea';
 	$uiText = $ui['text_color'] ?? '#182522';
 @endphp
 <body
 	class="user-font-{{ $uiFont }} user-mode-{{ $uiMode }} user-bg-{{ $uiBackground }} @yield('body_class')"
-	style="--user-navbar-bg: {{ $uiNavbar }}; --user-text-color: {{ $uiText }};"
+	style="--user-primary: {{ $uiPrimary }}; --user-secondary: {{ $uiSecondary }}; --user-navbar-bg: {{ $uiNavbar }}; --user-text-color: {{ $uiText }};"
 >
 	<nav class="nav">
 		<a class="brand" href="{{ route('home') }}"><span class="brand-mark">+</span> impulso</a>
