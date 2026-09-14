@@ -6,6 +6,10 @@
 @php($publicPrimary = $business->public_primary_color ?: $palette['paper'])
 @php($publicSecondary = $business->public_secondary_color ?: $palette['accent'])
 @php($publicText = $business->public_text_color ?: $palette['ink'])
+@php($publicBorder = $business->public_border_type ?: 'standard')
+@php($publicButton = $business->public_button_style ?: 'solid')
+@php($publicCardShape = $business->public_card_shape ?: 'standard')
+@php($publicButtonColor = $business->public_button_color ?: $palette['accent'])
 @push('head')
 <style>
   body.business-public .nav {
@@ -20,7 +24,7 @@
 </style>
 @endpush
 @section('content')
-<section class="profile public-page public-background-{{ $business->public_background ?? 'plain' }} public-font-{{ $business->public_font_family ?? 'dm' }} wrap" style="--public-accent: {{ $palette['accent'] }}; --public-soft: {{ $palette['soft'] }}; --public-ink: {{ $publicText }}; --public-paper: {{ $publicPrimary }}; --public-secondary: {{ $publicSecondary }}; --public-post-bg: {{ $publicPostBg }};">
+<section class="profile public-page public-background-{{ $business->public_background ?? 'plain' }} public-font-{{ $business->public_font_family ?? 'dm' }} public-border-{{ in_array($publicBorder, ['subtle', 'standard', 'bold', 'rounded']) ? $publicBorder : 'standard' }} public-button-{{ $publicButton }} public-card-{{ $publicCardShape }} wrap" style="--public-accent: {{ $palette['accent'] }}; --public-button-color: {{ $publicButtonColor }}; --public-soft: {{ $palette['soft'] }}; --public-ink: {{ $publicText }}; --public-paper: {{ $publicPrimary }}; --public-secondary: {{ $publicSecondary }}; --public-post-bg: {{ $publicPostBg }};">
   <a class="back" href="{{ route('discover') }}">← Volver a explorar</a>
   <div class="profile-hero{{ $business->cover_photo_url ? ' profile-hero-has-cover' : '' }}">
     @if($business->cover_photo_url)

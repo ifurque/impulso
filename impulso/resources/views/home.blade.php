@@ -21,7 +21,10 @@
 	</section>
 
 	<section class="home-marquee" aria-label="Funcionalidades de Impulso">
-		<div class="home-marquee-track"><span>ordenar</span><b>+</b><span>mostrar</span><b>+</b><span>vender</span><b>+</b><span>conectar</span><b>+</b><span>crecer</span><b>+</b><span>ordenar</span></div>
+		<div class="home-marquee-track">
+			<div class="home-marquee-group"><span>ordenar</span><b>+</b><span>mostrar</span><b>+</b><span>vender</span><b>+</b><span>conectar</span><b>+</b><span>crecer</span><b>+</b></div>
+			<div class="home-marquee-group" aria-hidden="true"><span>ordenar</span><b>+</b><span>mostrar</span><b>+</b><span>vender</span><b>+</b><span>conectar</span><b>+</b><span>crecer</span><b>+</b></div>
+		</div>
 	</section>
 
 	<section class="home-intro wrap">

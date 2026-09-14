@@ -21,6 +21,10 @@ class BusinessController extends Controller
         'grid' => 'Cuadrícula suave',
         'dots' => 'Puntos suaves',
         'paper' => 'Papel cálido',
+        'diagonal' => 'Diagonal',
+        'noise' => 'Trama intensa',
+        'checker' => 'Tablero',
+        'waves' => 'Ondas',
     ];
 
     public function customization(Business $business, Request $request)
@@ -34,13 +38,17 @@ class BusinessController extends Controller
         abort_unless($business->canBeManagedBy($request->user()), 403);
         $data = $request->validate([
                 'public_palette' => ['nullable', 'in:mint,sun,coral,ocean'],
-            'public_background' => ['required', 'in:plain,grid,dots,paper'],
+            'public_background' => ['required', 'in:plain,grid,dots,paper,diagonal,noise,checker,waves'],
             'public_navbar_color' => ['nullable', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
             'public_posts_background' => ['nullable', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
             'public_font_family' => ['nullable', 'in:dm,space,serif,mono,fraunces,manrope,plex,fira'],
             'public_primary_color' => ['nullable', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
             'public_secondary_color' => ['nullable', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
             'public_text_color' => ['nullable', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
+            'public_border_type' => ['nullable', 'in:subtle,standard,bold,rounded'],
+            'public_button_style' => ['nullable', 'in:solid,outline,ghost,rounded,soft,sharp,underline,block'],
+            'public_card_shape' => ['nullable', 'in:standard,soft,rounded,pill,cut,organic,blob,ticket'],
+            'public_button_color' => ['nullable', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
         ]);
             $data['public_palette'] = $data['public_palette'] ?? 'mint';
         $business->update($data);
