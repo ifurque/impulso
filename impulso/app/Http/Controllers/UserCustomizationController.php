@@ -31,7 +31,7 @@ class UserCustomizationController extends Controller
         $data = $request->validate([
             'font_family' => ['required', 'in:dm,space,serif,mono,fraunces,manrope,plex,fira'],
             'theme_mode' => ['required', 'in:day,night'],
-            'screen_background' => ['required', 'in:paper,soft,grid,dots,gradient'],
+            'screen_background' => ['required', 'in:paper,soft,grid,dots,gradient,diagonal,checker,mesh'],
             'primary_color' => ['required', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
             'secondary_color' => ['required', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
             'navbar_color' => ['required', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],

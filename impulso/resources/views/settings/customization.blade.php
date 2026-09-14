@@ -57,7 +57,10 @@
         <label class="customization-option"><input type="radio" name="screen_background" value="soft" @checked($preferences['screen_background'] === 'soft')><span class="background-preview"><b>Suave</b></span></label>
         <label class="customization-option"><input type="radio" name="screen_background" value="grid" @checked($preferences['screen_background'] === 'grid')><span class="background-preview background-preview-grid"><b>Grilla</b></span></label>
         <label class="customization-option"><input type="radio" name="screen_background" value="dots" @checked($preferences['screen_background'] === 'dots')><span class="background-preview background-preview-dots"><b>Puntos</b></span></label>
-        <label class="customization-option"><input type="radio" name="screen_background" value="gradient" @checked($preferences['screen_background'] === 'gradient')><span class="background-preview background-preview-paper"><b>Gradiente</b></span></label>
+        <label class="customization-option"><input type="radio" name="screen_background" value="gradient" @checked($preferences['screen_background'] === 'gradient')><span class="background-preview background-preview-gradient"><b>Fade</b></span></label>
+        <label class="customization-option"><input type="radio" name="screen_background" value="diagonal" @checked($preferences['screen_background'] === 'diagonal')><span class="background-preview background-preview-diagonal"><b>Diagonal</b></span></label>
+        <label class="customization-option"><input type="radio" name="screen_background" value="checker" @checked($preferences['screen_background'] === 'checker')><span class="background-preview background-preview-checker"><b>Tablero</b></span></label>
+        <label class="customization-option"><input type="radio" name="screen_background" value="mesh" @checked($preferences['screen_background'] === 'mesh')><span class="background-preview background-preview-mesh"><b>Malla suave</b></span></label>
       </div>
     </fieldset>
 

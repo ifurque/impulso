@@ -17,7 +17,7 @@ class Business extends Model
         'phone', 'email', 'logo', 'profile_photo', 'cover_photo', 'opening_hours', 'is_public',
         'appointments_enabled', 'delivery_enabled', 'delivery_radius_km', 'delivery_cost',
         'payment_methods_customer', 'payment_methods_business', 'appointment_slot_duration',
-        'public_palette', 'public_background', 'public_navbar_color', 'public_posts_background', 'public_hero_color', 'public_font_family', 'public_primary_color', 'public_secondary_color', 'public_text_color', 'public_border_type', 'public_button_style', 'public_card_shape', 'public_button_color', 'database_components',
+        'public_palette', 'public_background', 'public_background_image', 'public_background_image_mode', 'public_background_pattern_size', 'public_navbar_color', 'public_posts_background', 'public_hero_color', 'public_font_family', 'public_primary_color', 'public_secondary_color', 'public_text_color', 'public_border_type', 'public_button_style', 'public_card_shape', 'public_button_color', 'database_components',
     ];
 
     protected function casts(): array

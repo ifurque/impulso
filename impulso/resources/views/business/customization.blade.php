@@ -11,7 +11,7 @@
   </div>
 
   <div class="customization-workspace">
-  <form method="POST" action="{{ route('business.customization.update', $business) }}" class="customization-form">
+  <form method="POST" enctype="multipart/form-data" action="{{ route('business.customization.update', $business) }}" class="customization-form">
     @csrf
     <fieldset>
       <legend>Presets rápidos del perfil público</legend>
@@ -81,6 +81,28 @@
         @foreach($backgrounds as $key => $label)
           <label class="customization-option"><input type="radio" name="public_background" value="{{ $key }}" @checked(($business->public_background ?? 'plain') === $key)><span class="background-preview background-preview-{{ $key }}"><b>{{ $label }}</b></span></label>
         @endforeach
+        <label class="customization-option"><input type="radio" name="public_background" value="custom" @checked(($business->public_background ?? 'plain') === 'custom')><span class="background-preview background-preview-custom"><b>Fondo propio</b></span></label>
+      </div>
+      <div class="custom-background-controls">
+        <label>Imagen de fondo
+          <input type="file" id="public-background-image" name="public_background_image" accept="image/jpeg,image/png,image/webp">
+          <small>Elegí una imagen y luego decidí cómo mostrarla.</small>
+        </label>
+        <label>Modo de imagen
+          <select id="public-background-image-mode" name="public_background_image_mode">
+            <option value="full" @selected(($business->public_background_image_mode ?? 'full') === 'full')>Imagen completa</option>
+            <option value="pattern" @selected(($business->public_background_image_mode ?? 'full') === 'pattern')>Convertir en patrón</option>
+          </select>
+        </label>
+        <label>Tamaño del patrón
+          <select id="public-background-pattern-size" name="public_background_pattern_size">
+            <option value="80" @selected(($business->public_background_pattern_size ?? 180) == 80)>Pequeño</option>
+            <option value="140" @selected(($business->public_background_pattern_size ?? 180) == 140)>Mediano</option>
+            <option value="220" @selected(($business->public_background_pattern_size ?? 180) == 220)>Grande</option>
+            <option value="320" @selected(($business->public_background_pattern_size ?? 180) == 320)>Extra grande</option>
+          </select>
+          <small>Solo se aplica al modo patrón.</small>
+        </label>
       </div>
     </fieldset>
 
@@ -102,7 +124,7 @@
 
   <aside class="customization-preview-shell">
     <div class="preview-label"><span>Vista previa</span><i></i></div>
-    <div class="customization-preview public-page public-background-{{ $business->public_background ?? 'plain' }} public-font-{{ $business->public_font_family ?? 'dm' }} public-border-{{ in_array($business->public_border_type, ['subtle', 'standard', 'bold', 'rounded']) ? $business->public_border_type : 'standard' }} public-button-{{ $business->public_button_style ?? 'solid' }} public-card-{{ $business->public_card_shape ?? 'standard' }}" id="business-preview">
+    <div class="customization-preview public-page public-background-{{ $business->public_background ?? 'plain' }} public-font-{{ $business->public_font_family ?? 'dm' }} public-border-{{ in_array($business->public_border_type, ['subtle', 'standard', 'bold', 'rounded']) ? $business->public_border_type : 'standard' }} public-button-{{ $business->public_button_style ?? 'solid' }} public-card-{{ $business->public_card_shape ?? 'standard' }}" id="business-preview" @if($business->public_background_image) style="--public-custom-image: url('{{ asset('storage/'.$business->public_background_image) }}');" @endif>
       <div class="preview-nav"><strong>{{ $business->name }}</strong><span>Explorar</span><span>Contacto</span></div>
       <div class="preview-hero"><div class="preview-logo">{{ Str::substr($business->name, 0, 1) }}</div><div><small>{{ $business->category }}</small><h2>{{ $business->name }}</h2><p>{{ Str::limit($business->description, 70) }}</p></div></div>
       <div class="preview-content"><small>PUBLICACIONES</small><div class="preview-posts"><article><b>Novedades</b><span>Lo nuevo de este emprendimiento.</span></article><article><b>Productos</b><span>Propuestas para conocer.</span></article></div><button type="button" class="button preview-action">Ver emprendimiento <span>→</span></button></div>
@@ -156,11 +178,24 @@
     businessPreview.style.setProperty('--public-button-color', document.querySelector('input[name="public_button_color"]')?.value || '#176b61');
     businessPreview.style.setProperty('--public-nav-preview', document.querySelector('input[name="public_navbar_color"]')?.value || '#eef1ea');
     businessPreview.style.setProperty('--public-post-bg', document.querySelector('input[name="public_posts_background"]')?.value || '#e8e6b6');
+    const imageInput = document.querySelector('#public-background-image');
+    const imageMode = document.querySelector('#public-background-image-mode')?.value || 'full';
+    const patternSize = document.querySelector('#public-background-pattern-size')?.value || '180';
+    businessPreview.classList.toggle('public-background-custom', background === 'custom');
+    businessPreview.classList.toggle('public-background-custom-pattern', background === 'custom' && imageMode === 'pattern');
+    businessPreview.style.setProperty('--public-pattern-size', `${patternSize}px`);
+    if (imageInput?.files?.[0]) businessPreview.style.setProperty('--public-custom-image', `url('${URL.createObjectURL(imageInput.files[0])}')`);
   }
 
   document.querySelectorAll('.customization-form input').forEach((input) => {
     input.addEventListener('input', applyBusinessPreview);
     input.addEventListener('change', applyBusinessPreview);
+  });
+  document.querySelectorAll('#public-background-image-mode, #public-background-pattern-size').forEach((input) => input.addEventListener('change', applyBusinessPreview));
+  document.querySelector('#public-background-image')?.addEventListener('change', () => {
+    const customBackground = document.querySelector('input[name="public_background"][value="custom"]');
+    if (customBackground) customBackground.checked = true;
+    applyBusinessPreview();
   });
   applyBusinessPreview();
 </script>

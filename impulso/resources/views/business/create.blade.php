@@ -33,11 +33,6 @@
       </label>
 
       <label>
-        Ubicacion
-        <input name="location" value="{{ old('location') }}" placeholder="Barrio o ciudad" required>
-      </label>
-
-      <label>
         Telefono <span class="label-hint">opcional</span>
         <input name="phone" value="{{ old('phone') }}" placeholder="+54 9 ...">
       </label>
@@ -46,6 +41,18 @@
         Correo de contacto <span class="label-hint">opcional</span>
         <input type="email" name="email" value="{{ old('email') }}">
       </label>
+
+      <div class="location-field">
+        <label>
+          Ubicacion
+          <input name="location" id="business-location" value="{{ old('location') }}" placeholder="Calle y número, ciudad, provincia" required>
+        </label>
+        <button type="button" class="button secondary location-button" id="set-business-location">Usar ubicación actual del local</button>
+        <p class="muted" id="business-location-status">Podés escribirla manualmente o completar una ubicación aproximada.</p>
+      </div>
+
+      <input type="hidden" name="delivery_latitude" id="delivery-latitude" value="{{ old('delivery_latitude') }}">
+      <input type="hidden" name="delivery_longitude" id="delivery-longitude" value="{{ old('delivery_longitude') }}">
 
       <label class="wide check">
         <input type="hidden" name="appointments_enabled" value="0">
@@ -81,10 +88,7 @@
             <input type="number" name="delivery_cost" id="delivery-cost" min="0" step="50" value="{{ old('delivery_cost', 0) }}">
           </label>
         </div>
-        <input type="hidden" name="delivery_latitude" id="delivery-latitude" value="{{ old('delivery_latitude') }}">
-        <input type="hidden" name="delivery_longitude" id="delivery-longitude" value="{{ old('delivery_longitude') }}">
-        <button type="button" class="button secondary" id="set-business-location">Usar ubicación actual del local</button>
-        <p class="muted" id="business-location-status">Guarda la ubicación del dispositivo que se encuentre en el local para calcular la cobertura.</p>
+        <p class="muted">Si activás las entregas, usaremos la ubicación del local indicada arriba para calcular la cobertura.</p>
 
         <div class="payment-row">
           <fieldset>
@@ -99,76 +103,6 @@
             </div>
           </fieldset>
 
-          <fieldset>
-            <legend>Pagos emprendedor</legend>
-            <div class="choice-list">
-              @foreach(['transferencia','mercado_pago','efectivo','tarjeta','qr'] as $method)
-                <label class="check small-check">
-                  <input type="checkbox" name="business_payment_methods[]" value="{{ $method }}" @checked(in_array($method, old('business_payment_methods', [])))>
-                  <span>{{ ucfirst(str_replace('_', ' ', $method)) }}</span>
-                </label>
-              @endforeach
-            </div>
-          </fieldset>
-        </div>
-      </div>
-
-      <div class="wide starter-products" id="starter-products">
-        <div class="starter-products-head">
-          <div>
-            <p class="eyebrow">Catalogo inicial</p>
-            <h2>Carga tus productos o servicios</h2>
-            <p class="muted">Agrega lo principal para que tu emprendimiento salga publicado con precios y unidades.</p>
-          </div>
-          <button type="button" class="button secondary" id="add-starter-product">Agregar item</button>
-        </div>
-
-        <div class="starter-products-list" id="starter-products-list">
-          @php($starterProducts = old('products', [['type' => 'product', 'unit' => 'unidad']]))
-          @foreach($starterProducts as $index => $starter)
-            <article class="starter-product-card" data-starter-row>
-              <div class="starter-product-grid">
-                <label>
-                  Tipo
-                  <select name="products[{{ $index }}][type]" data-product-type>
-                    <option value="product" @selected(($starter['type'] ?? 'product') === 'product')>Producto</option>
-                    <option value="service" @selected(($starter['type'] ?? '') === 'service')>Servicio</option>
-                  </select>
-                </label>
-
-                <label>
-                  Nombre
-                  <input name="products[{{ $index }}][name]" value="{{ $starter['name'] ?? '' }}" maxlength="120" placeholder="Ej. Pan integral o Asesoria contable">
-                </label>
-
-                <label>
-                  Categoria
-                  <input name="products[{{ $index }}][category]" value="{{ $starter['category'] ?? '' }}" maxlength="100" placeholder="Ej. Panificados, Limpieza, Consultoria">
-                </label>
-
-                <label>
-                  Unidad
-                  <select name="products[{{ $index }}][unit]" data-product-unit>
-                    <option value="unidad" @selected(($starter['unit'] ?? 'unidad') === 'unidad')>Unidad</option>
-                    <option value="kilo" @selected(($starter['unit'] ?? '') === 'kilo')>Kilo</option>
-                    <option value="litro" @selected(($starter['unit'] ?? '') === 'litro')>Litro</option>
-                  </select>
-                </label>
-
-                <label>
-                  Precio
-                  <input type="number" name="products[{{ $index }}][price]" value="{{ $starter['price'] ?? '' }}" min="0" step="0.01" placeholder="0.00">
-                </label>
-
-                <label class="wide">
-                  Descripcion <span class="label-hint">opcional</span>
-                  <textarea name="products[{{ $index }}][description]" rows="2" maxlength="500" placeholder="Breve descripcion para mostrar en tu perfil">{{ $starter['description'] ?? '' }}</textarea>
-                </label>
-              </div>
-
-              <button type="button" class="plain-button remove-starter-product">Quitar</button>
-            </article>
-          @endforeach
         </div>
       </div>
 
@@ -192,6 +126,10 @@
 </section>
 
 <style>
+  .location-field { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:10px 14px; align-items:end; grid-column:1 / -1; }
+  .location-field .location-button { white-space:nowrap; margin-bottom:0; }
+  .location-field #business-location-status { grid-column:1 / -1; margin:0; font-size:.78rem; }
+  .form-grid { row-gap:14px; }
   .delivery-fields fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
   .delivery-fields legend { font-weight: 700; font-size: 0.9rem; }
   .choice-list { display: grid; gap: 8px; margin-top: 8px; }
@@ -205,7 +143,8 @@
   .starter-product-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .section-disabled { opacity: 0.6; pointer-events: none; }
   @media (max-width: 760px) {
-    .payment-row, .starter-product-grid { grid-template-columns: 1fr; }
+    .payment-row, .starter-product-grid, .location-field { grid-template-columns: 1fr; }
+    .location-field .location-button { width:100%; }
     .starter-products { padding: 12px; }
     .starter-products-head { flex-direction: column; align-items: stretch; gap: 10px; }
     .starter-products-head .button { width: 100%; justify-content: center; }
@@ -248,6 +187,7 @@
   const locationStatus = document.querySelector('#business-location-status');
   const latitudeInput = document.querySelector('#delivery-latitude');
   const longitudeInput = document.querySelector('#delivery-longitude');
+  const locationInput = document.querySelector('#business-location');
   locationButton?.addEventListener('click', () => {
     if (!navigator.geolocation) {
       locationStatus.textContent = 'Este navegador no permite obtener la ubicación.';
@@ -257,76 +197,24 @@
     navigator.geolocation.getCurrentPosition((position) => {
       latitudeInput.value = position.coords.latitude;
       longitudeInput.value = position.coords.longitude;
-      locationStatus.textContent = 'Ubicación del local guardada para calcular la cobertura.';
+      locationInput.value = `Ubicación actual (${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)})`;
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${position.coords.latitude}&lon=${position.coords.longitude}&zoom=18&addressdetails=1`, { headers: { 'Accept-Language': 'es' } })
+        .then((response) => response.ok ? response.json() : null)
+        .then((data) => {
+          if (data?.address) {
+            const address = data.address;
+            const street = [address.road, address.house_number].filter(Boolean).join(' ');
+            const city = address.city || address.town || address.village || address.municipality || '';
+            const province = address.state || address.region || '';
+            locationInput.value = [street, city, province].filter(Boolean).join(', ');
+          }
+          locationStatus.textContent = 'Ubicación completada automáticamente. También podés editarla manualmente.';
+        })
+        .catch(() => { locationStatus.textContent = 'Coordenadas guardadas. Podés editar la ubicación manualmente.'; });
     }, () => {
       locationStatus.textContent = 'No pudimos obtener la ubicación. Revisa el permiso del navegador.';
     }, { enableHighAccuracy: true, timeout: 10000 });
   });
 
-  const productsList = document.querySelector('#starter-products-list');
-  const addProductButton = document.querySelector('#add-starter-product');
-
-  const normalizeProductRow = (row) => {
-    const typeField = row.querySelector('[data-product-type]');
-    const unitField = row.querySelector('[data-product-unit]');
-    if (!typeField || !unitField) return;
-
-    const syncUnitByType = () => {
-      if (typeField.value === 'service') {
-        unitField.value = 'unidad';
-        unitField.disabled = true;
-      } else {
-        unitField.disabled = false;
-      }
-    };
-
-    typeField.addEventListener('change', syncUnitByType);
-    syncUnitByType();
-  };
-
-  const reindexProductRows = () => {
-    const rows = productsList.querySelectorAll('[data-starter-row]');
-    rows.forEach((row, index) => {
-      row.querySelectorAll('input, select, textarea').forEach((field) => {
-        field.name = field.name.replace(/products\[\d+\]/, `products[${index}]`);
-      });
-    });
-  };
-
-  const registerRemoveButton = (row) => {
-    const removeButton = row.querySelector('.remove-starter-product');
-    if (!removeButton) return;
-    removeButton.addEventListener('click', () => {
-      row.remove();
-      reindexProductRows();
-    });
-  };
-
-  addProductButton?.addEventListener('click', () => {
-    const index = productsList.querySelectorAll('[data-starter-row]').length;
-    const wrapper = document.createElement('article');
-    wrapper.className = 'starter-product-card';
-    wrapper.setAttribute('data-starter-row', 'true');
-    wrapper.innerHTML = `
-      <div class="starter-product-grid">
-        <label>Tipo<select name="products[${index}][type]" data-product-type><option value="product">Producto</option><option value="service">Servicio</option></select></label>
-        <label>Nombre<input name="products[${index}][name]" maxlength="120" placeholder="Ej. Pan integral o Asesoria contable"></label>
-        <label>Categoria<input name="products[${index}][category]" maxlength="100" placeholder="Ej. Panificados, Limpieza, Consultoria"></label>
-        <label>Unidad<select name="products[${index}][unit]" data-product-unit><option value="unidad">Unidad</option><option value="kilo">Kilo</option><option value="litro">Litro</option></select></label>
-        <label>Precio<input type="number" name="products[${index}][price]" min="0" step="0.01" placeholder="0.00"></label>
-        <label class="wide">Descripcion <span class="label-hint">opcional</span><textarea name="products[${index}][description]" rows="2" maxlength="500" placeholder="Breve descripcion para mostrar en tu perfil"></textarea></label>
-      </div>
-      <button type="button" class="plain-button remove-starter-product">Quitar</button>
-    `;
-    productsList.appendChild(wrapper);
-    normalizeProductRow(wrapper);
-    registerRemoveButton(wrapper);
-    reindexProductRows();
-  });
-
-  productsList?.querySelectorAll('[data-starter-row]').forEach((row) => {
-    normalizeProductRow(row);
-    registerRemoveButton(row);
-  });
 </script>
 @endsection
