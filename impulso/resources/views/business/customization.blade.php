@@ -79,7 +79,9 @@
       <legend>Fondo</legend>
       <div class="customization-options background-options">
         @foreach($backgrounds as $key => $label)
-          <label class="customization-option"><input type="radio" name="public_background" value="{{ $key }}" @checked(($business->public_background ?? 'plain') === $key)><span class="background-preview background-preview-{{ $key }}"><b>{{ $label }}</b></span></label>
+          @if($key !== 'custom')
+            <label class="customization-option"><input type="radio" name="public_background" value="{{ $key }}" @checked(($business->public_background ?? 'plain') === $key)><span class="background-preview background-preview-{{ $key }}"><b>{{ $label }}</b></span></label>
+          @endif
         @endforeach
         <label class="customization-option"><input type="radio" name="public_background" value="custom" @checked(($business->public_background ?? 'plain') === 'custom')><span class="background-preview background-preview-custom"><b>Fondo propio</b></span></label>
       </div>
@@ -105,7 +107,6 @@
         </label>
       </div>
     </fieldset>
-
     <fieldset>
       <legend>Foto de perfil del emprendimiento</legend>
       <div class="profile-photo-customizer">
@@ -155,7 +156,7 @@
 
   <aside class="customization-preview-shell">
     <div class="preview-label"><span>Vista previa</span><i></i></div>
-    <div class="customization-preview public-page public-background-{{ $business->public_background ?? 'plain' }} public-font-{{ $business->public_font_family ?? 'dm' }} public-border-{{ in_array($business->public_border_type, ['subtle', 'standard', 'bold', 'rounded']) ? $business->public_border_type : 'standard' }} public-button-{{ $business->public_button_style ?? 'solid' }} public-card-{{ $business->public_card_shape ?? 'standard' }}" id="business-preview" @if($business->public_background_image) style="--public-custom-image: url('{{ asset('storage/'.$business->public_background_image) }}');" @endif>
+    <div class="customization-preview public-page public-background-{{ $business->public_background ?? 'plain' }}{{ $business->public_pattern_image ? ' public-has-pattern-layer' : '' }} public-font-{{ $business->public_font_family ?? 'dm' }} public-border-{{ in_array($business->public_border_type, ['subtle', 'standard', 'bold', 'rounded']) ? $business->public_border_type : 'standard' }} public-button-{{ $business->public_button_style ?? 'solid' }} public-card-{{ $business->public_card_shape ?? 'standard' }}" id="business-preview" @if($business->public_background_image || $business->public_pattern_image) style="--public-custom-image: url('{{ $business->public_background_image ? asset('storage/'.$business->public_background_image) : '' }}'); --public-pattern-image: url('{{ $business->public_pattern_image ? asset('storage/'.$business->public_pattern_image) : '' }}');" @endif>
       <div class="preview-nav"><strong>{{ $business->name }}</strong><span>Explorar</span><span>Contacto</span></div>
       <div class="preview-hero"><div class="preview-logo profile-photo-style-{{ $business->profile_photo_style ?? 'circle' }}" id="business-preview-logo">@if($business->profile_photo_url)<img src="{{ $business->profile_photo_url }}" alt="">@else{{ Str::substr($business->name, 0, 1) }}@endif</div><div><small>{{ $business->category }}</small><h2>{{ $business->name }}</h2><p>{{ Str::limit($business->description, 70) }}</p></div></div>
       <div class="preview-content"><small>PUBLICACIONES</small><div class="preview-posts"><article><b>Novedades</b><span>Lo nuevo de este emprendimiento.</span></article><article><b>Productos</b><span>Propuestas para conocer.</span></article></div><button type="button" class="button preview-action">Ver emprendimiento <span>→</span></button></div>
