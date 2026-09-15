@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -30,7 +31,11 @@ class ProductController extends Controller
         $data = $request->validate($this->productRules());
         $data['type'] = 'product';
         $data['is_active'] = true;
-        $business->products()->create($data);
+        DB::transaction(function () use ($business, $data) {
+            $business->newQuery()->lockForUpdate()->findOrFail($business->id);
+            $data['catalog_number'] = ((int) $business->products()->max('catalog_number')) + 1;
+            $business->products()->create($data);
+        });
         return back()->with('success', 'Registro guardado en la base de datos.');
     }
 

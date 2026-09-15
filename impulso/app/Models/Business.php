@@ -71,7 +71,7 @@ class Business extends Model
 
     public function products()
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(Product::class)->orderBy('catalog_number')->orderBy('id');
     }
 
     public function appointments()
