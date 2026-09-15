@@ -30,7 +30,7 @@
     @if($business->cover_photo_url)
       <img class="profile-cover-image" src="{{ $business->cover_photo_url }}" alt="" aria-hidden="true" onerror="this.remove()">
     @endif
-    <div class="profile-logo">
+    <div class="profile-logo profile-photo-style-{{ $business->profile_photo_style ?? 'circle' }}" style="--photo-position-x: {{ $business->profile_photo_position_x ?? 50 }}%; --photo-position-y: {{ $business->profile_photo_position_y ?? 50 }}%; --photo-zoom: {{ (($business->profile_photo_zoom ?? 100) / 100) * 1.2 }}; --photo-translate-x: {{ ((50 - ($business->profile_photo_position_x ?? 50)) / 50 * (((($business->profile_photo_zoom ?? 100) / 100) * 1.2) - 1) / 2 * 100) }}%; --photo-translate-y: {{ ((50 - ($business->profile_photo_position_y ?? 50)) / 50 * (((($business->profile_photo_zoom ?? 100) / 100) * 1.2) - 1) / 2 * 100) }}%;">
       @if($business->profile_photo_url)
         <img src="{{ $business->profile_photo_url }}" alt="Logo de {{ $business->name }}" data-fallback="{{ Str::substr($business->name, 0, 1) }}" onerror="this.parentElement.textContent=this.dataset.fallback">
       @else

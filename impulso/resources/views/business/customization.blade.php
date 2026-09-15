@@ -107,6 +107,37 @@
     </fieldset>
 
     <fieldset>
+      <legend>Foto de perfil del emprendimiento</legend>
+      <div class="profile-photo-customizer">
+        <div class="profile-photo-editor">
+          <div class="profile-photo-crop-frame profile-photo-style-{{ $business->profile_photo_style ?? 'circle' }}" id="profile-photo-crop-frame">
+            @if($business->profile_photo_url)
+              <img id="profile-photo-crop-image" src="{{ $business->profile_photo_url }}" alt="Vista previa de la foto de {{ $business->name }}" style="object-position: {{ $business->profile_photo_position_x ?? 50 }}% {{ $business->profile_photo_position_y ?? 50 }}%; transform: scale({{ (($business->profile_photo_zoom ?? 100) / 100) }});">
+            @else
+              <span id="profile-photo-crop-placeholder">{{ Str::substr($business->name, 0, 1) }}</span>
+              <img id="profile-photo-crop-image" alt="Vista previa de la foto" hidden>
+            @endif
+          </div>
+          <label class="photo-upload-button profile-photo-upload">Subir una foto de perfil
+            <input id="profile-photo-input" type="file" name="profile_photo" accept="image/*">
+          </label>
+          <small class="muted">Acepta imágenes del dispositivo. La vista se adapta al formato elegido.</small>
+        </div>
+        <div class="profile-photo-controls">
+          <strong>Diseño de la foto</strong>
+          <div class="profile-photo-style-options">
+            @foreach(['circle' => 'Círculo', 'square' => 'Cuadrada', 'rounded' => 'Redondeada', 'hexagon' => 'Hexágono', 'diamond' => 'Diamante', 'blob' => 'Orgánica'] as $style => $label)
+              <label class="profile-photo-style-option"><input type="radio" name="profile_photo_style" value="{{ $style }}" @checked(($business->profile_photo_style ?? 'circle') === $style)><span class="profile-photo-style-sample profile-photo-style-{{ $style }}">Aa</span><small>{{ $label }}</small></label>
+            @endforeach
+          </div>
+          <label class="crop-range"><span>Encuadre horizontal <output id="profile-photo-position-x-value">{{ $business->profile_photo_position_x ?? 50 }}%</output></span><input id="profile-photo-position-x" type="range" name="profile_photo_position_x" min="0" max="100" value="{{ $business->profile_photo_position_x ?? 50 }}" aria-label="Encuadre horizontal"></label>
+          <label class="crop-range"><span>Encuadre vertical <output id="profile-photo-position-y-value">{{ $business->profile_photo_position_y ?? 50 }}%</output></span><input id="profile-photo-position-y" type="range" name="profile_photo_position_y" min="0" max="100" value="{{ $business->profile_photo_position_y ?? 50 }}" aria-label="Encuadre vertical"></label>
+          <label class="crop-range"><span>Zoom <output id="profile-photo-zoom-value">{{ $business->profile_photo_zoom ?? 100 }}%</output></span><input id="profile-photo-zoom" type="range" name="profile_photo_zoom" min="100" max="220" value="{{ $business->profile_photo_zoom ?? 100 }}" aria-label="Zoom de la foto"></label>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
       <legend>Colores</legend>
       <div class="form-inline customization-color-grid">
         <label>Fondo principal<input class="color-bar-input" type="color" name="public_primary_color" value="{{ $business->public_primary_color ?? '#f6faf6' }}"><small>Color base de tu perfil.</small></label>
@@ -126,7 +157,7 @@
     <div class="preview-label"><span>Vista previa</span><i></i></div>
     <div class="customization-preview public-page public-background-{{ $business->public_background ?? 'plain' }} public-font-{{ $business->public_font_family ?? 'dm' }} public-border-{{ in_array($business->public_border_type, ['subtle', 'standard', 'bold', 'rounded']) ? $business->public_border_type : 'standard' }} public-button-{{ $business->public_button_style ?? 'solid' }} public-card-{{ $business->public_card_shape ?? 'standard' }}" id="business-preview" @if($business->public_background_image) style="--public-custom-image: url('{{ asset('storage/'.$business->public_background_image) }}');" @endif>
       <div class="preview-nav"><strong>{{ $business->name }}</strong><span>Explorar</span><span>Contacto</span></div>
-      <div class="preview-hero"><div class="preview-logo">{{ Str::substr($business->name, 0, 1) }}</div><div><small>{{ $business->category }}</small><h2>{{ $business->name }}</h2><p>{{ Str::limit($business->description, 70) }}</p></div></div>
+      <div class="preview-hero"><div class="preview-logo profile-photo-style-{{ $business->profile_photo_style ?? 'circle' }}" id="business-preview-logo">@if($business->profile_photo_url)<img src="{{ $business->profile_photo_url }}" alt="">@else{{ Str::substr($business->name, 0, 1) }}@endif</div><div><small>{{ $business->category }}</small><h2>{{ $business->name }}</h2><p>{{ Str::limit($business->description, 70) }}</p></div></div>
       <div class="preview-content"><small>PUBLICACIONES</small><div class="preview-posts"><article><b>Novedades</b><span>Lo nuevo de este emprendimiento.</span></article><article><b>Productos</b><span>Propuestas para conocer.</span></article></div><button type="button" class="button preview-action">Ver emprendimiento <span>→</span></button></div>
       <div class="preview-footer">{{ $business->name }} <span>Un espacio propio para crecer.</span></div>
     </div>
@@ -163,6 +194,64 @@
   });
 
   const businessPreview = document.getElementById('business-preview');
+  const profilePhotoCropFrame = document.getElementById('profile-photo-crop-frame');
+  const profilePhotoCropImage = document.getElementById('profile-photo-crop-image');
+  const profilePhotoPlaceholder = document.getElementById('profile-photo-crop-placeholder');
+  const businessPreviewLogo = document.getElementById('business-preview-logo');
+  const profilePhotoInput = document.getElementById('profile-photo-input');
+  const profilePhotoPositionX = document.getElementById('profile-photo-position-x');
+  const profilePhotoPositionY = document.getElementById('profile-photo-position-y');
+  const profilePhotoZoom = document.getElementById('profile-photo-zoom');
+  const profilePhotoPositionXValue = document.getElementById('profile-photo-position-x-value');
+  const profilePhotoPositionYValue = document.getElementById('profile-photo-position-y-value');
+  const profilePhotoZoomValue = document.getElementById('profile-photo-zoom-value');
+
+  function setProfilePhotoTransform(image, positionX, positionY, zoom) {
+    if (!image) return;
+    const scale = Number(zoom);
+    const translateX = ((50 - Number(positionX)) / 50 * (scale - 1) / 2 * 100).toFixed(2);
+    const translateY = ((50 - Number(positionY)) / 50 * (scale - 1) / 2 * 100).toFixed(2);
+    image.style.setProperty('--photo-translate-x', `${translateX}%`);
+    image.style.setProperty('--photo-translate-y', `${translateY}%`);
+    image.style.transform = `translate(${translateX}%, ${translateY}%) scale(${scale})`;
+  }
+
+  function applyProfilePhotoPreview() {
+    const style = document.querySelector('input[name="profile_photo_style"]:checked')?.value || 'circle';
+    const positionX = profilePhotoPositionX?.value || '50';
+    const positionY = profilePhotoPositionY?.value || '50';
+    const zoom = (Number(profilePhotoZoom?.value || 100) / 100 * 1.2).toFixed(2);
+    if (profilePhotoPositionXValue) profilePhotoPositionXValue.textContent = `${positionX}%`;
+    if (profilePhotoPositionYValue) profilePhotoPositionYValue.textContent = `${positionY}%`;
+    if (profilePhotoZoomValue) profilePhotoZoomValue.textContent = `${profilePhotoZoom?.value || 100}%`;
+    [profilePhotoCropFrame, businessPreviewLogo].forEach((element) => {
+      if (!element) return;
+      element.className = element.className.replace(/profile-photo-style-\S+/g, '').trim();
+      element.classList.add(`profile-photo-style-${style}`);
+    });
+    if (profilePhotoCropImage) {
+      profilePhotoCropImage.style.setProperty('--photo-position-x', `${positionX}%`);
+      profilePhotoCropImage.style.setProperty('--photo-position-y', `${positionY}%`);
+      profilePhotoCropImage.style.objectPosition = `${positionX}% ${positionY}%`;
+      setProfilePhotoTransform(profilePhotoCropImage, positionX, positionY, zoom);
+    }
+    if (profilePhotoCropFrame) {
+      profilePhotoCropFrame.style.setProperty('--photo-position-x', `${positionX}%`);
+      profilePhotoCropFrame.style.setProperty('--photo-position-y', `${positionY}%`);
+      profilePhotoCropFrame.style.setProperty('--photo-zoom', zoom);
+    }
+    if (businessPreviewLogo) {
+      businessPreviewLogo.style.setProperty('--photo-position-x', `${positionX}%`);
+      businessPreviewLogo.style.setProperty('--photo-position-y', `${positionY}%`);
+      businessPreviewLogo.style.setProperty('--photo-zoom', zoom);
+      const previewImage = businessPreviewLogo.querySelector('img');
+      if (previewImage) {
+        previewImage.style.objectPosition = `${positionX}% ${positionY}%`;
+        setProfilePhotoTransform(previewImage, positionX, positionY, zoom);
+      }
+    }
+  }
+
   function applyBusinessPreview() {
     if (!businessPreview) return;
     const font = document.querySelector('input[name="public_font_family"]:checked')?.value || 'dm';
@@ -178,6 +267,7 @@
     businessPreview.style.setProperty('--public-button-color', document.querySelector('input[name="public_button_color"]')?.value || '#176b61');
     businessPreview.style.setProperty('--public-nav-preview', document.querySelector('input[name="public_navbar_color"]')?.value || '#eef1ea');
     businessPreview.style.setProperty('--public-post-bg', document.querySelector('input[name="public_posts_background"]')?.value || '#e8e6b6');
+    applyProfilePhotoPreview();
     const imageInput = document.querySelector('#public-background-image');
     const imageMode = document.querySelector('#public-background-image-mode')?.value || 'full';
     const patternSize = document.querySelector('#public-background-pattern-size')?.value || '180';
@@ -192,6 +282,20 @@
     input.addEventListener('change', applyBusinessPreview);
   });
   document.querySelectorAll('#public-background-image-mode, #public-background-pattern-size').forEach((input) => input.addEventListener('change', applyBusinessPreview));
+  document.querySelectorAll('input[name="profile_photo_style"], #profile-photo-position-x, #profile-photo-position-y, #profile-photo-zoom').forEach((input) => input.addEventListener('input', applyProfilePhotoPreview));
+  profilePhotoInput?.addEventListener('change', () => {
+    const file = profilePhotoInput.files?.[0];
+    if (!file || !profilePhotoCropImage) return;
+    const imageUrl = URL.createObjectURL(file);
+    profilePhotoCropImage.src = imageUrl;
+    profilePhotoCropImage.hidden = false;
+    if (profilePhotoPlaceholder) profilePhotoPlaceholder.hidden = true;
+    if (businessPreviewLogo) {
+      businessPreviewLogo.innerHTML = '<img alt="">';
+      businessPreviewLogo.querySelector('img').src = imageUrl;
+    }
+    applyProfilePhotoPreview();
+  });
   document.querySelector('#public-background-image')?.addEventListener('change', () => {
     const customBackground = document.querySelector('input[name="public_background"][value="custom"]');
     if (customBackground) customBackground.checked = true;

@@ -52,7 +52,19 @@ class BusinessController extends Controller
             'public_button_style' => ['nullable', 'in:solid,outline,ghost,rounded,soft,sharp,underline,block'],
             'public_card_shape' => ['nullable', 'in:standard,soft,rounded,pill,cut,organic,blob,ticket'],
             'public_button_color' => ['nullable', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
+            'profile_photo' => ['nullable', 'image', 'max:8192'],
+            'profile_photo_style' => ['nullable', 'in:circle,square,rounded,hexagon,diamond,blob'],
+            'profile_photo_position_x' => ['nullable', 'integer', 'between:0,100'],
+            'profile_photo_position_y' => ['nullable', 'integer', 'between:0,100'],
+            'profile_photo_zoom' => ['nullable', 'integer', 'between:100,220'],
         ]);
+        if ($request->hasFile('profile_photo')) {
+            $data['profile_photo'] = $request->file('profile_photo')->store('businesses', 'public');
+        }
+        $data['profile_photo_style'] = $data['profile_photo_style'] ?? $business->profile_photo_style ?? 'circle';
+        $data['profile_photo_position_x'] = $data['profile_photo_position_x'] ?? $business->profile_photo_position_x ?? 50;
+        $data['profile_photo_position_y'] = $data['profile_photo_position_y'] ?? $business->profile_photo_position_y ?? 50;
+        $data['profile_photo_zoom'] = $data['profile_photo_zoom'] ?? $business->profile_photo_zoom ?? 100;
         if ($request->hasFile('public_background_image')) {
             $data['public_background_image'] = $request->file('public_background_image')->store('businesses/backgrounds', 'public');
         }

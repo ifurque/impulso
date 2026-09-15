@@ -108,7 +108,7 @@
 
       <label>
         Logo o foto de perfil <span class="label-hint">JPG, PNG o WEBP · max. 5 MB</span>
-        <input type="file" name="profile_photo" accept="image/jpeg,image/png,image/webp">
+        <input type="file" name="profile_photo" accept="image/*">
       </label>
 
       <label>
