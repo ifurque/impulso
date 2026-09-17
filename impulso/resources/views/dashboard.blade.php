@@ -1,0 +1,122 @@
+@extends('layouts.app')
+@section('content')
+<section class="dashboard wrap"><div class="dashboard-top"><div><p class="eyebrow">Panel de {{ $business->name }}</p><h1>Hola, {{ Str::before(auth()->user()->name, ' ') }}.</h1><p class="muted">Aquí tienes una mirada rápida de lo que está pasando.</p><div class="page-actions"><a class="button create-post-action" href="{{ route('posts.create', $business) }}">Crear publicación <span>+</span></a><a class="button secondary create-post-action" href="{{ route('management.database', $business) }}">Base de datos <span>↗</span></a></div></div><a class="button secondary" href="{{ route('business.show', $business) }}">Ver perfil público <span>↗</span></a></div>
+<div class="metric-grid"><div class="metric-card accent"><span>Pagos entrantes · 30 días</span><strong>$ {{ number_format($totalIncomes, 0, ',', '.') }}</strong><small>Todo lo que ingresó a tu negocio.</small></div><div class="metric-card"><span>Gastos · 30 días</span><strong>$ {{ number_format($totalExpenses, 0, ',', '.') }}</strong><small>Movimientos registrados</small></div>@if($business->appointments_enabled)<div class="metric-card"><span>Turnos próximos</span><strong>{{ $appointments }}</strong><small class="positive">● En seguimiento</small></div>@endif @if($business->delivery_enabled)<div class="metric-card"><span>Pedidos pendientes</span><strong>{{ $pendingOrders ?? 0 }}</strong><small class="positive">● Revisión de envíos</small></div>@endif</div>
+<div class="dashboard-grid">
+  <div class="dashboard-main">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Egresos</p>
+          <h2>Gastos por categoría</h2>
+        </div>
+        <a class="text-link" href="{{ route('movements.index', $business) }}">Ver movimientos →</a>
+      </div>
+      @if($categoryTotals->count())
+        <div class="bars">
+          @foreach($categoryTotals as $category => $amount)
+            <div class="bar-row">
+              <div>
+                <span>{{ $category }}</span>
+                <strong>$ {{ number_format($amount, 0, ',', '.') }}</strong>
+              </div>
+              <div class="bar-track">
+                <i style="width: {{ max(8, ($amount / max(1, $categoryTotals->first())) * 100) }}%"></i>
+              </div>
+            </div>
+          @endforeach
+        </div>
+      @else
+        <p class="muted">Todavía no hay gastos registrados.</p>
+      @endif
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Ingresos</p>
+          <h2>Pagos recibidos</h2>
+        </div>
+        <a class="text-link" href="{{ route('movements.index', $business) }}">Ver movimientos →</a>
+      </div>
+      @if($incomeTotals->count())
+        <div class="bars">
+          @foreach($incomeTotals as $source => $amount)
+            <div class="bar-row">
+              <div>
+                <span>{{ $source === 'service' ? 'Servicios' : ($source === 'sale' ? 'Ventas' : 'Otros') }}</span>
+                <strong>$ {{ number_format($amount, 0, ',', '.') }}</strong>
+              </div>
+              <div class="bar-track income">
+                <i style="width: {{ max(8, ($amount / max(1, $incomeTotals->first())) * 100) }}%"></i>
+              </div>
+            </div>
+          @endforeach
+        </div>
+      @else
+        <p class="muted">Todavía no hay pagos entrantes.</p>
+      @endif
+    </div>
+  </div>
+
+  <div class="panel quick-panel">
+    <p class="eyebrow">Acciones rápidas</p>
+    <h2>Haz avanzar tu día.</h2>
+    @if($business->delivery_enabled && ($pendingOrders ?? 0) > 0)
+      <div class="notice success-box" style="margin-bottom: 16px;">Tienes {{ $pendingOrders }} pedido(s) pendiente(s) con envío.</div>
+    @endif
+    <div class="quick-links">
+      <a href="{{ route('movements.index', $business) }}" class="quick-link">
+        <span>↕</span>
+        <div>
+          <strong>Ver movimientos</strong>
+          <small>Gastos e ingresos</small>
+        </div>
+      </a>
+      <a href="{{ route('management.index', $business) }}" class="quick-link">
+        <span>◷</span>
+        <div>
+          <strong>Gestion operativa</strong>
+          <small>Envios, atencion y mensajes</small>
+        </div>
+      </a>
+      <a href="{{ route('management.database', $business) }}" class="quick-link">
+        <span>▦</span>
+        <div>
+          <strong>Base de datos</strong>
+          <small>Catalogo y registros</small>
+        </div>
+      </a>
+      <a href="{{ route('posts.index', $business) }}" class="quick-link">
+        <span>✦</span>
+        <div>
+          <strong>Publicaciones</strong>
+          <small>Administra contenido</small>
+        </div>
+      </a>
+      <a href="{{ route('members.index', $business) }}" class="quick-link">
+        <span>⌁</span>
+        <div>
+          <strong>Equipo y redes</strong>
+          <small>Conexiones y miembros</small>
+        </div>
+      </a>
+      <a href="{{ route('availability.index', $business) }}" class="quick-link">
+        <span>🕐</span>
+        <div>
+          <strong>Horarios</strong>
+          <small>Configure días y horarios</small>
+        </div>
+      </a>
+      <a href="{{ route('business.customization', $business) }}" class="quick-link">
+        <span>◈</span>
+        <div>
+          <strong>Personalizar página</strong>
+          <small>Colores y fondos del perfil público</small>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+</section>
+@endsection
