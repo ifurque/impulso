@@ -1,2 +1,3 @@
-*
+# Las imagenes subidas por los emprendimientos deben persistir en el repositorio,
+# sin importar la PC donde se clone/ejecute el proyecto.
 !.gitignore
