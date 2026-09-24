@@ -1,3 +1,23 @@
+## Impulso
+
+Desde esta carpeta (`impulso`), en una PC nueva ejecuta:
+
+```bash
+composer run setup
+```
+
+El setup instala dependencias, crea `.env`, genera la clave, ejecuta las migraciones, crea automáticamente el enlace `public/storage` y compila los assets.
+
+Las imágenes subidas se guardan en `storage/app/public` y se muestran mediante `public/storage`. El setup crea el enlace automáticamente cuando falta, por lo que no hay que configurarlo manualmente en cada PC.
+
+Para iniciar el servidor:
+
+```bash
+php artisan serve
+```
+
+Abre http://127.0.0.1:8000.
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
