@@ -1,8 +1,7 @@
 @if($business->posts->count())
-    <h2>Publicaciones</h2>
     <div class="public-posts" style="--public-post-bg: {{ $publicPostBg ?? 'var(--public-soft)' }};">
         @foreach($business->posts as $post)
-            <article style="background-color: {{ $publicPostBg ?? 'var(--public-soft)' }};">
+            <article data-public-product data-filter-text="{{ Str::lower($post->title.' '.$post->body.' '.($post->type === 'offer' ? 'oferta' : ($post->type === 'product' ? 'producto' : 'novedad'))) }}" style="background-color: {{ $publicPostBg ?? 'var(--public-soft)' }};">
                 @if($post->photo)
                     <img class="post-public-photo" src="{{ asset('storage/'.$post->photo) }}" alt="Foto de {{ $post->title }}">
                 @endif

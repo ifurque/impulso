@@ -51,13 +51,13 @@
     <div>
       <h2>Sobre el emprendimiento</h2>
       <p class="large-text">{{ $business->description }}</p>
-      @include('business._posts')
-      
-      <h2>Productos y servicios</h2>
+      <h2>Publicaciones</h2>
+      <p class="muted">Productos y servicios del emprendimiento</p>
       <label for="public-product-search" style="display:block; margin: 0 0 10px;">
-        Buscar productos o servicios
+        Buscar en publicaciones y productos
         <input id="public-product-search" class="search-input" placeholder="Ej. pan, litro, limpieza, asesoria">
       </label>
+      @include('business._posts')
       <div class="product-list">
         @forelse($business->products as $product)
           <div data-public-product data-filter-text="{{ Str::lower($product->name.' '.($product->category ?? '').' '.($product->unit ?? '').' '.($product->type === 'product' ? 'producto' : 'servicio')) }}">
