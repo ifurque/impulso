@@ -8,7 +8,7 @@
 
 </div>
 
-Impulso conecta a clientes con emprendimientos y ofrece a cada negocio un escaparate público y herramientas privadas para administrar su operación. Desde una sola plataforma se pueden publicar productos y servicios, recibir pedidos y turnos, responder consultas y registrar movimientos financieros.
+Impulso conecta a clientes con emprendimientos y ofrece a cada negocio un escaparate público y herramientas privadas para administrar su operación. Desde una sola plataforma se pueden publicar productos y servicios, recibir pedidos y turnos, responder consultas y registrar movimientos financieros. El código de la aplicación está en `impulso/`; esta documentación se encuentra en la raíz del repositorio.
 
 ## Contenido
 
@@ -50,9 +50,10 @@ Impulso conecta a clientes con emprendimientos y ofrece a cada negocio un escapa
 
 ### Instalación
 
-Desde la raíz del repositorio:
+Desde la raíz del repositorio, entra al directorio de la aplicación e instala:
 
 ```bash
+cd impulso
 composer run setup
 ```
 
@@ -66,9 +67,11 @@ php artisan serve
 
 Abre <http://127.0.0.1:8000>.
 
-Las imágenes cargadas se guardan en `storage/app/public` y se sirven mediante `public/storage`. Configura `MAIL_*` en `.env` para habilitar los correos de pedidos y confirmación de turnos.
+Las imágenes cargadas se guardan en `impulso/storage/app/public` y se sirven mediante `impulso/public/storage`. Configura las variables `MAIL_*` en `impulso/.env` para habilitar los correos de pedidos y confirmación de turnos.
 
 ## Comandos de desarrollo
+
+Ejecuta estos comandos desde `impulso/`:
 
 ```bash
 # Aplicación, Vite, cola y visor de logs
@@ -86,19 +89,19 @@ composer run test
 
 ## Pruebas
 
-La suite reside en `tests/Feature` y `tests/Unit`. Configura las variables de entorno de prueba en `phpunit.xml`; para desarrollo local, utiliza una base de datos aislada de los datos reales.
+La suite reside en `impulso/tests/Feature` y `impulso/tests/Unit`. La configuración de PHPUnit está en `impulso/phpunit.xml`; para desarrollo local, utiliza una base de datos aislada de los datos reales.
 
 ## Estructura del proyecto
 
 ```text
-app/                 Modelos, controladores y correo
-database/migrations/ Evolución del esquema de datos
-resources/views/     Vistas Blade
-resources/css/       Estilos de la interfaz
-resources/js/        JavaScript de la interfaz
-routes/web.php       Rutas web y agrupación por autenticación
-tests/               Pruebas de integración y unitarias
-docs/                Documentación de arquitectura y UML
+impulso/app/                 Modelos, controladores y correo
+impulso/database/migrations/ Evolución del esquema de datos
+impulso/resources/views/     Vistas Blade
+impulso/resources/css/       Estilos de la interfaz
+impulso/resources/js/        JavaScript de la interfaz
+impulso/routes/web.php       Rutas web y agrupación por autenticación
+impulso/tests/               Pruebas de integración y unitarias
+docs/                         Documentación de arquitectura y UML
 ```
 
 ## Documentación técnica

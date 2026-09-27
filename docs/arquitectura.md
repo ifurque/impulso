@@ -64,7 +64,7 @@ flowchart LR
 
 | Componente | Responsabilidad |
 | --- | --- |
-| `routes/web.php` | Define páginas públicas, autenticación y operaciones del panel. |
+| `impulso/routes/web.php` | Define páginas públicas, autenticación y operaciones del panel. |
 | Controladores HTTP | Validan solicitudes, aplican reglas del caso de uso y coordinan modelos, correo y respuestas. |
 | Modelos Eloquent | Representan negocios, cuentas, catálogo, pedidos, turnos y registros administrativos. |
 | Migraciones | Mantienen versionado el esquema y sus claves foráneas. |
@@ -76,7 +76,7 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    browser["Navegador"] -->|HTTP| routes["Rutas web<br/>routes/web.php"]
+    browser["Navegador"] -->|HTTP| routes["Rutas web<br/>impulso/routes/web.php"]
     routes --> controllers["Controladores Laravel"]
     controllers --> auth["Autenticación y autorización"]
     controllers --> models["Modelos Eloquent"]
@@ -87,7 +87,7 @@ flowchart TB
     mail --> mailserver["Servicio de correo configurado"]
     assets["CSS y JavaScript"] --> vite["Vite"]
     vite --> browser
-    controllers --> storage["Almacenamiento público<br/>storage/app/public"]
+    controllers --> storage["Almacenamiento público<br/>impulso/storage/app/public"]
     storage --> browser
 ```
 
@@ -272,7 +272,7 @@ sequenceDiagram
 
 ## 6. Rutas por área
 
-Las rutas están declaradas en `routes/web.php` y siguen esta organización:
+Las rutas están declaradas en `impulso/routes/web.php` y siguen esta organización:
 
 | Área | Rutas representativas | Acceso |
 | --- | --- | --- |
@@ -288,23 +288,24 @@ Las rutas están declaradas en `routes/web.php` y siguen esta organización:
 
 ## 7. Persistencia y datos
 
-El esquema evoluciona con migraciones Laravel en `database/migrations`. Las tablas funcionales principales incluyen `users`, `businesses`, `business_members`, `products`, `orders`, `order_items`, `appointments`, `inquiries`, `posts`, `reviews`, `incomes`, `expenses`, `expense_categories`, `social_links` y `business_availability_hours`.
+El esquema evoluciona con migraciones Laravel en `impulso/database/migrations`. Las tablas funcionales principales incluyen `users`, `businesses`, `business_members`, `products`, `orders`, `order_items`, `appointments`, `inquiries`, `posts`, `reviews`, `incomes`, `expenses`, `expense_categories`, `social_links` y `business_availability_hours`.
 
 Las relaciones de negocio usan claves foráneas. Por ejemplo, los elementos de pedido se eliminan junto con su pedido; un producto borrado puede quedar desvinculado de pedidos y turnos, mientras el renglón conserva una copia del nombre y precio histórico. El campo `slug` identifica la página pública. Las opciones de personalización y ciertos atributos flexibles se almacenan en columnas JSON.
 
 ## 8. Configuración, correo y archivos
 
-- La configuración sensible y por entorno se define en `.env`; no se debe versionar ese archivo.
+- La configuración sensible y por entorno se define en `impulso/.env`; no se debe versionar ese archivo.
 - El correo usa el mailer configurado por Laravel mediante variables `MAIL_*`.
-- Los archivos públicos subidos usan el disco público de Laravel: `storage/app/public`.
-- El enlace público se prepara con `php artisan storage:link`; `composer run setup` lo crea si falta.
-- Los recursos CSS/JavaScript se compilan con Vite mediante `npm run build`.
+- Los archivos públicos subidos usan el disco público de Laravel: `impulso/storage/app/public`.
+- Desde `impulso/`, el enlace público se prepara con `php artisan storage:link`; `composer run setup` lo crea si falta.
+- Los recursos CSS/JavaScript se compilan con Vite mediante `npm run build`, desde `impulso/`.
 
 ## 9. Desarrollo y calidad
 
 Desde la raíz del repositorio:
 
 ```bash
+cd impulso
 composer run setup
 composer run dev
 composer run test
@@ -312,7 +313,7 @@ composer run test
 
 `composer run dev` inicia servidor web, Vite, escucha de cola y visor de logs. Para ejecutar una única aplicación sin los procesos auxiliares, se puede usar `php artisan serve` y, en otra terminal, `npm run dev`.
 
-La suite automática está en `tests/Feature` y `tests/Unit`. Antes de cambios en reglas de negocio, ejecutar `composer run test` y añadir pruebas de regresión para el flujo afectado.
+La suite automática está en `impulso/tests/Feature` y `impulso/tests/Unit`. Antes de cambios en reglas de negocio, ejecutar `composer run test` desde `impulso/` y añadir pruebas de regresión para el flujo afectado.
 
 ## 10. Límites conocidos del diseño
 
