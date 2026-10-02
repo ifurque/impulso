@@ -26,7 +26,7 @@
         <article class="post-row">
           <div>
             @php($photos = $post->photos ?: ($post->photo ? [$post->photo] : []))
-            @if(count($photos))<div class="post-gallery">@foreach($photos as $photo)<img class="post-photo" src="{{ asset('storage/'.$photo) }}" alt="Foto de {{ $post->title }}">@endforeach</div>@endif
+            @if(count($photos))<div class="post-gallery">@foreach($photos as $photo)<img class="post-photo" src="{{ asset('uploads/'.$photo) }}" alt="Foto de {{ $post->title }}">@endforeach</div>@endif
             <span class="tag">{{ $post->type === 'offer' ? 'Oferta' : ($post->type === 'product' ? 'Producto' : 'Novedad') }}</span>
             <h3>{{ $post->title }}</h3><p>{{ Str::limit($post->body, 150) }}</p>
             <strong>$ {{ number_format($post->price, 0, ',', '.') }}</strong>

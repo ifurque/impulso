@@ -3,7 +3,7 @@
         @foreach($business->posts as $post)
             <article data-public-product data-filter-text="{{ Str::lower($post->title.' '.$post->body.' '.($post->type === 'offer' ? 'oferta' : ($post->type === 'product' ? 'producto' : 'novedad'))) }}" style="background-color: {{ $publicPostBg ?? 'var(--public-soft)' }};">
                 @if($post->photo)
-                    <img class="post-public-photo" src="{{ asset('storage/'.$post->photo) }}" alt="Foto de {{ $post->title }}">
+                    <img class="post-public-photo" src="{{ asset('uploads/'.$post->photo) }}" alt="Foto de {{ $post->title }}">
                 @endif
                 <span class="tag">{{ $post->type === 'offer' ? 'Oferta' : ($post->type === 'product' ? 'Producto' : 'Novedad') }}</span>
                 <h3>{{ $post->title }}</h3>

@@ -140,10 +140,8 @@ class Business extends Model
             return $path;
         }
 
-        if (Str::startsWith($path, ['/storage/', 'storage/'])) {
-            return asset(ltrim($path, '/'));
-        }
+        $path = Str::after(ltrim($path, '/'), 'storage/');
 
-        return asset('storage/'.ltrim($path, '/'));
+        return asset('uploads/'.Str::after($path, 'uploads/'));
     }
 }
