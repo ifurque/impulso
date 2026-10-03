@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\BusinessController;
+use App\Http\Controllers\BusinessPlusController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiscoveryController;
 use App\Http\Controllers\ExpenseController;
@@ -41,6 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/crear-emprendimiento', [BusinessController::class, 'create'])->name('business.create');
     Route::post('/crear-emprendimiento', [BusinessController::class, 'store'])->name('business.store');
     Route::get('/paneles', [BusinessController::class, 'panels'])->name('business.panels');
+    Route::get('/impulso-plus', [BusinessPlusController::class, 'index'])->name('business.plus.index');
+    Route::get('/panel/{business:slug}/impulso-plus', [BusinessPlusController::class, 'show'])->name('business.plus.show');
     Route::get('/panel/{business:slug}/personalizacion', [BusinessController::class, 'customization'])->name('business.customization');
     Route::post('/panel/{business:slug}/personalizacion', [BusinessController::class, 'updateCustomization'])->name('business.customization.update');
     Route::get('/panel/{business:slug}', DashboardController::class)->name('dashboard');

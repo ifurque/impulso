@@ -68,6 +68,54 @@ class BusinessInteractionsTest extends TestCase
             ->assertSee($business->name);
     }
 
+    public function test_business_owner_can_view_impulso_plus_membership_benefits(): void
+    {
+        $owner = User::factory()->create();
+        $business = $owner->ownedBusinesses()->create([
+            'name' => 'Impulso Plus',
+            'category' => 'Servicios',
+            'description' => 'Una página propia',
+            'location' => 'Centro',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('home'))
+            ->assertSee('Impulso');
+
+        $this->actingAs($owner)
+            ->get(route('business.plus.index'))
+            ->assertRedirect(route('business.plus.show', $business));
+
+        $this->actingAs($owner)
+            ->get(route('business.plus.show', $business))
+            ->assertOk()
+            ->assertSee('Dominio propio')
+            ->assertSee('Sin anuncios de terceros')
+            ->assertSee('Sincronización de publicaciones')
+            ->assertSee('Animaciones personalizadas')
+            ->assertSee('Activación próximamente')
+            ->assertSee('4,99 $')
+            ->assertSee('Tener Impulso +')
+            ->assertSee('no realiza ningún cobro');
+    }
+
+    public function test_impulso_plus_is_not_available_to_business_members_without_an_admin_role(): void
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $business = $owner->ownedBusinesses()->create([
+            'name' => 'Acceso restringido',
+            'category' => 'Servicios',
+            'description' => 'Página',
+            'location' => 'Centro',
+        ]);
+        $business->members()->attach($member->id, ['role' => 'member', 'joined_at' => now()]);
+
+        $this->actingAs($member)
+            ->get(route('business.plus.show', $business))
+            ->assertForbidden();
+    }
+
     public function test_owner_can_open_every_destination_linked_from_the_business_panel(): void
     {
         $owner = User::factory()->create();
