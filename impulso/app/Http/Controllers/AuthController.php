@@ -21,7 +21,7 @@ class AuthController extends Controller
         $user = User::create($data);
         Auth::login($user);
         $request->session()->regenerate();
-        return redirect()->route('discover')->with('success', 'Tu cuenta ya está lista.');
+        return redirect()->route('user.profile')->with('success', 'Tu cuenta ya está lista. Completa tu perfil.');
     }
 
     public function login(Request $request)

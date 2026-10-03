@@ -39,9 +39,9 @@ return [
         ],
 
         'public' => [
-            'driver' => 'local',
+            'driver' => env('PUBLIC_FILESYSTEM_DRIVER', 'local'),
             'root' => public_path('uploads'),
-            'url' => '/uploads',
+            'url' => env('PUBLIC_FILESYSTEM_URL') ?: (env('AWS_URL') ?: '/uploads'),
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

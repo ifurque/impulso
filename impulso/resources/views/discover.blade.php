@@ -7,7 +7,9 @@
       <h1>Ideas que ya están en marcha.</h1>
       <p class="muted">Encuentra personas y servicios cerca de ti.</p>
     </div>
-    <div class="search-controls">
+    <div class="discover-tools">
+      <a class="button discover-create" href="{{ auth()->check() ? route('business.create') : route('register') }}">Crear emprendimiento <span>+</span></a>
+      <div class="search-controls">
       <input 
         type="text" 
         id="search-input" 
@@ -24,6 +26,7 @@
           </option>
         @endforeach
       </select>
+      </div>
     </div>
   </div>
 

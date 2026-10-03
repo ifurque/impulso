@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
+use App\Support\MediaUrl;
 use Illuminate\Support\Str;
 
 class Business extends Model
@@ -130,18 +130,18 @@ class Business extends Model
         return $this->resolveMediaUrl($this->cover_photo);
     }
 
+    public function getPublicBackgroundImageUrlAttribute(): ?string
+    {
+        return $this->resolveMediaUrl($this->public_background_image);
+    }
+
+    public function getPublicPatternImageUrlAttribute(): ?string
+    {
+        return $this->resolveMediaUrl($this->public_pattern_image);
+    }
+
     protected function resolveMediaUrl(?string $path): ?string
     {
-        if (!$path) {
-            return null;
-        }
-
-        if (Str::startsWith($path, ['http://', 'https://', '//'])) {
-            return $path;
-        }
-
-        $path = Str::after(ltrim($path, '/'), 'storage/');
-
-        return asset('uploads/'.Str::after($path, 'uploads/'));
+        return MediaUrl::from($path);
     }
 }

@@ -24,7 +24,7 @@
 </style>
 @endpush
 @section('content')
-<section class="profile public-page public-background-{{ $business->public_background ?? 'plain' }}{{ $business->public_background === 'custom' && $business->public_background_image_mode === 'pattern' ? ' public-background-custom-pattern' : '' }} public-font-{{ $business->public_font_family ?? 'dm' }} public-border-{{ in_array($publicBorder, ['subtle', 'standard', 'bold', 'rounded']) ? $publicBorder : 'standard' }} public-button-{{ $publicButton }} public-card-{{ $publicCardShape }} wrap" style="--public-accent: {{ $palette['accent'] }}; --public-button-color: {{ $publicButtonColor }}; --public-soft: {{ $palette['soft'] }}; --public-ink: {{ $publicText }}; --public-paper: {{ $publicPrimary }}; --public-secondary: {{ $publicSecondary }}; --public-post-bg: {{ $publicPostBg }}; @if($business->public_background === 'custom' && $business->public_background_image) --public-custom-image: url('{{ asset('uploads/'.$business->public_background_image) }}'); @endif">
+<section class="profile public-page public-background-{{ $business->public_background ?? 'plain' }}{{ $business->public_background === 'custom' && $business->public_background_image_mode === 'pattern' ? ' public-background-custom-pattern' : '' }} public-font-{{ $business->public_font_family ?? 'dm' }} public-border-{{ in_array($publicBorder, ['subtle', 'standard', 'bold', 'rounded']) ? $publicBorder : 'standard' }} public-button-{{ $publicButton }} public-card-{{ $publicCardShape }} wrap" style="--public-accent: {{ $palette['accent'] }}; --public-button-color: {{ $publicButtonColor }}; --public-soft: {{ $palette['soft'] }}; --public-ink: {{ $publicText }}; --public-paper: {{ $publicPrimary }}; --public-secondary: {{ $publicSecondary }}; --public-post-bg: {{ $publicPostBg }}; @if($business->public_background === 'custom' && $business->public_background_image) --public-custom-image: url('{{ $business->public_background_image_url }}'); @endif">
   <a class="back" href="{{ route('discover') }}">← Volver a explorar</a>
   <div class="profile-hero{{ $business->cover_photo_url ? ' profile-hero-has-cover' : '' }}">
     @if($business->cover_photo_url)
@@ -62,7 +62,7 @@
         @forelse($business->products as $product)
           <div data-public-product data-filter-text="{{ Str::lower($product->name.' '.($product->category ?? '').' '.($product->unit ?? '').' '.($product->type === 'product' ? 'producto' : 'servicio')) }}">
             @if($product->photo)
-              <img class="product-photo" src="{{ asset('uploads/'.$product->photo) }}" alt="Foto de {{ $product->name }}">
+              <img class="product-photo" src="{{ $product->photo_url }}" alt="Foto de {{ $product->name }}">
             @endif
             <span>{{ $product->type === 'product' ? 'Producto' : 'Servicio' }} · {{ $product->category ?: 'Sin categoria' }}</span>
             <strong>{{ $product->name }}</strong>

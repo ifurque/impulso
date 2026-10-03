@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Support\MediaUrl;
 
 class Post extends Model
 {
@@ -11,6 +12,18 @@ class Post extends Model
     protected function casts(): array
     {
         return ['photos' => 'array', 'price' => 'decimal:2', 'discount_price' => 'decimal:2', 'starts_at' => 'date', 'ends_at' => 'date', 'is_published' => 'boolean', 'share_on_social' => 'boolean'];
+    }
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return MediaUrl::from($this->photo);
+    }
+
+    public function getPhotoUrlsAttribute(): array
+    {
+        $photos = $this->photos ?: ($this->photo ? [$this->photo] : []);
+
+        return collect($photos)->map(fn ($photo) => MediaUrl::from($photo))->filter()->values()->all();
     }
 
     public function discountPercentage(): ?int

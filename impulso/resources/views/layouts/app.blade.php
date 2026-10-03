@@ -27,17 +27,15 @@
 		<div class="nav-links">
 			<a href="{{ route('discover') }}">Explorar</a>
 			@auth
-				<a href="{{ route('user.customization') }}">Personalización</a>
 				@php($hasBusinessAccess = auth()->user()->ownedBusinesses()->exists() || auth()->user()->businesses()->exists())
 				@php($hasImpulsoPlusAccess = auth()->user()->role === 'superadmin' || auth()->user()->ownedBusinesses()->exists() || auth()->user()->businesses()->wherePivotIn('role', ['owner', 'administrator'])->exists())
 				@if($hasBusinessAccess)
 					<a href="{{ route('business.panels') }}">Mis emprendimientos</a>
-				@else
-					<a href="{{ route('business.create') }}">Crear emprendimiento</a>
 				@endif
 				@if($hasImpulsoPlusAccess)
 					<a class="nav-plus" href="{{ route('business.plus.index') }}">Impulso <span>+</span></a>
 				@endif
+				<a href="{{ route('user.profile') }}">Mi perfil</a>
 				<form method="POST" action="{{ route('logout') }}">
 					@csrf
 					<button class="link-button">Salir</button>
