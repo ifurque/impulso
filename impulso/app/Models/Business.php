@@ -15,7 +15,7 @@ class Business extends Model
         'owner_id', 'name', 'slug', 'category', 'description', 'location',
         'delivery_latitude', 'delivery_longitude',
         'phone', 'email', 'logo', 'profile_photo', 'profile_photo_style', 'profile_photo_position_x', 'profile_photo_position_y', 'profile_photo_zoom', 'cover_photo', 'opening_hours', 'is_public',
-        'appointments_enabled', 'delivery_enabled', 'delivery_radius_km', 'delivery_cost',
+        'appointments_enabled', 'delivery_enabled', 'delivery_radius_km', 'delivery_cost', 'is_plus',
         'payment_methods_customer', 'payment_methods_business', 'appointment_slot_duration',
         'public_palette', 'public_background', 'public_background_image', 'public_background_image_mode', 'public_background_pattern_size', 'public_pattern_image', 'public_pattern_size', 'public_pattern_gap_x', 'public_pattern_gap_y', 'public_pattern_scale', 'public_pattern_rotation', 'public_pattern_opacity', 'public_pattern_offset_x', 'public_pattern_offset_y', 'public_navbar_color', 'public_posts_background', 'public_hero_color', 'public_font_family', 'public_primary_color', 'public_secondary_color', 'public_text_color', 'public_border_type', 'public_button_style', 'public_card_shape', 'public_button_color', 'database_components',
     ];
@@ -25,6 +25,7 @@ class Business extends Model
         return [
             'opening_hours' => 'array',
             'is_public' => 'boolean',
+            'is_plus' => 'boolean',
             'appointments_enabled' => 'boolean',
             'delivery_enabled' => 'boolean',
             'delivery_radius_km' => 'integer',

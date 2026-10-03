@@ -1,10 +1,7 @@
 @extends('layouts.app')
 @section('content')
 <section class="form-page wrap profile-settings-page">
-  <nav class="profile-tabs" aria-label="Mi perfil">
-    <a class="is-active" href="{{ route('user.profile') }}" aria-current="page">Datos personales</a>
-    <a href="{{ route('user.customization') }}">Personalización</a>
-  </nav>
+  @include('settings._tabs', ['active' => 'profile'])
 
   <div class="dashboard-top profile-settings-heading">
     <div>

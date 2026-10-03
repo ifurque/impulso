@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\BusinessPlusController;
@@ -37,6 +38,18 @@ Route::middleware('guest')->group(function () {
 });
 Route::post('/salir', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 Route::middleware('auth')->group(function () {
+    Route::prefix('administracion')->name('admin.')->controller(AdminController::class)->group(function () {
+        Route::get('/emprendimientos', 'businesses')->name('businesses');
+        Route::get('/emprendimientos/{business}/editar', 'editBusiness')->name('businesses.edit');
+        Route::put('/emprendimientos/{business}', 'updateBusiness')->name('businesses.update');
+        Route::delete('/emprendimientos/{business}', 'deleteBusiness')->name('businesses.delete');
+        Route::patch('/emprendimientos/{business}/impulso', 'togglePlus')->name('businesses.plus');
+        Route::get('/usuarios', 'users')->name('users');
+        Route::get('/usuarios/{user}/editar', 'editUser')->name('users.edit');
+        Route::put('/usuarios/{user}', 'updateUser')->name('users.update');
+        Route::delete('/usuarios/{user}', 'deleteUser')->name('users.delete');
+        Route::patch('/usuarios/{user}/admin', 'toggleAdmin')->name('users.admin');
+    });
     Route::get('/bandeja', [InboxController::class, 'index'])->name('inbox.index');
     Route::get('/mi-perfil', [UserProfileController::class, 'edit'])->name('user.profile');
     Route::post('/mi-perfil', [UserProfileController::class, 'update'])->name('user.profile.update');

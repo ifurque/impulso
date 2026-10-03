@@ -39,7 +39,7 @@
     </div>
     <div>
       <p class="eyebrow">{{ $business->category }}</p>
-      <h1>{{ $business->name }}</h1>
+      <h1>{{ $business->name }} @if($business->is_plus)<span class="verified-badge" aria-label="Emprendimiento verificado por +Impulso" title="Verificado por +Impulso">✓</span>@endif</h1>
       <p class="muted">⌖ {{ $business->location }} · Creado por {{ $business->owner->name }}</p>
     </div>
     <div class="profile-rating">

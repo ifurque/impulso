@@ -25,22 +25,22 @@
 	<nav class="nav">
 		<a class="brand" href="{{ route('home') }}"><span class="brand-mark">+</span> impulso</a>
 		<div class="nav-links">
-			<a href="{{ route('discover') }}">Explorar</a>
 			@auth
-				@php($hasBusinessAccess = auth()->user()->ownedBusinesses()->exists() || auth()->user()->businesses()->exists())
 				@php($hasImpulsoPlusAccess = auth()->user()->role === 'superadmin' || auth()->user()->ownedBusinesses()->exists() || auth()->user()->businesses()->wherePivotIn('role', ['owner', 'administrator'])->exists())
-				@if($hasBusinessAccess)
-					<a href="{{ route('business.panels') }}">Mis emprendimientos</a>
-				@endif
 				@if($hasImpulsoPlusAccess)
-					<a class="nav-plus" href="{{ route('business.plus.index') }}">Impulso <span>+</span></a>
+					<a class="nav-highlight nav-plus" href="{{ route('business.plus.index') }}">+impulso</a>
 				@endif
+				<a href="{{ route('discover') }}">Explorar</a>
 				<a href="{{ route('user.profile') }}">Mi perfil</a>
+				@if(auth()->user()->role === 'superadmin')
+					<a href="{{ route('admin.businesses') }}">Administración</a>
+				@endif
 				<form method="POST" action="{{ route('logout') }}">
 					@csrf
-					<button class="link-button">Salir</button>
+					<button class="link-button nav-highlight nav-logout" type="submit">Salir</button>
 				</form>
 			@else
+				<a href="{{ route('discover') }}">Explorar</a>
 				<a href="{{ route('login') }}">Ingresar</a>
 				<a class="button button-small" href="{{ route('register') }}">Crear cuenta</a>
 			@endauth

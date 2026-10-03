@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('content')
 <section class="dashboard wrap">
+  @include('settings._tabs', ['active' => 'businesses'])
   <div class="dashboard-top">
     <div>
       <p class="eyebrow">Tu espacio de trabajo</p>
