@@ -43,7 +43,7 @@ return [
             'root' => public_path('uploads'),
             'url' => env('PUBLIC_FILESYSTEM_URL') ?: (env('AWS_URL') ?: '/uploads'),
             'visibility' => 'public',
-            'throw' => false,
+            'throw' => true,
             'report' => false,
         ],
 

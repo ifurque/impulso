@@ -31,9 +31,7 @@ class UserProfileController extends Controller
         }
 
         if ($request->hasFile('avatar')) {
-            if ($user->avatar) {
-                Storage::disk('public')->delete($user->avatar);
-            }
+            $oldAvatar = $user->avatar;
             $data['avatar'] = $request->file('avatar')->store('users/avatars', 'public');
         } else {
             unset($data['avatar']);
@@ -43,6 +41,9 @@ class UserProfileController extends Controller
         $user->update($data);
         if ($emailChanged) {
             $user->forceFill(['email_verified_at' => null])->save();
+        }
+        if (!empty($oldAvatar)) {
+            Storage::disk('public')->delete($oldAvatar);
         }
 
         return redirect()->route('user.profile')->with('success', 'Tu perfil fue actualizado.');

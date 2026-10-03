@@ -6,6 +6,7 @@ use App\Models\Business;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -51,11 +52,14 @@ class PostController extends Controller
         $this->ownerOnly($business);
         abort_unless($post->business_id === $business->id, 404);
         $data = $request->validate(['title' => ['required', 'string', 'max:140'], 'body' => ['required', 'string', 'max:2000'], 'photos' => ['nullable', 'array', 'max:4'], 'photos.*' => ['image', 'max:5120'], 'type' => ['required', 'in:product,offer,news'], 'price' => ['required', 'numeric', 'min:0'], 'discount_price' => ['nullable', 'numeric', 'min:0', 'lte:price'], 'starts_at' => ['nullable', 'date'], 'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'], 'is_published' => ['nullable', 'boolean'], 'share_on_social' => ['nullable', 'boolean']]);
+        $oldPhotos = [];
         if ($request->hasFile('photos')) {
+            $oldPhotos = array_merge($post->photos ?? [], [$post->photo]);
             $data['photos'] = collect($request->file('photos'))->map(fn ($photo) => $photo->store('posts', 'public'))->all();
             $data['photo'] = $data['photos'][0];
         }
         $post->update($data + ['is_published' => $request->boolean('is_published'), 'share_on_social' => $request->boolean('share_on_social')]);
+        Storage::disk('public')->delete(array_filter($oldPhotos));
         return back()->with('success', 'Publicación actualizada.');
     }
 
@@ -63,6 +67,7 @@ class PostController extends Controller
     {
         $this->ownerOnly($business);
         abort_unless($post->business_id === $business->id, 404);
+        Storage::disk('public')->delete(array_filter(array_merge($post->photos ?? [], [$post->photo])));
         $post->delete();
         return back()->with('success', 'Publicación eliminada.');
     }

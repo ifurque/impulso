@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class BusinessController extends Controller
@@ -58,7 +59,9 @@ class BusinessController extends Controller
             'profile_photo_position_y' => ['nullable', 'integer', 'between:0,100'],
             'profile_photo_zoom' => ['nullable', 'integer', 'between:100,220'],
         ]);
+        $oldMedia = [];
         if ($request->hasFile('profile_photo')) {
+            $oldMedia[] = $business->profile_photo;
             $data['profile_photo'] = $request->file('profile_photo')->store('businesses', 'public');
         }
         $data['profile_photo_style'] = $data['profile_photo_style'] ?? $business->profile_photo_style ?? 'circle';
@@ -66,6 +69,7 @@ class BusinessController extends Controller
         $data['profile_photo_position_y'] = $data['profile_photo_position_y'] ?? $business->profile_photo_position_y ?? 50;
         $data['profile_photo_zoom'] = $data['profile_photo_zoom'] ?? $business->profile_photo_zoom ?? 100;
         if ($request->hasFile('public_background_image')) {
+            $oldMedia[] = $business->public_background_image;
             $data['public_background_image'] = $request->file('public_background_image')->store('businesses/backgrounds', 'public');
         }
         if ($data['public_background'] === 'custom' && empty($data['public_background_image']) && !$business->public_background_image) {
@@ -74,6 +78,7 @@ class BusinessController extends Controller
         $data['public_background_image_mode'] = $data['public_background_image_mode'] ?? $business->public_background_image_mode ?? 'full';
             $data['public_palette'] = $data['public_palette'] ?? 'mint';
         $business->update($data);
+        Storage::disk('public')->delete(array_filter($oldMedia));
         return redirect()->route('business.customization', $business)->with('success', 'Personalización guardada.');
     }
 

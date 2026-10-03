@@ -48,7 +48,7 @@ class BusinessInteractionsTest extends TestCase
         $this->actingAs($visitor)->get(route('business.show', $business))->assertOk();
     }
 
-    public function test_owner_with_direct_business_access_sees_the_panel_link_and_can_open_panel(): void
+    public function test_owner_opens_business_panels_from_profile_tab_not_global_navbar(): void
     {
         $owner = User::factory()->create();
         $business = $owner->ownedBusinesses()->create([
@@ -60,6 +60,11 @@ class BusinessInteractionsTest extends TestCase
 
         $this->actingAs($owner)
             ->get(route('home'))
+            ->assertDontSee('Mis emprendimientos');
+
+        $this->actingAs($owner)
+            ->get(route('user.profile'))
+            ->assertOk()
             ->assertSee('Mis emprendimientos');
 
         $this->actingAs($owner)

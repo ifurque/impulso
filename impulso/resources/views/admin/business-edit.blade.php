@@ -15,7 +15,18 @@
     </div>
     <label>Descripción<textarea name="description" rows="5" maxlength="2000">{{ old('description', $business->description) }}</textarea></label>
     <label class="admin-checkbox"><input type="checkbox" name="is_public" value="1" @checked(old('is_public', $business->is_public))> Emprendimiento visible públicamente</label>
-    <div class="form-grid"><label>Foto de perfil<input type="file" name="profile_photo" accept="image/*">@error('profile_photo')<small class="error">{{ $message }}</small>@enderror</label><label>Portada<input type="file" name="cover_photo" accept="image/*">@error('cover_photo')<small class="error">{{ $message }}</small>@enderror</label></div>
+    <div class="admin-photo-grid">
+      <label class="admin-photo-field">Foto de perfil
+        <span class="admin-image-preview admin-image-preview-avatar" id="admin-business-avatar-preview">@if($business->profile_photo_url)<img src="{{ $business->profile_photo_url }}" alt="Foto actual de {{ $business->name }}">@else<span data-preview-fallback>{{ Str::substr($business->name, 0, 1) }}</span>@endif</span>
+        <input type="file" name="profile_photo" accept="image/jpeg,image/png,image/webp" data-image-preview="#admin-business-avatar-preview" data-preview-alt="Vista previa de la foto de perfil">
+        @error('profile_photo')<small class="error">{{ $message }}</small>@enderror
+      </label>
+      <label class="admin-photo-field">Portada
+        <span class="admin-image-preview admin-image-preview-cover" id="admin-business-cover-preview">@if($business->cover_photo_url)<img src="{{ $business->cover_photo_url }}" alt="Portada actual de {{ $business->name }}">@else<span data-preview-fallback>Sin portada</span>@endif</span>
+        <input type="file" name="cover_photo" accept="image/jpeg,image/png,image/webp" data-image-preview="#admin-business-cover-preview" data-preview-alt="Vista previa de la portada">
+        @error('cover_photo')<small class="error">{{ $message }}</small>@enderror
+      </label>
+    </div>
     <div class="admin-actions"><button class="button" type="submit">Guardar cambios</button><a class="button secondary" href="{{ route('admin.businesses') }}">Cancelar</a></div>
   </form>
 </section>

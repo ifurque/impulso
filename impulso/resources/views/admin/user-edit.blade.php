@@ -5,7 +5,7 @@
   <div class="dashboard-top"><div><p class="eyebrow">Administración · Usuarios</p><h1>Modificar usuario</h1><p class="muted">{{ $user->email }}</p></div></div>
   <form method="POST" enctype="multipart/form-data" action="{{ route('admin.users.update', $user) }}" class="business-form admin-edit-form">
     @csrf @method('PUT')
-    <div class="profile-settings-avatar"><div class="account-avatar">@if($user->avatar_url)<img src="{{ $user->avatar_url }}" alt="Foto de {{ $user->name }}">@else{{ Str::substr($user->name, 0, 1) }}@endif</div><label>Foto de perfil<input type="file" name="avatar" accept="image/*"></label>@error('avatar')<small class="error">{{ $message }}</small>@enderror</div>
+    <div class="profile-settings-avatar"><div class="account-avatar" id="admin-user-avatar-preview">@if($user->avatar_url)<img src="{{ $user->avatar_url }}" alt="Foto de {{ $user->name }}">@else<span data-preview-fallback>{{ Str::substr($user->name, 0, 1) }}</span>@endif</div><label>Foto de perfil<input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" data-image-preview="#admin-user-avatar-preview" data-preview-alt="Vista previa de la foto de perfil"></label>@error('avatar')<small class="error">{{ $message }}</small>@enderror</div>
     <div class="form-grid">
       <label>Nombre completo<input name="name" value="{{ old('name', $user->name) }}" maxlength="120" required>@error('name')<small class="error">{{ $message }}</small>@enderror</label>
       <label>Correo electrónico<input type="email" name="email" value="{{ old('email', $user->email) }}" maxlength="180" required>@error('email')<small class="error">{{ $message }}</small>@enderror</label>

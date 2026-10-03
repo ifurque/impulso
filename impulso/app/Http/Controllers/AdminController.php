@@ -53,16 +53,14 @@ class AdminController extends Controller
         }
         foreach (['profile_photo', 'cover_photo'] as $field) {
             if ($request->hasFile($field)) {
-                $oldPath = $business->{$field};
+                $oldPaths[$field] = $business->{$field};
                 $data[$field] = $request->file($field)->store('businesses', 'public');
-                if ($oldPath) {
-                    Storage::disk('public')->delete($oldPath);
-                }
             } else {
                 unset($data[$field]);
             }
         }
         $business->update($data);
+        Storage::disk('public')->delete(array_filter($oldPaths ?? []));
 
         return redirect()->route('admin.businesses')->with('success', 'Emprendimiento actualizado.');
     }
@@ -112,12 +110,10 @@ class AdminController extends Controller
             'is_entrepreneur' => ['sometimes', 'boolean'],
         ]);
         $data['is_entrepreneur'] = $request->boolean('is_entrepreneur');
+        $oldAvatar = null;
         if ($request->hasFile('avatar')) {
             $oldAvatar = $user->avatar;
             $data['avatar'] = $request->file('avatar')->store('users/avatars', 'public');
-            if ($oldAvatar) {
-                Storage::disk('public')->delete($oldAvatar);
-            }
         } else {
             unset($data['avatar']);
         }
@@ -125,6 +121,9 @@ class AdminController extends Controller
         $user->update($data);
         if ($emailChanged) {
             $user->forceFill(['email_verified_at' => null])->save();
+        }
+        if ($oldAvatar) {
+            Storage::disk('public')->delete($oldAvatar);
         }
 
         return redirect()->route('admin.users')->with('success', 'Usuario actualizado.');
