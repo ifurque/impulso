@@ -100,8 +100,14 @@ class BusinessInteractionsTest extends TestCase
             ->assertSee('Animaciones personalizadas')
             ->assertSee('Activación próximamente')
             ->assertSee('4,99 $')
-            ->assertSee('Tener Impulso +')
-            ->assertSee('no realiza ningún cobro');
+            ->assertSee('Contratar Impulso +')
+            ->assertSee('Elegí cómo querés pagar')
+            ->assertSee('Mercado Pago')
+            ->assertSee('Tarjeta de crédito o débito')
+            ->assertSee('Rapipago con efectivo')
+            ->assertSee('Transferencia bancaria')
+            ->assertSee('Cancelar membresía')
+            ->assertSee('todavía no se procesan pagos');
     }
 
     public function test_impulso_plus_is_not_available_to_business_members_without_an_admin_role(): void

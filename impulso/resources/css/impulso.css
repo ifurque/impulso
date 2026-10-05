@@ -252,7 +252,27 @@ input, select, textarea, button { max-width:100%; }
 .plus-cta { width:100%; }
 .plus-cta summary { width:100%; list-style:none; gap:12px; }
 .plus-cta summary::-webkit-details-marker { display:none; }
-.plus-cta-note { max-width:280px; margin:10px 0 0; color:#50615a; font-size:.78rem; line-height:1.5; }
+.plus-payment-panel { width:min(100%, 390px); margin-top:14px; padding:18px; border:1px solid #cbd5ca; background:#fff; }
+.plus-payment-methods { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin:0; padding:0; border:0; }
+.plus-payment-methods legend { grid-column:1 / -1; margin-bottom:4px; font-weight:700; }
+.plus-payment-card { position:relative; display:grid; aspect-ratio:1; place-items:center; padding:12px; border:1px solid var(--line); border-radius:5px; background:#fff; cursor:pointer; text-align:center; }
+.plus-payment-card:has(input:checked) { border-color:var(--teal); box-shadow:inset 0 0 0 1px var(--teal); background:#f4f8f3; }
+.plus-payment-card:focus-within { outline:2px solid var(--teal); outline-offset:2px; }
+.plus-payment-card input { position:absolute; width:1px; height:1px; opacity:0; }
+.plus-payment-card-content { display:grid; justify-items:center; align-content:center; gap:12px; color:var(--ink); font-size:.82rem; font-weight:600; line-height:1.3; }
+.plus-payment-logo { display:block; width:48px; height:32px; object-fit:contain; }
+.plus-payment-logo-mercado-pago { width:58px; height:58px; }
+.plus-payment-logo-rapipago { width:58px; height:58px; }
+.plus-payment-logo-bank { width:48px; height:48px; color:var(--teal); }
+.plus-card-brands { display:flex; align-items:center; justify-content:center; gap:6px; height:58px; }
+.plus-card-brands .plus-payment-logo { width:44px; }
+.plus-cta-note { margin:13px 0 0; color:#50615a; font-size:.78rem; line-height:1.5; }
+.plus-cancel-option { display:grid; gap:8px; margin-top:17px; padding-top:15px; border-top:1px solid var(--line); }
+.plus-cancel-option strong { font-size:.9rem; }
+.plus-cancel-option p { margin:3px 0 0; color:var(--muted); font-size:.8rem; }
+.plus-cancel-button { justify-self:start; }
+.plus-cancel-button:disabled { cursor:not-allowed; opacity:.55; }
+.plus-cancel-option small { color:var(--muted); font-size:.72rem; }
 .plus-status { flex:0 0 auto; padding:9px 13px; border:1px solid #b4c0b6; border-radius:20px; color:#50615a; font-size:.74rem; font-weight:700; }
 @media (max-width:760px) { .plus-page { padding-top:30px; padding-bottom:60px; }.plus-hero { min-height:0; padding:34px 26px; }.plus-orbit { position:absolute; right:-90px; bottom:-105px; opacity:.4; }.plus-benefits-heading { align-items:flex-start; flex-direction:column; gap:8px; margin-top:40px; }.plus-benefit-grid { grid-template-columns:1fr; }.plus-benefit-card { min-height:0; }.plus-footer { align-items:flex-start; flex-direction:column; padding:24px; }.plus-price-action { width:100%; }.plus-price-action .button { width:100%; } }
 .create-post-action { margin-top:20px; padding:11px 15px; gap:10px; }.publication-editor { padding-top:60px; padding-bottom:100px; }.editor-top { display:flex; align-items:end; justify-content:space-between; gap:30px; margin-bottom:38px; }.editor-top h1 { margin-bottom:12px; font-size:3.6rem; }.editor-top p { margin-bottom:0; }.publication-composer { display:grid; grid-template-columns:minmax(0, 1.1fr) minmax(320px, .9fr); gap:34px; align-items:start; }.editor-fields, .publication-preview { border:1px solid var(--line); background:var(--white); border-radius:6px; }.editor-fields { display:grid; gap:18px; padding:30px; }.editor-section { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:14px; padding-bottom:18px; border-bottom:1px solid var(--line); }.editor-section.compact { margin-top:12px; }.editor-section .eyebrow { margin-bottom:5px; }.editor-section h2 { margin:0; font-size:1.15rem; }.editor-step { display:grid; place-items:center; width:34px; height:34px; border-radius:50%; background:var(--lime); color:var(--teal); font:700 .78rem var(--sans); }.photo-upload { display:grid!important; gap:8px; cursor:pointer; }.photo-upload input { position:absolute; width:1px!important; height:1px; opacity:0; }.photo-upload-button { display:grid; place-items:center; min-height:105px; border:1px dashed #8ca59a; border-radius:5px; background:#f4f8f3; color:var(--teal); font-weight:600; }.editor-photo-previews { display:grid; grid-template-columns:repeat(4, 1fr); gap:9px; }.editor-photo-previews img { width:100%; height:72px; border-radius:4px; object-fit:cover; }.editor-submit { margin-top:8px; }.publication-preview { position:sticky; top:25px; padding:18px; background:#edf1e9; }.preview-label { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; color:var(--muted); font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }.preview-label i { width:8px; height:8px; border-radius:50%; background:#65a45b; }.offer-preview { overflow:hidden; background:var(--white); border:1px solid var(--line); border-radius:5px; }.preview-image { display:grid; place-items:center; height:220px; background:#cfe3d2; background-position:center; background-size:cover; color:var(--teal); font:600 .82rem var(--sans); }.preview-image.has-image { color:transparent; }.preview-copy { padding:21px; }.preview-copy h2 { margin:12px 0 8px; font-size:1.45rem; }.preview-copy p { min-height:49px; margin-bottom:16px; color:var(--muted); font-size:.9rem; }.preview-copy > strong { display:block; margin-bottom:12px; font:700 1.45rem var(--serif); }.preview-copy small { color:var(--muted); font-size:.75rem; }

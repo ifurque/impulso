@@ -66,8 +66,54 @@
     <div class="plus-price-action">
       <p class="plus-price"><strong>4,99 $</strong><span>/ mes</span></p>
       <details class="plus-cta">
-        <summary class="button">Tener Impulso + <span>→</span></summary>
-        <p class="plus-cta-note" role="status">La membresía todavía no está disponible para activarse y este botón no realiza ningún cobro.</p>
+        <summary class="button">Contratar Impulso + <span>→</span></summary>
+        <div class="plus-payment-panel">
+          <fieldset class="plus-payment-methods">
+            <legend>Elegí cómo querés pagar</legend>
+            <label class="plus-payment-card">
+              <input type="radio" name="plus-payment-method" value="mercado-pago">
+              <span class="plus-payment-card-content">
+                <img class="plus-payment-logo plus-payment-logo-mercado-pago" src="https://cdn.simpleicons.org/mercadopago" alt="">
+                <span>Mercado Pago</span>
+              </span>
+            </label>
+            <label class="plus-payment-card">
+              <input type="radio" name="plus-payment-method" value="card">
+              <span class="plus-payment-card-content">
+                <span class="plus-card-brands" aria-label="Visa y Mastercard">
+                  <img class="plus-payment-logo" src="https://cdn.simpleicons.org/visa" alt="Visa">
+                  <img class="plus-payment-logo" src="https://cdn.simpleicons.org/mastercard" alt="Mastercard">
+                </span>
+                <span>Tarjeta de crédito o débito</span>
+              </span>
+            </label>
+            <label class="plus-payment-card">
+              <input type="radio" name="plus-payment-method" value="rapipago">
+              <span class="plus-payment-card-content">
+                <img class="plus-payment-logo plus-payment-logo-rapipago" src="https://rapipago.com.ar/rapipagoWeb/favicon.ico" alt="">
+                <span>Rapipago con efectivo</span>
+              </span>
+            </label>
+            <label class="plus-payment-card">
+              <input type="radio" name="plus-payment-method" value="bank-transfer">
+              <span class="plus-payment-card-content">
+                <svg class="plus-payment-logo plus-payment-logo-bank" viewBox="0 0 48 48" aria-hidden="true">
+                  <path d="M5 18h38L24 7 5 18Zm4 4v14h5V22H9Zm12 0v14h6V22h-6Zm13 0v14h5V22h-5ZM5 41h38v-4H5v4Z" fill="currentColor"/>
+                </svg>
+                <span>Transferencia bancaria</span>
+              </span>
+            </label>
+          </fieldset>
+          <p class="plus-cta-note" role="status">Vista de muestra: todavía no se procesan pagos ni se realizan cambios en la membresía.</p>
+          <div class="plus-cancel-option">
+            <div>
+              <strong>¿Ya no querés Impulso +?</strong>
+              <p>Podés cancelar tu membresía desde esta opción.</p>
+            </div>
+            <button class="button secondary plus-cancel-button" type="button" disabled aria-describedby="plus-cancel-note">Cancelar membresía</button>
+            <small id="plus-cancel-note">Opción de muestra; la cancelación todavía no está disponible.</small>
+          </div>
+        </div>
       </details>
       <span class="plus-status">Activación próximamente</span>
     </div>
