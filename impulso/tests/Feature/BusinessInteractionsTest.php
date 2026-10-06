@@ -57,6 +57,12 @@ class BusinessInteractionsTest extends TestCase
             'description' => 'Sin pivot de miembro',
             'location' => 'Centro',
         ]);
+        $secondBusiness = $owner->ownedBusinesses()->create([
+            'name' => 'Segundo negocio',
+            'category' => 'Comercio',
+            'description' => 'Otro emprendimiento',
+            'location' => 'Norte',
+        ]);
 
         $this->actingAs($owner)
             ->get(route('home'))
@@ -70,7 +76,11 @@ class BusinessInteractionsTest extends TestCase
         $this->actingAs($owner)
             ->get(route('business.panels'))
             ->assertOk()
-            ->assertSee($business->name);
+            ->assertSee($business->name)
+            ->assertSee($secondBusiness->name)
+            ->assertSee('class="admin-row', false)
+            ->assertSee('Administrar')
+            ->assertSee('Ver perfil');
     }
 
     public function test_business_owner_can_view_impulso_plus_membership_benefits(): void
