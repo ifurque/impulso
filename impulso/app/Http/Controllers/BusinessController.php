@@ -40,7 +40,7 @@ class BusinessController extends Controller
         $data = $request->validate([
                 'public_palette' => ['nullable', 'in:mint,sun,coral,ocean'],
             'public_background' => ['required', 'in:plain,grid,dots,paper,diagonal,noise,waves,custom'],
-            'public_background_image' => ['nullable', 'image', 'max:8192'],
+            'public_background_image' => ['nullable', 'image', 'max:5120'],
             'public_background_image_mode' => ['nullable', 'in:full,pattern'],
             'public_background_pattern_size' => ['nullable', 'integer', 'in:80,140,220,320'],
             'public_navbar_color' => ['nullable', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
@@ -53,7 +53,7 @@ class BusinessController extends Controller
             'public_button_style' => ['nullable', 'in:solid,outline,ghost,rounded,soft,sharp,underline,block'],
             'public_card_shape' => ['nullable', 'in:standard,soft,rounded,pill,cut,organic,blob,ticket'],
             'public_button_color' => ['nullable', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
-            'profile_photo' => ['nullable', 'image', 'max:8192'],
+            'profile_photo' => ['nullable', 'image', 'max:5120'],
             'profile_photo_style' => ['nullable', 'in:circle,square,rounded,hexagon,diamond,blob'],
             'profile_photo_position_x' => ['nullable', 'integer', 'between:0,100'],
             'profile_photo_position_y' => ['nullable', 'integer', 'between:0,100'],
@@ -115,7 +115,7 @@ class BusinessController extends Controller
             'customer_payment_methods.*' => ['string', 'in:efectivo,transferencia,tarjeta,mercado_pago,qr'],
             'appointment_slot_duration' => ['nullable', 'in:15,30,60'],
             'profile_photo' => ['nullable', 'image', 'max:5120'],
-            'cover_photo' => ['nullable', 'image', 'max:8192'],
+            'cover_photo' => ['nullable', 'image', 'max:5120'],
         ]);
         foreach (['profile_photo', 'cover_photo'] as $image) {
             if ($request->hasFile($image)) {

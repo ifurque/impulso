@@ -44,8 +44,8 @@ class AdminController extends Controller
             'phone' => ['nullable', 'string', 'max:40'],
             'email' => ['nullable', 'email', 'max:180'],
             'is_public' => ['sometimes', 'boolean'],
-            'profile_photo' => ['nullable', 'image', 'max:8192'],
-            'cover_photo' => ['nullable', 'image', 'max:8192'],
+            'profile_photo' => ['nullable', 'image', 'max:5120'],
+            'cover_photo' => ['nullable', 'image', 'max:5120'],
         ]);
         $data['is_public'] = $request->boolean('is_public');
         if ($data['name'] !== $business->name) {

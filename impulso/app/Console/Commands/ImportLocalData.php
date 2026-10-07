@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use RuntimeException;
 use Throwable;
 
@@ -13,6 +14,7 @@ class ImportLocalData extends Command
 {
     protected $signature = 'app:import-local-data
         {--confirm : Confirms the one-time transfer into the shared services}
+        {--dry-run : Validates the empty PostgreSQL destination without copying data}
         {--files-only : Transfers uploads without copying database rows}
         {--database-only : Copies database rows without transferring uploads}';
 
@@ -45,6 +47,16 @@ class ImportLocalData extends Command
             $source = DB::connection('sqlite_import');
             $tables = $this->option('files-only') ? [] : $this->prepareTableOrder($source, $target);
 
+            if ($this->option('dry-run')) {
+                if (! $this->option('database-only') && config('filesystems.disks.public.driver') !== 's3') {
+                    throw new RuntimeException('Set PUBLIC_FILESYSTEM_DRIVER=s3 and configure the shared bucket before transferring uploads.');
+                }
+
+                $this->info('Preflight passed. The destination schema is complete and all imported tables are empty. No data was copied.');
+
+                return self::SUCCESS;
+            }
+
             if (! $this->option('database-only')) {
                 $this->copyUploads();
             }
@@ -70,7 +82,9 @@ class ImportLocalData extends Command
             ->reject(fn (string $table) => in_array($table, self::SKIPPED_TABLES, true))
             ->values()
             ->all();
-        $targetTables = Schema::getTableListing();
+        $targetTables = collect(Schema::getTableListing())
+            ->map(fn (string $table) => Str::afterLast($table, '.'))
+            ->all();
         $missingTables = array_values(array_diff($sourceTables, $targetTables));
 
         if ($missingTables) {

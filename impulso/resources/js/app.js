@@ -1,4 +1,9 @@
 import './bootstrap';
+import { getSupabaseClient } from './supabase/client';
+
+if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
+	getSupabaseClient();
+}
 
 document.querySelectorAll('input[type="file"][data-image-preview]').forEach((input) => {
 	input.addEventListener('change', () => {

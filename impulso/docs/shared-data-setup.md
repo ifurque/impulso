@@ -5,7 +5,7 @@ La aplicación separa el código de los datos: Git sincroniza el código; Supaba
 ## Crear el servicio
 
 1. Crea un proyecto de Supabase en una región cercana a quienes usarán Impulso. Guarda la contraseña de PostgreSQL en un gestor de contraseñas.
-2. En **Storage**, crea un bucket llamado `impulso-media` y márcalo como público. Este bucket solo debe contener medios que ya sean públicos en Impulso, como fotos de emprendimientos y publicaciones.
+2. En **Storage**, crea un bucket llamado `impulso-media`, márcalo como público y establece el tamaño máximo por archivo en **5 MB**. Este bucket solo debe contener medios que ya sean públicos en Impulso, como fotos de emprendimientos y publicaciones; Laravel valida las cargas con el mismo límite.
 3. En los ajustes de Storage, crea credenciales S3 dedicadas. No uses la `service_role key` como clave S3.
 4. En **Connect**, copia la cadena del **Session Pooler** para obtener host, puerto, usuario y base. El pooler de sesión es la opción recomendada para equipos locales cuando la conexión directa no está disponible por IPv4.
 
@@ -29,7 +29,7 @@ AWS_DEFAULT_REGION=<region-del-proyecto>
 AWS_BUCKET=impulso-media
 AWS_ACCESS_KEY_ID=<s3-access-key>
 AWS_SECRET_ACCESS_KEY=<s3-secret-key>
-AWS_USE_PATH_STYLE_ENDPOINT=false
+AWS_USE_PATH_STYLE_ENDPOINT=true
 ```
 
 No compartas ni publiques el `.env`, la contraseña de PostgreSQL ni las claves S3. Los valores de `.env.example` son solo una plantilla.
