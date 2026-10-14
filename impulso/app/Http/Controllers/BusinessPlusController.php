@@ -15,7 +15,7 @@ class BusinessPlusController extends Controller
                 ->where('owner_id', $user->id)
                 ->orWhereHas('members', fn ($members) => $members
                     ->whereKey($user->id)
-                    ->wherePivotIn('role', ['owner', 'administrator'])))
+                    ->whereIn('business_members.role', ['owner', 'administrator'])))
             ->latest('created_at')
             ->get();
 

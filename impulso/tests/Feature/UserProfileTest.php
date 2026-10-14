@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Models\Business;
 use App\Support\MediaUrl;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -30,6 +31,25 @@ class UserProfileTest extends TestCase
             ->assertOk()
             ->assertSee('Personalización')
             ->assertSee(route('user.profile'));
+    }
+
+    public function test_business_administrator_can_open_profile_without_pivot_query_error(): void
+    {
+        $owner = User::factory()->create();
+        $administrator = User::factory()->create();
+        $business = Business::create([
+            'owner_id' => $owner->id,
+            'name' => 'Taller Norte',
+        ]);
+        $business->members()->attach($administrator->id, [
+            'role' => 'administrator',
+            'joined_at' => now(),
+        ]);
+
+        $this->actingAs($administrator)
+            ->get(route('user.profile'))
+            ->assertOk()
+            ->assertSee('Mi perfil');
     }
 
     public function test_user_can_update_registered_details_and_profile_photo(): void

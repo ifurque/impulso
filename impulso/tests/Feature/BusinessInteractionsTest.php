@@ -7,7 +7,9 @@ use App\Mail\OrderReceived;
 use App\Models\Business;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class BusinessInteractionsTest extends TestCase
@@ -41,11 +43,40 @@ class BusinessInteractionsTest extends TestCase
 
     public function test_authenticated_user_can_open_a_public_business_profile(): void
     {
+        Storage::fake('public');
         $owner = User::factory()->create();
         $visitor = User::factory()->create();
         $business = Business::create(['owner_id' => $owner->id, 'name' => 'Estudio Centro', 'category' => 'Servicios', 'description' => 'Atención', 'location' => 'Centro']);
+        $photoPath = 'products/vela-publica.jpg';
+        Storage::disk('public')->put($photoPath, 'test-image');
+        $business->products()->create([
+            'name' => 'Vela aromática',
+            'brand' => 'Luz de Casa',
+            'description' => 'Vela artesanal de lavanda.',
+            'photo' => $photoPath,
+            'type' => 'product',
+            'category' => 'Dato interno',
+            'model' => 'Modelo privado',
+            'unit' => 'unidad',
+            'quantity' => 8,
+            'price' => 1500,
+            'is_active' => true,
+        ]);
 
-        $this->actingAs($visitor)->get(route('business.show', $business))->assertOk();
+        $response = $this->actingAs($visitor)
+            ->get(route('business.show', $business))
+            ->assertOk()
+            ->assertSee('stock-product-publication', false)
+            ->assertSee('Vela aromática')
+            ->assertSee('Luz de Casa')
+            ->assertSee('Vela artesanal de lavanda.')
+            ->assertSee('Stock disponible')
+            ->assertSee('1500')
+            ->assertDontSee('Modelo privado')
+            ->assertDontSee('<div data-public-product', false);
+
+            $this->assertSame(1, substr_count($response->getContent(), 'stock-product-publication'));
+            $this->assertStringContainsString('src="'.Storage::disk('public')->url($photoPath).'"', $response->getContent());
     }
 
     public function test_owner_opens_business_panels_from_profile_tab_not_global_navbar(): void
@@ -151,6 +182,7 @@ class BusinessInteractionsTest extends TestCase
         foreach ([
             route('dashboard', $business),
             route('management.index', $business),
+            route('management.database', $business),
             route('movements.index', $business),
             route('expenses.index', $business),
             route('posts.index', $business),
@@ -160,6 +192,73 @@ class BusinessInteractionsTest extends TestCase
         ] as $url) {
             $this->actingAs($owner)->get($url)->assertOk();
         }
+
+        $this->actingAs($owner)
+            ->get(route('management.database', $business))
+            ->assertOk()
+            ->assertSee('Crear producto')
+            ->assertSee('Listado')
+            ->assertSee('Ingresar producto')
+            ->assertSee('<h2>Crear producto</h2>', false)
+            ->assertSee('<h2>Ingresar producto</h2>', false)
+            ->assertSee('Lista de productos')
+            ->assertSee('Datos privados y opcionales')
+            ->assertSee('Cambios extras')
+            ->assertSee('name="photo"', false)
+            ->assertSee('name="description"', false)
+            ->assertSee('name="incoming_quantity"', false)
+            ->assertSee('aria-label="Navegación del emprendimiento"', false)
+            ->assertSee('data-inventory-toggle="nuevo-registro"', false)
+            ->assertSee('data-inventory-toggle="registros"', false)
+            ->assertSee('data-inventory-toggle="ingreso-mercaderia"', false)
+            ->assertSee('aria-expanded="false"', false)
+            ->assertSee('id="inventory-panel-storage" hidden', false)
+            ->assertSee(route('user.profile'), false)
+            ->assertSee(route('dashboard', $business), false);
+    }
+
+    public function test_business_owner_can_create_a_stock_product_with_a_photo_and_description(): void
+    {
+        Storage::fake('public');
+        $owner = User::factory()->create();
+        $business = $owner->ownedBusinesses()->create([
+            'name' => 'Tienda de prueba',
+            'category' => 'Comercio',
+            'description' => 'Productos seleccionados',
+            'location' => 'Centro',
+        ]);
+
+        $this->actingAs($owner)
+            ->post(route('products.store', $business), [
+                'name' => 'Vela aromática',
+                'description' => 'Vela artesanal de lavanda.',
+                'brand' => 'Luz',
+                'model' => 'Lavanda 200',
+                'category' => 'Hogar',
+                'unit' => 'unidad',
+                'quantity' => 8,
+                'price' => 1500,
+                'photo' => UploadedFile::fake()->createWithContent(
+                    'vela.png',
+                    base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p1sAAAAASUVORK5CYII=')
+                ),
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $product = $business->products()->firstOrFail();
+        $this->assertSame('Vela artesanal de lavanda.', $product->description);
+        $this->assertNotNull($product->photo);
+        Storage::disk('public')->assertExists($product->photo);
+
+        $this->get(route('business.show', $business))
+            ->assertOk()
+            ->assertSee('stock-product-publication', false)
+            ->assertSee('Vela aromática')
+            ->assertSee('Luz')
+            ->assertSee('Vela artesanal de lavanda.')
+            ->assertSee('Stock disponible')
+            ->assertDontSee('Lavanda 200');
     }
 
     public function test_management_panel_displays_guest_appointments_without_an_error(): void

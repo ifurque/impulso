@@ -16,6 +16,7 @@ class ProductController extends Controller
     {
         return [
             'name' => ['required', 'string', self::TEXT_MAX_120],
+            'description' => ['nullable', 'string', 'max:2000'],
             'brand' => ['nullable', 'string', self::TEXT_MAX_120],
             'model' => ['nullable', 'string', self::TEXT_MAX_120],
             'category' => ['nullable', 'string', 'max:100'],
@@ -28,7 +29,12 @@ class ProductController extends Controller
     public function store(Request $request, Business $business)
     {
         abort_unless($business->canBeManagedBy(Auth::user()), 403);
-        $data = $request->validate($this->productRules());
+        $data = $request->validate($this->productRules() + [
+            'photo' => ['nullable', 'image', 'max:5120'],
+        ]);
+        if ($request->hasFile('photo')) {
+            $data['photo'] = $request->file('photo')->store('products', 'public');
+        }
         $data['type'] = 'product';
         $data['is_active'] = true;
         DB::transaction(function () use ($business, $data) {

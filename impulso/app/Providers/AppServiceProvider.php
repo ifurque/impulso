@@ -36,7 +36,9 @@ class AppServiceProvider extends ServiceProvider
             $managedBusinesses = Business::query()
                 ->select(['id', 'name', 'slug'])
                 ->where('owner_id', $user->id)
-                ->orWhereHas('members', fn ($query) => $query->whereKey($user->id)->wherePivotIn('role', ['owner', 'administrator']))
+                ->orWhereHas('members', fn ($query) => $query
+                    ->whereKey($user->id)
+                    ->whereIn('business_members.role', ['owner', 'administrator']))
                 ->get();
 
             $managedIds = $managedBusinesses->pluck('id');

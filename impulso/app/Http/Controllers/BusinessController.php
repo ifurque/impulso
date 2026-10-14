@@ -87,7 +87,9 @@ class BusinessController extends Controller
         return view('business.panels', [
             'businesses' => Business::query()
                 ->where('owner_id', $request->user()->id)
-                ->orWhereHas('members', fn ($query) => $query->whereKey($request->user()->id)->wherePivotIn('role', ['owner', 'administrator']))
+                ->orWhereHas('members', fn ($query) => $query
+                    ->whereKey($request->user()->id)
+                    ->whereIn('business_members.role', ['owner', 'administrator']))
                 ->latest('created_at')
                 ->withCount(['appointments as pending_appointments_count' => fn ($query) => $query->whereIn('status', ['pending', 'confirmed'])])
                 ->get(),

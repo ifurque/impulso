@@ -58,8 +58,9 @@
         <input id="public-product-search" class="search-input" placeholder="Ej. pan, litro, limpieza, asesoria">
       </label>
       @include('business._posts')
+      @php($publicServices = $business->products->where('type', '!=', 'product')->where('is_active', true))
       <div class="product-list">
-        @forelse($business->products as $product)
+        @forelse($publicServices as $product)
           <div data-public-product data-filter-text="{{ Str::lower($product->name.' '.($product->category ?? '').' '.($product->unit ?? '').' '.($product->type === 'product' ? 'producto' : 'servicio')) }}">
             @if($product->photo)
               <img class="product-photo" src="{{ $product->photo_url }}" alt="Foto de {{ $product->name }}">
@@ -77,7 +78,9 @@
             @endif
           </div>
         @empty
-          <p class="muted">Próximamente encontrarás aquí sus propuestas.</p>
+          @if($business->posts->isEmpty() && $business->products->where('is_active', true)->isEmpty())
+            <p class="muted">Próximamente encontrarás aquí sus propuestas.</p>
+          @endif
         @endforelse
       </div>
 
