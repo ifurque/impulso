@@ -112,7 +112,7 @@
       </label>
 
       <label>
-        Foto de portada <span class="label-hint">JPG, PNG o WEBP · max. 8 MB</span>
+        Foto de portada <span class="label-hint">JPG, PNG o WEBP · max. 5 MB</span>
         <input type="file" name="cover_photo" accept="image/jpeg,image/png,image/webp">
       </label>
     </div>

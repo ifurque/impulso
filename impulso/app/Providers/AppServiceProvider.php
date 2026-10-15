@@ -60,7 +60,8 @@ class AppServiceProvider extends ServiceProvider
                         'href' => $inquiry->business ? route('management.index', $inquiry->business) : route('business.panels'),
                         'badge' => 'Nuevo',
                     ])
-                : $user->inquiries()
+                : Inquiry::query()
+                    ->where('client_id', $user->id)
                     ->with('business:id,name,slug')
                     ->latest()
                     ->limit(8)
@@ -110,7 +111,8 @@ class AppServiceProvider extends ServiceProvider
                     ->sortByDesc('created_at')
                     ->values()
                     ->take(8)
-                : $user->inquiries()
+                : Inquiry::query()
+                    ->where('client_id', $user->id)
                     ->with('business:id,name,slug')
                     ->whereNotNull('response')
                     ->latest('answered_at')

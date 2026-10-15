@@ -1,5 +1,10 @@
 @extends('layouts.app')
 @section('content')
+@include('partials.help-tour-trigger', ['label' => 'Guía de administración de emprendimientos', 'steps' => [
+  ['target' => '.admin-list', 'title' => 'Listado de emprendimientos', 'body' => 'Cada fila muestra el negocio, su propietario y los datos de contacto. Usa la búsqueda del navegador si necesitas localizar uno rápidamente.'],
+  ['target' => '.admin-action-primary', 'title' => 'Activar +Impulso', 'body' => 'La acción cambia el estado de membresía y la insignia visible. Puedes quitarla desde el mismo botón.'],
+  ['target' => '.admin-row .button.danger', 'title' => 'Eliminar', 'body' => 'La eliminación es permanente e incluye los datos vinculados. Verifica el nombre antes de confirmar.'],
+]])
 <section class="form-page wrap admin-page">
   @include('admin._tabs', ['active' => 'businesses'])
   <div class="dashboard-top"><div><p class="eyebrow">Panel de administración</p><h1>Emprendimientos</h1><p class="muted">{{ $businesses->total() }} registrados</p></div></div>

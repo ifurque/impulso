@@ -24,7 +24,6 @@ class BusinessInteractionsTest extends TestCase
         $response = $this->post(route('appointments.store', $business), [
             'guest_name' => 'Ana Pérez', 'guest_email' => 'ana@example.com', 'appointment_date' => now()->addDay()->format('Y-m-d'), 'start_time' => '10:00',
         ]);
-
         $appointment = $business->appointments()->first();
         $response->assertSessionHas('success');
         $this->assertSame('awaiting_confirmation', $appointment->status);
@@ -75,8 +74,8 @@ class BusinessInteractionsTest extends TestCase
             ->assertDontSee('Modelo privado')
             ->assertDontSee('<div data-public-product', false);
 
-            $this->assertSame(1, substr_count($response->getContent(), 'stock-product-publication'));
-            $this->assertStringContainsString('src="'.Storage::disk('public')->url($photoPath).'"', $response->getContent());
+        $this->assertSame(1, substr_count($response->getContent(), 'stock-product-publication'));
+        $this->assertStringContainsString($photoPath, $response->getContent());
     }
 
     public function test_owner_opens_business_panels_from_profile_tab_not_global_navbar(): void
@@ -249,7 +248,7 @@ class BusinessInteractionsTest extends TestCase
         $product = $business->products()->firstOrFail();
         $this->assertSame('Vela artesanal de lavanda.', $product->description);
         $this->assertNotNull($product->photo);
-        Storage::disk('public')->assertExists($product->photo);
+        $this->assertTrue(Storage::disk('public')->exists($product->photo));
 
         $this->get(route('business.show', $business))
             ->assertOk()

@@ -1,5 +1,6 @@
 import './bootstrap';
 import { getSupabaseClient } from './supabase/client';
+import './help-tour';
 
 if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) {
 	getSupabaseClient();

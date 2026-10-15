@@ -1,5 +1,10 @@
 @extends('layouts.app')
 @section('content')
+@include('partials.help-tour-trigger', ['label' => 'Guía del panel', 'steps' => [
+  ['target' => '.metric-grid', 'title' => 'Resumen del negocio', 'body' => 'Aquí ves ingresos, gastos, turnos y pedidos recientes para detectar qué necesita atención.'],
+  ['target' => '.dashboard-main', 'title' => 'Ingresos y gastos', 'body' => 'Compara los movimientos por categoría y entra al historial para registrar nuevos movimientos.'],
+  ['target' => '.quick-panel', 'title' => 'Acciones rápidas', 'body' => 'Desde aquí saltas a pedidos, turnos, inventario, publicaciones, equipo y personalización.'],
+]])
 <section class="dashboard wrap"><div class="dashboard-top"><div><p class="eyebrow">Panel de {{ $business->name }}</p><h1>Hola, {{ Str::before(auth()->user()->name, ' ') }}.</h1><p class="muted">Aquí tienes una mirada rápida de lo que está pasando.</p><div class="page-actions"><a class="button create-post-action" href="{{ route('posts.create', $business) }}">Crear publicación <span>+</span></a><a class="button secondary create-post-action" href="{{ route('management.database', $business) }}">Base de datos <span>↗</span></a></div></div><a class="button secondary" href="{{ route('business.show', $business) }}">Ver perfil público <span>↗</span></a></div>
 <div class="metric-grid"><div class="metric-card accent"><span>Pagos entrantes · 30 días</span><strong>$ {{ number_format($totalIncomes, 0, ',', '.') }}</strong><small>Todo lo que ingresó a tu negocio.</small></div><div class="metric-card"><span>Gastos · 30 días</span><strong>$ {{ number_format($totalExpenses, 0, ',', '.') }}</strong><small>Movimientos registrados</small></div>@if($business->appointments_enabled)<div class="metric-card"><span>Turnos próximos</span><strong>{{ $appointments }}</strong><small class="positive">● En seguimiento</small></div>@endif @if($business->delivery_enabled)<div class="metric-card"><span>Pedidos pendientes</span><strong>{{ $pendingOrders ?? 0 }}</strong><small class="positive">● Revisión de envíos</small></div>@endif</div>
 <div class="dashboard-grid">

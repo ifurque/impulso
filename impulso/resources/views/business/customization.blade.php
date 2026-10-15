@@ -1,5 +1,13 @@
 @extends('layouts.app')
 @section('content')
+@include('partials.help-tour-trigger', ['label' => 'Guía de personalización', 'steps' => [
+  ['target' => '#business-preset-grid', 'title' => 'Empezar con un preset', 'body' => 'El preset aplica una combinación inicial de fondo, tipografía, bordes y botones. Luego puedes ajustar cada opción.'],
+  ['target' => '.border-options', 'title' => 'Bordes y tarjetas', 'body' => 'Define cuánto se destacan las tarjetas y qué forma tendrán en tu perfil público.'],
+  ['target' => '.button-options', 'title' => 'Estilo de botones', 'body' => 'Elige cómo se verán las acciones para que destaquen sin perder legibilidad.'],
+  ['target' => '.profile-photo-customizer', 'title' => 'Foto y encuadre', 'body' => 'Sube el logo del emprendimiento y ajusta su forma, posición y zoom. Las imágenes admiten hasta 5 MB.'],
+  ['target' => '.background-options', 'title' => 'Fondo de página', 'body' => 'Elige una textura o una imagen propia para el perfil público.'],
+  ['target' => '.customization-color-grid', 'title' => 'Colores y contraste', 'body' => 'Ajusta fondos, texto, publicaciones y botones; revisa la vista previa y guarda al final.'],
+]])
 <section class="form-page wrap">
   <div class="dashboard-top">
     <div>

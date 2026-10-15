@@ -1,6 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
+@include('partials.help-tour-trigger', ['label' => 'Guía de gestión operativa', 'steps' => [
+  ['target' => '[data-help-target="management-coverage"]', 'title' => 'Cobertura de entregas', 'body' => 'Activa entregas y configura ubicación, radio, costo y pagos desde Horarios.'],
+  ['target' => '[data-help-target="management-deliveries"]', 'title' => 'Pedidos con envío', 'body' => 'Revisa dirección, monto y pago; confirma el estado cuando hayas coordinado con el cliente.'],
+  ['target' => '[data-help-target="management-pickups"]', 'title' => 'Retiros', 'body' => 'Administra los pedidos que el cliente pasa a buscar por el emprendimiento.'],
+  ['target' => '[data-help-target="management-appointments"]', 'title' => 'Turnos', 'body' => 'Consulta horario y estado; actualízalo después de atender o confirmar el turno.'],
+  ['target' => '[data-help-target="management-inquiries"]', 'title' => 'Consultas', 'body' => 'Lee el mensaje, escribe una respuesta y marca la consulta como respondida o cerrada.'],
+]])
 <section class="dashboard wrap">
   <div class="dashboard-top">
     <div><p class="eyebrow">Administración</p><h1>Gestion operativa.</h1><p class="muted">Administra envios, atencion y mensajes desde un solo lugar.</p></div>
@@ -11,7 +18,7 @@
   </div>
 
   <div class="management-grid {{ $business->delivery_enabled ? 'has-delivery' : '' }}">
-    <section class="panel management-panel">
+    <section class="panel management-panel" data-help-target="management-coverage">
       <p class="eyebrow">Sistema de envíos</p><h2>Zona de cobertura</h2>
       @if($business->delivery_enabled && $business->delivery_latitude !== null && $business->delivery_longitude !== null)
         <p class="muted">La comprobación automática está activa en un radio de <strong>{{ $business->delivery_radius_km }} km</strong> desde {{ $business->location }}.</p>
@@ -25,23 +32,23 @@
       <a class="button secondary" href="{{ route('availability.index', $business) }}">Configurar sistema de envíos</a>
     </section>
     @if($business->delivery_enabled)
-      <section class="panel management-panel">
+      <section class="panel management-panel" data-help-target="management-deliveries">
         <p class="eyebrow">Pedidos con envío</p><h2>Entregas a domicilio</h2>
         <div class="stack-list">@forelse($deliveryOrders as $order)<div class="mini-item"><div><strong>{{ $order->customer_name }}</strong><small>{{ $order->product?->name ?? 'Producto' }} · {{ $order->quantity }} unidad(es)</small><small>{{ $order->delivery_address }}</small></div><div class="meta"><span>{{ ucfirst($order->payment_method) }}</span><strong>$ {{ number_format($order->total, 0, ',', '.') }}</strong></div><form method="POST" action="{{ route('orders.status', [$business, $order]) }}" class="inline-form">@csrf<select name="status"><option value="pending" @selected($order->status === 'pending')>Pendiente</option><option value="confirmed" @selected($order->status === 'confirmed')>Confirmado</option><option value="delivered" @selected($order->status === 'delivered')>Entregado</option><option value="cancelled" @selected($order->status === 'cancelled')>Cancelado</option></select><button class="plain-button">Guardar</button></form></div>@empty<p class="muted">Todavía no hay pedidos con envío.</p>@endforelse</div>
       </section>
     @endif
 
-    <section class="panel management-panel">
+    <section class="panel management-panel" data-help-target="management-pickups">
       <p class="eyebrow">Pedidos sin envío</p><h2>Retiros en el emprendimiento</h2>
       <div class="stack-list">@forelse($pickupOrders as $order)<div class="mini-item"><div><strong>{{ $order->customer_name }}</strong><small>{{ $order->product?->name ?? 'Producto' }} · {{ $order->quantity }} unidad(es)</small><small>Retira en el emprendimiento</small></div><div class="meta"><span>{{ ucfirst($order->payment_method) }}</span><strong>$ {{ number_format($order->total, 0, ',', '.') }}</strong></div><form method="POST" action="{{ route('orders.status', [$business, $order]) }}" class="inline-form">@csrf<select name="status"><option value="pending" @selected($order->status === 'pending')>Pendiente</option><option value="confirmed" @selected($order->status === 'confirmed')>Confirmado</option><option value="delivered" @selected($order->status === 'delivered')>Retirado</option><option value="cancelled" @selected($order->status === 'cancelled')>Cancelado</option></select><button class="plain-button">Guardar</button></form></div>@empty<p class="muted">Todavía no hay pedidos para retirar.</p>@endforelse</div>
     </section>
 
-    <section class="panel management-panel">
+    <section class="panel management-panel" data-help-target="management-appointments">
       <p class="eyebrow">Atención</p><h2>Turnos recientes</h2>
       <div class="expense-list">@forelse($appointments as $appointment)<div><span><strong>{{ $appointment->client?->name ?? $appointment->guest_name }} @if($appointment->product) · {{ $appointment->product->name }} @endif</strong><small>{{ $appointment->appointment_date->format('d/m/Y') }} a las {{ $appointment->start_time }} · {{ ucfirst($appointment->status) }}</small></span><form method="POST" action="{{ route('appointments.status', [$business, $appointment->id]) }}">@csrf<select name="status" onchange="this.form.submit()"><option value="pending" @selected($appointment->status === 'pending')>Pendiente</option><option value="confirmed" @selected($appointment->status === 'confirmed')>Confirmado</option><option value="completed" @selected($appointment->status === 'completed')>Completado</option><option value="cancelled" @selected($appointment->status === 'cancelled')>Cancelado</option></select></form></div>@empty<p class="muted">Todavía no hay turnos solicitados.</p>@endforelse</div>
     </section>
 
-    <section class="panel management-panel">
+    <section class="panel management-panel" data-help-target="management-inquiries">
       <p class="eyebrow">Mensajes</p><h2>Consultas de clientes</h2>
       <div class="stack-list">
         @forelse($inquiries as $inquiry)

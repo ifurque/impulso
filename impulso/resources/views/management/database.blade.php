@@ -4,6 +4,11 @@
 
 @section('content')
   <section class="dashboard wrap">
+      @include('partials.help-tour-trigger', ['label' => 'Guía de inventario', 'steps' => [
+        ['target' => '[data-inventory-toggle="nuevo-registro"]', 'title' => 'Crear un producto', 'body' => 'Completa nombre, precio, cantidad y los datos opcionales que quieres guardar en tu catálogo.'],
+        ['target' => '[data-inventory-toggle="registros"]', 'title' => 'Revisar el listado', 'body' => 'Busca, modifica o elimina productos. Los campos visibles dependen de la estructura que configures.'],
+        ['target' => '[data-inventory-toggle="ingreso-mercaderia"]', 'title' => 'Ingresar mercadería', 'body' => 'Selecciona un producto y suma las unidades recibidas; el stock actual no se reemplaza.'],
+      ]])
     <header class="inventory-mobile-header">
       <p class="inventory-mobile-kicker">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 9 5v10l-9 5-9-5V7l9-5Z"/><path d="m3.5 7.2 8.5 4.7 8.5-4.7M12 12v10M7.5 4.5l9 5"/></svg>
