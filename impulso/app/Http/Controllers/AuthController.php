@@ -18,6 +18,7 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:180', 'unique:users'],
             'password' => ['required', 'confirmed', 'min:8'],
         ]);
+        [$data['first_name'], $data['last_name']] = User::splitName($data['name']);
         $user = User::create($data);
         Auth::login($user);
         $request->session()->regenerate();

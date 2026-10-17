@@ -1,5 +1,11 @@
 @extends('layouts.app')
 @section('content')
+@include('partials.help-tour-trigger', ['label' => 'Guía para descubrir emprendimientos', 'steps' => [
+  ['target' => '.search-input', 'title' => 'Buscar', 'body' => 'Escribe un nombre o una descripción para filtrar los resultados.'],
+  ['target' => '.category-filter', 'title' => 'Filtrar por rubro', 'body' => 'Elige un rubro para ver solo esa categoría.'],
+  ['target' => '.discover-create', 'title' => 'Crear emprendimiento', 'body' => 'Publica el tuyo para que la comunidad lo encuentre.'],
+  ['target' => '#business-grid .business-card, #business-grid > *', 'title' => 'Resultados', 'body' => 'Abre cualquier tarjeta para ver el perfil completo.'],
+]])
 <section class="discover wrap">
   <div class="discover-head">
     <div>

@@ -1,8 +1,10 @@
 @extends('layouts.app')
 @section('content')
 @include('partials.help-tour-trigger', ['label' => 'Guía de administración de emprendimientos', 'steps' => [
-  ['target' => '.admin-list', 'title' => 'Listado de emprendimientos', 'body' => 'Cada fila muestra el negocio, su propietario y los datos de contacto. Usa la búsqueda del navegador si necesitas localizar uno rápidamente.'],
-  ['target' => '.admin-action-primary', 'title' => 'Activar +Impulso', 'body' => 'La acción cambia el estado de membresía y la insignia visible. Puedes quitarla desde el mismo botón.'],
+  ['target' => $businesses->count() ? '.admin-row' : '.admin-list', 'title' => 'Listado de emprendimientos', 'body' => 'Cada fila muestra el negocio, su propietario y los datos de contacto. Usa la búsqueda del navegador si necesitas localizar uno rápidamente.'],
+  ['target' => '.admin-tabs', 'title' => 'Secciones del panel', 'body' => 'Cambia entre Emprendimientos y Usuarios desde estas pestañas.'],
+  ['target' => '.admin-row .admin-actions > a', 'title' => 'Modificar emprendimiento', 'body' => 'Abre el formulario de edición para corregir datos del negocio como nombre, zona, rubro y contacto. Los cambios se aplican al guardar.'],
+  ['target' => '.admin-row .admin-action-primary', 'title' => 'Activar +Impulso', 'body' => 'La acción cambia el estado de membresía y la insignia visible. Puedes quitarla desde el mismo botón.'],
   ['target' => '.admin-row .button.danger', 'title' => 'Eliminar', 'body' => 'La eliminación es permanente e incluye los datos vinculados. Verifica el nombre antes de confirmar.'],
 ]])
 <section class="form-page wrap admin-page">

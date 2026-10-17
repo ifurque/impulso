@@ -1,6 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
+@include('partials.help-tour-trigger', ['label' => 'Guía de publicaciones', 'steps' => [
+  ['target' => '.dashboard-top', 'title' => 'Publicaciones', 'body' => 'Desde aquí creas novedades, productos y ofertas para tu comunidad.'],
+  ['target' => '.dashboard-grid .panel form', 'title' => 'Redes sociales', 'body' => 'Guarda los enlaces de tus redes para compartir tus publicaciones.'],
+  ['target' => '.post-row', 'title' => 'Tus publicaciones', 'body' => 'Revisa si están publicadas o en borrador, y su precio u oferta.'],
+  ['target' => '.post-row details summary', 'title' => 'Editar publicación', 'body' => 'Despliega el formulario para modificar título, descripción, fotos y precio.'],
+  ['target' => '.post-row .plain-button', 'title' => 'Eliminar', 'body' => 'Borra la publicación de forma permanente.'],
+]])
 <section class="dashboard wrap">
   <div class="dashboard-top"><div><p class="eyebrow">Contenido del emprendimiento</p><h1>Publicaciones.</h1><p class="muted">Comparte productos, novedades y ofertas con tu comunidad.</p></div><div class="page-actions"><a class="button secondary" href="{{ route('dashboard', $business) }}">Volver al panel</a><a class="button" href="{{ route('posts.create', $business) }}">Crear publicación <span>+</span></a></div></div>
 

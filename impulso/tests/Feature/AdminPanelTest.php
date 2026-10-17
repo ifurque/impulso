@@ -22,6 +22,28 @@ class AdminPanelTest extends TestCase
             ->get(route('admin.users'))->assertOk()->assertSee('Usuarios');
     }
 
+    public function test_admin_help_tours_target_individual_records_and_actions(): void
+    {
+        $admin = User::factory()->create(['role' => 'superadmin']);
+        $user = User::factory()->create();
+        Business::create([
+            'owner_id' => $user->id,
+            'name' => 'Tienda de prueba',
+            'slug' => 'tienda-prueba',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.businesses'))
+            ->assertOk()
+            ->assertSee('&quot;.admin-row&quot;', false)
+            ->assertSee('&quot;.admin-row .admin-action-primary&quot;', false);
+
+        $this->get(route('admin.users'))
+            ->assertOk()
+            ->assertSee('&quot;.admin-row&quot;', false)
+            ->assertSee('&quot;.admin-row .admin-action-primary&quot;', false);
+    }
+
     public function test_superadmin_can_grant_admin_and_impulso_plus(): void
     {
         $admin = User::factory()->create(['role' => 'superadmin']);

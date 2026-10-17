@@ -1,8 +1,10 @@
 @extends('layouts.app')
 @section('content')
 @include('partials.help-tour-trigger', ['label' => 'Guía de administración de usuarios', 'steps' => [
-  ['target' => '.admin-list', 'title' => 'Listado de usuarios', 'body' => 'Consulta nombre, contacto, rol y cantidad de emprendimientos. La foto de perfil aparece a la izquierda.'],
-  ['target' => '.admin-action-primary', 'title' => 'Permisos de administrador', 'body' => 'Usa Hacer Admin o Quitar Admin según la tarea. No cambies tu propio rol.'],
+  ['target' => $users->count() ? '.admin-row' : '.admin-list', 'title' => 'Listado de usuarios', 'body' => 'Consulta nombre, contacto, rol y cantidad de emprendimientos. La foto de perfil aparece a la izquierda.'],
+  ['target' => '.admin-tabs', 'title' => 'Secciones del panel', 'body' => 'Cambia entre Emprendimientos y Usuarios desde estas pestañas.'],
+  ['target' => '.admin-row .admin-actions > a', 'title' => 'Modificar usuario', 'body' => 'Abre el formulario de edición para corregir nombre, correo, teléfono o rol. Si cambias el correo o el teléfono, deberá verificarse de nuevo.'],
+  ['target' => '.admin-row .admin-action-primary', 'title' => 'Permisos de administrador', 'body' => 'Usa Hacer Admin o Quitar Admin según la tarea. No cambies tu propio rol.'],
   ['target' => '.admin-row .button.danger', 'title' => 'Eliminar usuario', 'body' => 'Esta acción elimina la cuenta y sus emprendimientos asociados. Confirma solo después de revisar la fila.'],
 ]])
 <section class="form-page wrap admin-page">

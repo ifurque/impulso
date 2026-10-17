@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountVerificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AvailabilityController;
@@ -56,6 +57,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/mi-perfil/personalizacion', [UserCustomizationController::class, 'edit'])->name('user.customization');
     Route::post('/mi-perfil/personalizacion', [UserCustomizationController::class, 'update'])->name('user.customization.update');
     Route::redirect('/personalizacion', '/mi-perfil/personalizacion');
+    Route::post('/mi-perfil/verificar-correo', [AccountVerificationController::class, 'sendEmail'])->middleware('throttle:3,1')->name('verification.send');
+    Route::get('/verificar-correo/{id}/{hash}', [AccountVerificationController::class, 'verifyEmail'])->middleware('signed')->name('verification.verify');
+    Route::post('/mi-perfil/verificar-telefono', [AccountVerificationController::class, 'sendPhone'])->middleware('throttle:3,1')->name('phone.verification.send');
+    Route::get('/verificar-telefono/{id}/{hash}', [AccountVerificationController::class, 'verifyPhone'])->middleware('signed')->name('phone.verification.verify');
     Route::get('/crear-emprendimiento', [BusinessController::class, 'create'])->name('business.create');
     Route::post('/crear-emprendimiento', [BusinessController::class, 'store'])->name('business.store');
     Route::get('/paneles', [BusinessController::class, 'panels'])->name('business.panels');

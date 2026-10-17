@@ -6,6 +6,8 @@ use App\Models\Appointment;
 use App\Models\Business;
 use App\Models\Inquiry;
 use App\Models\Order;
+use App\Services\Sms\LogSmsSender;
+use App\Services\Sms\SmsSender;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -18,7 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Para usar un proveedor real, registrar aquí otra implementación de SmsSender.
+        $this->app->bind(SmsSender::class, LogSmsSender::class);
     }
 
     /**

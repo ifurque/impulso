@@ -1,5 +1,11 @@
 @extends('layouts.app')
 @section('content')
+@include('partials.help-tour-trigger', ['label' => 'Guía de mis emprendimientos', 'steps' => [
+  ['target' => '.dashboard-top .button', 'title' => 'Crear emprendimiento', 'body' => 'Registra un nuevo emprendimiento en pocos pasos.'],
+  ['target' => '.business-owner-list .admin-row', 'title' => 'Tus emprendimientos', 'body' => 'Cada fila resume zona, rubro, contacto y si la agenda está activa.'],
+  ['target' => '.business-owner-list .admin-actions > a:first-child', 'title' => 'Administrar', 'body' => 'Entra al panel para gestionar publicaciones, turnos, movimientos y personalización.'],
+  ['target' => '.business-owner-list .admin-actions > a:last-child', 'title' => 'Ver perfil', 'body' => 'Mira cómo ve tu emprendimiento el público.'],
+]])
 <section class="dashboard wrap">
   @include('settings._tabs', ['active' => 'businesses'])
   <div class="dashboard-top">

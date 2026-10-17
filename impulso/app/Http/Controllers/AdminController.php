@@ -118,9 +118,16 @@ class AdminController extends Controller
             unset($data['avatar']);
         }
         $emailChanged = $user->email !== $data['email'];
+        $phoneChanged = ($user->phone ?? '') !== ($data['phone'] ?? '');
+        if ($user->name !== $data['name']) {
+            [$data['first_name'], $data['last_name']] = User::splitName($data['name']);
+        }
         $user->update($data);
         if ($emailChanged) {
             $user->forceFill(['email_verified_at' => null])->save();
+        }
+        if ($phoneChanged) {
+            $user->forceFill(['phone_verified_at' => null])->save();
         }
         if ($oldAvatar) {
             Storage::disk('public')->delete($oldAvatar);

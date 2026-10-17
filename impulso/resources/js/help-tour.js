@@ -15,6 +15,10 @@ function closeHelpTour() {
     window.removeEventListener('keydown', activeTour.onKeydown);
     window.removeEventListener('resize', activeTour.position);
     activeTour.shades.forEach((shade) => shade.remove());
+    if (activeTour.positionFrame) {
+        window.cancelAnimationFrame(activeTour.positionFrame);
+    }
+    window.removeEventListener('scroll', activeTour.position);
     activeTour.ring.remove();
     activeTour.card.remove();
     activeTour.trigger.focus();
@@ -25,13 +29,14 @@ function startHelpTour(trigger, steps) {
     closeHelpTour();
 
     const availableSteps = steps.filter((step) => {
+        let target = null;
         try {
-            const target = document.querySelector(step.target);
-
-            return Boolean(target && target.getClientRects().length && getComputedStyle(target).visibility !== 'hidden');
-        } catch {
+            target = document.querySelector(step.target);
+        } catch (error) {
             return false;
         }
+
+        return Boolean(target && target.getClientRects().length && getComputedStyle(target).visibility !== 'hidden');
     });
     if (!availableSteps.length) return;
 
@@ -75,6 +80,7 @@ function startHelpTour(trigger, steps) {
         ring,
         card,
         position: null,
+        positionFrame: null,
         onKeydown: null,
     };
 
@@ -113,11 +119,25 @@ function startHelpTour(trigger, steps) {
             const cardWidth = cardRect.width || 360;
             const cardHeight = cardRect.height || 180;
             const cardLeft = Math.max(16, Math.min(rect.left, window.innerWidth - cardWidth - 16));
-            const below = rect.bottom + cardHeight + 20 <= window.innerHeight;
-            card.style.left = `${cardLeft}px`;
-            card.style.top = below ? `${rect.bottom + 14}px` : `${Math.max(16, rect.top - cardHeight - 14)}px`;
+            const spaceBelow = window.innerHeight - rect.bottom - 16;
+            const spaceAbove = rect.top - 16;
+            const top = spaceBelow >= cardHeight || spaceBelow >= spaceAbove
+                ? rect.bottom + 14
+                : rect.top - cardHeight - 14;
+            card.style.left = `${Math.min(cardLeft, Math.max(16, window.innerWidth - cardWidth - 16))}px`;
+            card.style.top = `${Math.max(16, Math.min(top, window.innerHeight - cardHeight - 16))}px`;
             card.style.bottom = '';
         }
+    }
+
+    function schedulePosition() {
+        if (!activeTour || activeTour.positionFrame) return;
+
+        activeTour.positionFrame = window.requestAnimationFrame(() => {
+            if (!activeTour) return;
+            activeTour.positionFrame = null;
+            position();
+        });
     }
 
     function showStep() {
@@ -129,7 +149,9 @@ function startHelpTour(trigger, steps) {
         count.textContent = `${activeTour.index + 1} / ${activeTour.steps.length}`;
         previous.disabled = activeTour.index === 0;
         next.textContent = activeTour.index === activeTour.steps.length - 1 ? 'Terminar' : 'Siguiente';
-        window.setTimeout(position, reducedMotion ? 0 : 240);
+        card.classList.remove('help-tour-card-visible');
+        schedulePosition();
+        window.requestAnimationFrame(() => card.classList.add('help-tour-card-visible'));
     }
 
     previous.addEventListener('click', () => {
@@ -148,7 +170,7 @@ function startHelpTour(trigger, steps) {
     });
     close.addEventListener('click', closeHelpTour);
     skip.addEventListener('click', closeHelpTour);
-    activeTour.position = position;
+    activeTour.position = schedulePosition;
     activeTour.onKeydown = (event) => {
         if (event.key === 'Escape') {
             closeHelpTour();
@@ -167,7 +189,8 @@ function startHelpTour(trigger, steps) {
         }
     };
     window.addEventListener('keydown', activeTour.onKeydown);
-    window.addEventListener('resize', position);
+    window.addEventListener('scroll', activeTour.position, { passive: true });
+    window.addEventListener('resize', activeTour.position);
     showStep();
     close.focus();
 }
