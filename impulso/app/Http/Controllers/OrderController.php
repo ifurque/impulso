@@ -47,6 +47,9 @@ class OrderController extends Controller
                 return back()->withErrors(['items' => 'Hay un producto inválido o una cantidad fuera de rango.'])->withInput();
             }
             $product = $products->get($productId);
+            if ((float) $product->quantity < $quantity) {
+                return back()->withErrors(['items' => 'No hay stock suficiente para '. $product->name .'.'])->withInput();
+            }
             $unitPrice = (float) ($product->price ?? 0);
             $orderItems[] = [
                 'product' => $product,
@@ -80,6 +83,14 @@ class OrderController extends Controller
         $total = $subtotal + $deliveryCost;
 
         $order = DB::transaction(function () use ($business, $data, $firstItem, $subtotal, $deliveryCost, $total, $orderItems) {
+            foreach ($orderItems as $item) {
+                $product = $item['product'];
+                if ($product->quantity < $item['quantity']) {
+                    throw new \RuntimeException('No hay stock suficiente para '. $product->name .'.');
+                }
+                $product->decrement('quantity', $item['quantity']);
+            }
+
             $order = $business->orders()->create([
             'product_id' => $firstItem['product']->id,
             'customer_name' => $data['customer_name'],

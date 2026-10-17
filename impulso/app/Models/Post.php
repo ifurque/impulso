@@ -26,6 +26,16 @@ class Post extends Model
         return collect($photos)->map(fn ($photo) => MediaUrl::from($photo))->filter()->values()->all();
     }
 
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'post_products')->withPivot('quantity')->withTimestamps();
+    }
+
+    public function productItems()
+    {
+        return $this->hasMany(PostProduct::class, 'post_id', 'id');
+    }
+
     public function discountPercentage(): ?int
     {
         if (! $this->price || ! $this->discount_price || (float) $this->price <= 0) {

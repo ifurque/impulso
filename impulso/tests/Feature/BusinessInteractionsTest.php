@@ -260,6 +260,78 @@ class BusinessInteractionsTest extends TestCase
             ->assertDontSee('Lavanda 200');
     }
 
+    public function test_owner_can_create_a_post_linked_to_existing_stock_products(): void
+    {
+        $owner = User::factory()->create();
+        $business = $owner->ownedBusinesses()->create([
+            'name' => 'Publicaciones con stock',
+            'category' => 'Comercio',
+            'description' => 'Prueba de stock en publicaciones',
+            'location' => 'Centro',
+        ]);
+        $product = $business->products()->create([
+            'name' => 'Kit de limpieza',
+            'type' => 'product',
+            'unit' => 'unidad',
+            'quantity' => 10,
+            'price' => 2500,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($owner)
+            ->post(route('posts.store', $business), [
+                'title' => 'Kit promocional',
+                'body' => 'Incluye todo lo necesario para la limpieza del hogar.',
+                'type' => 'product',
+                'price' => 2999,
+                'selected_products' => [[
+                    'product_id' => $product->id,
+                    'quantity' => 2,
+                ]],
+                'is_published' => true,
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $post = $business->posts()->firstOrFail();
+        $this->assertDatabaseHas('post_products', [
+            'post_id' => $post->id,
+            'product_id' => $product->id,
+            'quantity' => 2,
+        ]);
+    }
+
+    public function test_order_decrements_stock_quantity_after_a_successful_purchase(): void
+    {
+        $owner = User::factory()->create();
+        $business = Business::create([
+            'owner_id' => $owner->id,
+            'name' => 'Tienda con stock',
+            'category' => 'Comercio',
+            'description' => 'Prueba de decremento',
+            'location' => 'Centro',
+        ]);
+        $product = $business->products()->create([
+            'name' => 'Pack de café',
+            'type' => 'product',
+            'unit' => 'unidad',
+            'quantity' => 8,
+            'price' => 1200,
+            'is_active' => true,
+        ]);
+
+        $this->post(route('orders.store', $business), [
+            'product_id' => $product->id,
+            'quantity' => 3,
+            'customer_name' => 'Ana',
+            'customer_phone' => '1122334455',
+            'delivery_method' => 'pickup',
+            'payment_method' => 'efectivo',
+        ])->assertSessionHas('success');
+
+        $this->assertSame(5.0, (float) $product->fresh()->quantity);
+    }
+
     public function test_management_panel_displays_guest_appointments_without_an_error(): void
     {
         $owner = User::factory()->create();

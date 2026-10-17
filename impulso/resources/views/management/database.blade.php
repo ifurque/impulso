@@ -1,17 +1,64 @@
 @extends('layouts.app')
 
+@php
+  $palette = \App\Http\Controllers\BusinessController::PUBLIC_PALETTES[$business->public_palette ?? 'mint'] ?? \App\Http\Controllers\BusinessController::PUBLIC_PALETTES['mint'];
+  $inventoryPrimary = $business->public_primary_color ?: $palette['paper'];
+  $inventorySecondary = $business->public_secondary_color ?: $palette['accent'];
+  $inventoryText = $business->public_text_color ?: $palette['ink'];
+  $inventorySoft = $business->public_navbar_color ?: $palette['soft'];
+  $inventoryPanel = $business->public_posts_background ?: $palette['soft'];
+  $inventoryButton = $business->public_button_color ?: $inventorySecondary;
+@endphp
+
 @section('body_class', 'inventory-database-page')
 
 @section('content')
+  <style>
+    body.inventory-database-page {
+      --business-primary:
+        {{ $inventoryPrimary }}
+      ;
+      --business-secondary:
+        {{ $inventorySecondary }}
+      ;
+      --business-soft:
+        {{ $inventorySoft }}
+      ;
+      --business-panel:
+        {{ $inventoryPanel }}
+      ;
+      --business-text:
+        {{ $inventoryText }}
+      ;
+      --business-button:
+        {{ $inventoryButton }}
+      ;
+      --business-line: color-mix(in srgb,
+          {{ $inventorySecondary }}
+          42%, #dfe5dc 58%);
+      --business-surface: color-mix(in srgb,
+          {{ $inventoryPrimary }}
+          88%, white 12%);
+      --business-muted: color-mix(in srgb,
+          {{ $inventoryText }}
+          64%, white 36%);
+    }
+  </style>
   <section class="dashboard wrap">
-      @include('partials.help-tour-trigger', ['label' => 'Guía de inventario', 'steps' => [
+    @include('partials.help-tour-trigger', [
+      'label' => 'Guía de inventario',
+      'steps' => [
         ['target' => '[data-inventory-toggle="nuevo-registro"]', 'title' => 'Crear un producto', 'body' => 'Completa nombre, precio, cantidad y los datos opcionales que quieres guardar en tu catálogo.'],
         ['target' => '[data-inventory-toggle="registros"]', 'title' => 'Revisar el listado', 'body' => 'Busca, modifica o elimina productos. Los campos visibles dependen de la estructura que configures.'],
         ['target' => '[data-inventory-toggle="ingreso-mercaderia"]', 'title' => 'Ingresar mercadería', 'body' => 'Selecciona un producto y suma las unidades recibidas; el stock actual no se reemplaza.'],
-      ]])
+      ]
+    ])
     <header class="inventory-mobile-header">
       <p class="inventory-mobile-kicker">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 9 5v10l-9 5-9-5V7l9-5Z"/><path d="m3.5 7.2 8.5 4.7 8.5-4.7M12 12v10M7.5 4.5l9 5"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m12 2 9 5v10l-9 5-9-5V7l9-5Z" />
+          <path d="m3.5 7.2 8.5 4.7 8.5-4.7M12 12v10M7.5 4.5l9 5" />
+        </svg>
         Inventario
       </p>
       <h1>Dashboard</h1>
@@ -20,20 +67,40 @@
 
     <nav id="inventory-actions" class="inventory-mobile-actions" aria-label="Acciones de inventario"
       data-initial-panel="{{ $errors->has('incoming_quantity') || $errors->has('product_id') ? 'ingreso-mercaderia' : ($errors->any() ? 'nuevo-registro' : '') }}">
-      <button type="button" aria-controls="inventory-disclosure-panel" aria-expanded="false" data-inventory-toggle="nuevo-registro">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8M8 12h8"/></svg>
+      <button type="button" aria-controls="inventory-disclosure-panel" aria-expanded="false"
+        data-inventory-toggle="nuevo-registro">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="3" />
+          <path d="M12 8v8M8 12h8" />
+        </svg>
         <span>Crear producto</span>
-        <svg class="inventory-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        <svg class="inventory-chevron" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m9 18 6-6-6-6" />
+        </svg>
       </button>
-      <button type="button" aria-controls="inventory-disclosure-panel" aria-expanded="false" data-inventory-toggle="registros">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>
+      <button type="button" aria-controls="inventory-disclosure-panel" aria-expanded="false"
+        data-inventory-toggle="registros">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 6h12M9 12h12M9 18h12" />
+          <circle cx="4" cy="6" r="1" />
+          <circle cx="4" cy="12" r="1" />
+          <circle cx="4" cy="18" r="1" />
+        </svg>
         <span>Listado</span>
-        <svg class="inventory-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        <svg class="inventory-chevron" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m9 18 6-6-6-6" />
+        </svg>
       </button>
-      <button type="button" aria-controls="inventory-disclosure-panel" aria-expanded="false" data-inventory-toggle="ingreso-mercaderia">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="M4.5 7.8 12 12l7.5-4.2M12 12v9M12 8V2m-3 3 3-3 3 3"/></svg>
+      <button type="button" aria-controls="inventory-disclosure-panel" aria-expanded="false"
+        data-inventory-toggle="ingreso-mercaderia">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" />
+          <path d="M4.5 7.8 12 12l7.5-4.2M12 12v9M12 8V2m-3 3 3-3 3 3" />
+        </svg>
         <span>Ingresar producto</span>
-        <svg class="inventory-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        <svg class="inventory-chevron" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m9 18 6-6-6-6" />
+        </svg>
       </button>
     </nav>
     <div id="inventory-disclosure-panel" class="inventory-disclosure-panel" hidden></div>
@@ -51,365 +118,387 @@
     </div>
 
     <div id="inventory-panel-storage" hidden>
-    <section id="nuevo-registro" class="inventory-create-view" hidden>
-      <header class="inventory-view-heading">
-        <button class="inventory-back-link" type="button" aria-label="Cerrar apartado">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6M9 12h12"/></svg>
-        </button>
-        <div>
-          <p class="inventory-section-kicker">Inventario</p>
-          <h2>Crear producto</h2>
-        </div>
-      </header>
-
-      <details class="inventory-components">
-        <summary>Personalizar campos de la tabla</summary>
-      <form method="POST" action="{{ route('management.database.components', $business) }}" class="db-components-form"
-        style="margin-bottom: 18px;">
-        @csrf
-        <label class="check db-fixed-check">
-          <input type="checkbox" checked disabled>
-          <span>N° <small>(fijo)</small></span>
-        </label>
-        @foreach($availableComponents as $component)
-          <label class="check">
-            <input type="checkbox" name="components[]" value="{{ $component }}" @checked(in_array($component, $selectedComponents, true))>
-            <span>{{ ucfirst($component) }}</span>
-          </label>
-        @endforeach
-        <label class="check db-fixed-check">
-          <input type="checkbox" checked disabled>
-          <span>Accion <small>(fijo)</small></span>
-        </label>
-        <button class="button button-small" type="submit">Guardar estructura</button>
-      </form>
-      </details>
-
-      <form method="POST" enctype="multipart/form-data" action="{{ route('products.store', $business) }}" class="inventory-product-form">
-        @csrf
-        <div class="inventory-product-main">
-          <div class="inventory-product-media-fields">
-            <label class="inventory-photo-picker" for="inventory-product-photo">
-              <img id="inventory-photo-preview" alt="Vista previa del producto" hidden>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg>
-              <span>Subir imagen</span>
-              <small>PNG o JPG, hasta 5 MB</small>
-              <input id="inventory-product-photo" type="file" name="photo" accept="image/*">
-            </label>
-            @error('photo') <span class="error">{{ $message }}</span> @enderror
-
-            <label class="inventory-field">
-              Descripción
-              <textarea name="description" maxlength="2000" rows="4" placeholder="Describe brevemente el producto">{{ old('description') }}</textarea>
-            </label>
-          </div>
-
-          <div class="inventory-product-core">
-            @if(in_array('producto', $selectedComponents, true))
-              <label class="inventory-field">
-                Nombre
-                <input name="name" maxlength="120" value="{{ old('name') }}" required>
-              </label>
-            @else
-              <input type="hidden" name="name" value="Registro {{ now()->format('His') }}">
-            @endif
-
-            @if(in_array('marca', $selectedComponents, true))
-              <label class="inventory-field">
-                Marca
-                <input name="brand" maxlength="120" value="{{ old('brand') }}" placeholder="Ej. Philips">
-              </label>
-            @else
-              <input type="hidden" name="brand" value="">
-            @endif
-
-            @if(in_array('precio', $selectedComponents, true))
-              <label class="inventory-field">
-                Precio
-                <span class="inventory-input-prefix"><span>$</span><input type="number" name="price" min="0" step="0.01" value="{{ old('price') }}" required></span>
-              </label>
-            @else
-              <input type="hidden" name="price" value="0">
-            @endif
-
-            @if(in_array('cantidad', $selectedComponents, true))
-              <label class="inventory-field">
-                Stock
-                <span class="inventory-input-stepper">
-                  <input type="number" name="quantity" min="0.01" step="0.01" value="{{ old('quantity', 1) }}" required>
-                  <button type="button" data-step="-1" aria-label="Restar stock">−</button>
-                  <button type="button" data-step="1" aria-label="Sumar stock">+</button>
-                </span>
-              </label>
-            @else
-              <input type="hidden" name="quantity" value="1">
-            @endif
-
-            @if(in_array('unidad', $selectedComponents, true))
-              <label class="inventory-field">
-                Unidad
-                <select name="unit" required>
-                  <option value="unidad" @selected(old('unit', 'unidad') === 'unidad')>Unidad</option>
-                  <option value="kilo" @selected(old('unit') === 'kilo')>Kg</option>
-                  <option value="litro" @selected(old('unit') === 'litro')>Lt</option>
-                </select>
-              </label>
-            @else
-              <input type="hidden" name="unit" value="unidad">
-            @endif
-          </div>
-        </div>
-
-        <div class="inventory-product-optional">
-          <h3>Datos privados y opcionales</h3>
-          <div class="inventory-product-core">
-            @if(in_array('modelo', $selectedComponents, true))
-              <label class="inventory-field">
-                Modelo
-                <input name="model" maxlength="120" value="{{ old('model') }}" placeholder="Ej. X200">
-              </label>
-            @else
-              <input type="hidden" name="model" value="">
-            @endif
-
-            @if(in_array('categoria', $selectedComponents, true))
-              <label class="inventory-field">
-                Categoría
-                <input name="category" maxlength="100" value="{{ old('category') }}" placeholder="Ej. Panificados">
-              </label>
-            @else
-              <input type="hidden" name="category" value="">
-            @endif
-          </div>
-        </div>
-
-        <div class="inventory-form-actions">
-          <button class="inventory-cancel-button" type="button" data-inventory-close>Cancelar</button>
-          <button class="inventory-submit-button" type="submit">Crear producto</button>
-        </div>
-      </form>
-    </section>
-
-    <section id="ingreso-mercaderia" class="inventory-stock-view" hidden>
-      <header class="inventory-view-heading">
-        <button class="inventory-back-link" type="button" aria-label="Cerrar apartado">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6M9 12h12"/></svg>
-        </button>
-        <div>
-          <p class="inventory-section-kicker">Inventario</p>
-          <h2>Ingresar producto</h2>
-        </div>
-      </header>
-
-      <form method="POST" action="{{ route('products.add-stock', $business) }}" class="inventory-stock-form">
-        @csrf
-        <label class="inventory-stock-product">
-          Seleccionar producto
-          <select name="product_id" required>
-            <option value="">Producto</option>
-            @foreach($business->products as $product)
-              <option value="{{ $product->id }}">
-                #{{ $product->id }} - {{ $product->name }} (stock actual:
-                {{ number_format((float) ($product->quantity ?? 1), 2, ',', '.') }}
-                {{ $product->unit === 'kilo' ? 'Kg' : ($product->unit === 'litro' ? 'Lt' : 'Unidad') }})
-              </option>
-            @endforeach
-          </select>
-        </label>
-        </label>
-        <label class="inventory-field inventory-stock-quantity">
-          Cantidad
-          <span class="inventory-input-stepper inventory-stepper-control">
-            <button type="button" data-step="-1" aria-label="Restar cantidad">−</button>
-            <input id="inventory-incoming-quantity" type="number" name="incoming_quantity" min="0.01" step="0.01" value="1" required>
-            <button type="button" data-step="1" aria-label="Sumar cantidad">+</button>
-          </span>
-        </label>
-
-        <div class="inventory-stock-summary">
-          <h3>Cambios extras</h3>
-          <p>El ingreso se suma al stock actual. Para modificar precio o datos del producto, usa la opción “Modificar” en el listado.</p>
-        </div>
-
-        <div class="inventory-form-actions">
-          <button class="inventory-cancel-button" type="button" data-inventory-close>Cancelar</button>
-          <button class="inventory-submit-button" type="submit">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v3h16v-3"/></svg>
-            Ingresar producto
+      <section id="nuevo-registro" class="inventory-create-view" hidden>
+        <header class="inventory-view-heading">
+          <button class="inventory-back-link" type="button" aria-label="Cerrar apartado">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m15 18-6-6 6-6M9 12h12" />
+            </svg>
           </button>
-        </div>
-      </form>
-    </section>
+          <div>
+            <p class="inventory-section-kicker">Inventario</p>
+            <h2>Crear producto</h2>
+          </div>
+        </header>
 
-    <section id="registros" class="inventory-list-view" hidden>
-      <div class="db-table-head">
-        <div class="inventory-list-title">
-          <p class="inventory-section-kicker">Inventario</p>
-          <h2>Lista de productos</h2>
-        </div>
-        <label class="inventory-search-field">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
-          <input id="db-search" class="search-input" placeholder="Buscar producto">
-        </label>
-      </div>
+        <details class="inventory-components">
+          <summary>Personalizar campos de la tabla</summary>
+          <form method="POST" action="{{ route('management.database.components', $business) }}" class="db-components-form"
+            style="margin-bottom: 18px;">
+            @csrf
+            <label class="check db-fixed-check">
+              <input type="checkbox" checked disabled>
+              <span>N° <small>(fijo)</small></span>
+            </label>
+            @foreach($availableComponents as $component)
+              <label class="check">
+                <input type="checkbox" name="components[]" value="{{ $component }}" @checked(in_array($component, $selectedComponents, true))>
+                <span>{{ ucfirst($component) }}</span>
+              </label>
+            @endforeach
+            <label class="check db-fixed-check">
+              <input type="checkbox" checked disabled>
+              <span>Accion <small>(fijo)</small></span>
+            </label>
+            <button class="button button-small" type="submit">Guardar estructura</button>
+          </form>
+        </details>
 
-      <div class="db-table-wrap">
-        <table class="db-table">
-          <thead>
-            <tr>
-              <th>ID</th>
+        <form method="POST" enctype="multipart/form-data" action="{{ route('products.store', $business) }}"
+          class="inventory-product-form">
+          @csrf
+          <div class="inventory-product-main">
+            <div class="inventory-product-media-fields">
+              <label class="inventory-photo-picker" for="inventory-product-photo">
+                <img id="inventory-photo-preview" alt="Vista previa del producto" hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 16V4m-5 5 5-5 5 5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />
+                </svg>
+                <span>Subir imagen</span>
+                <small>PNG o JPG, hasta 5 MB</small>
+                <input id="inventory-product-photo" type="file" name="photo" accept="image/*">
+              </label>
+              @error('photo') <span class="error">{{ $message }}</span> @enderror
+
+              <label class="inventory-field">
+                Descripción
+                <textarea name="description" maxlength="2000" rows="4"
+                  placeholder="Describe brevemente el producto">{{ old('description') }}</textarea>
+              </label>
+            </div>
+
+            <div class="inventory-product-core">
               @if(in_array('producto', $selectedComponents, true))
-              <th>Producto</th>@endif
+                <label class="inventory-field">
+                  Nombre
+                  <input name="name" maxlength="120" value="{{ old('name') }}" required>
+                </label>
+              @else
+                <input type="hidden" name="name" value="Registro {{ now()->format('His') }}">
+              @endif
+
               @if(in_array('marca', $selectedComponents, true))
-              <th>Marca</th>@endif
-              @if(in_array('modelo', $selectedComponents, true))
-              <th>Modelo</th>@endif
-              @if(in_array('unidad', $selectedComponents, true))
-              <th>Unidad</th>@endif
-              @if(in_array('cantidad', $selectedComponents, true))
-              <th>Cantidad (por unidad)</th>@endif
+                <label class="inventory-field">
+                  Marca
+                  <input name="brand" maxlength="120" value="{{ old('brand') }}" placeholder="Ej. Philips">
+                </label>
+              @else
+                <input type="hidden" name="brand" value="">
+              @endif
+
               @if(in_array('precio', $selectedComponents, true))
-              <th>Precio (por unidad)</th>@endif
+                <label class="inventory-field">
+                  Precio
+                  <span class="inventory-input-prefix"><span>$</span><input type="number" name="price" min="0" step="0.01"
+                      value="{{ old('price') }}" required></span>
+                </label>
+              @else
+                <input type="hidden" name="price" value="0">
+              @endif
+
+              @if(in_array('cantidad', $selectedComponents, true))
+                <label class="inventory-field">
+                  Stock
+                  <span class="inventory-input-stepper">
+                    <input type="number" name="quantity" min="0.01" step="0.01" value="{{ old('quantity', 1) }}" required>
+                    <button type="button" data-step="-1" aria-label="Restar stock">−</button>
+                    <button type="button" data-step="1" aria-label="Sumar stock">+</button>
+                  </span>
+                </label>
+              @else
+                <input type="hidden" name="quantity" value="1">
+              @endif
+
+              @if(in_array('unidad', $selectedComponents, true))
+                <label class="inventory-field">
+                  Unidad
+                  <select name="unit" required>
+                    <option value="unidad" @selected(old('unit', 'unidad') === 'unidad')>Unidad</option>
+                    <option value="kilo" @selected(old('unit') === 'kilo')>Kg</option>
+                    <option value="litro" @selected(old('unit') === 'litro')>Lt</option>
+                  </select>
+                </label>
+              @else
+                <input type="hidden" name="unit" value="unidad">
+              @endif
+            </div>
+          </div>
+
+          <div class="inventory-product-optional">
+            <h3>Datos privados y opcionales</h3>
+            <div class="inventory-product-core">
+              @if(in_array('modelo', $selectedComponents, true))
+                <label class="inventory-field">
+                  Modelo
+                  <input name="model" maxlength="120" value="{{ old('model') }}" placeholder="Ej. X200">
+                </label>
+              @else
+                <input type="hidden" name="model" value="">
+              @endif
+
               @if(in_array('categoria', $selectedComponents, true))
-              <th>Categoria</th>@endif
-              <th>Accion</th>
-            </tr>
-          </thead>
-          <tbody>
-            @forelse($business->products as $product)
-              <tr data-db-row
-                data-filter-text="{{ Str::lower(($product->name ?? '') . ' ' . ($product->brand ?? '') . ' ' . ($product->model ?? '') . ' ' . ($product->category ?? '') . ' ' . ($product->unit ?? '')) }}">
-                <td>{{ $product->catalog_number }}</td>
-                @if(in_array('producto', $selectedComponents, true))
-                <td>{{ $product->name }}</td>@endif
-                @if(in_array('marca', $selectedComponents, true))
-                <td>{{ $product->brand ?: '-' }}</td>@endif
-                @if(in_array('modelo', $selectedComponents, true))
-                <td>{{ $product->model ?: '-' }}</td>@endif
-                @if(in_array('unidad', $selectedComponents, true))
-                <td>{{ $product->unit === 'kilo' ? 'Kg' : ($product->unit === 'litro' ? 'Lt' : 'Unidad') }}</td>@endif
-                @if(in_array('cantidad', $selectedComponents, true))
-                <td>{{ number_format((float) ($product->quantity ?? 1), 2, ',', '.') }}</td>@endif
-                @if(in_array('precio', $selectedComponents, true))
-                <td>$ {{ number_format((float) ($product->price ?? 0), 2, ',', '.') }}</td>@endif
-                @if(in_array('categoria', $selectedComponents, true))
-                <td>{{ $product->category ?: '-' }}</td>@endif
-                <td>
-                  <div class="db-actions">
-                    <button type="button" class="plain-button" data-edit-toggle="row-{{ $product->id }}">Modificar</button>
-                    <form method="POST" action="{{ route('products.destroy', [$business, $product]) }}"
-                      onsubmit="return confirm('¿Eliminar este registro?')">
-                      @csrf
-                      @method('DELETE')
-                      <button class="plain-button">Eliminar</button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-              <tr id="row-{{ $product->id }}" class="db-edit-row" hidden>
-                <td colspan="{{ 2 + count($selectedComponents) }}">
-                  <form method="POST" action="{{ route('products.update', [$business, $product]) }}" class="db-edit-form">
-                    @csrf
-                    @method('PUT')
-                    <label>
-                      N°
-                      <input value="{{ $product->catalog_number }}" disabled>
-                    </label>
+                <label class="inventory-field">
+                  Categoría
+                  <input name="category" maxlength="100" value="{{ old('category') }}" placeholder="Ej. Panificados">
+                </label>
+              @else
+                <input type="hidden" name="category" value="">
+              @endif
+            </div>
+          </div>
 
-                    @if(in_array('producto', $selectedComponents, true))
-                      <label>
-                        Producto
-                        <input name="name" maxlength="120" value="{{ $product->name }}" required>
-                      </label>
-                    @else
-                      <input type="hidden" name="name" value="{{ $product->name }}">
-                    @endif
+          <div class="inventory-form-actions">
+            <button class="inventory-cancel-button" type="button" data-inventory-close>Cancelar</button>
+            <button class="inventory-submit-button" type="submit">Crear producto</button>
+          </div>
+        </form>
+      </section>
 
-                    @if(in_array('marca', $selectedComponents, true))
-                      <label>
-                        Marca
-                        <input name="brand" maxlength="120" value="{{ $product->brand }}">
-                      </label>
-                    @else
-                      <input type="hidden" name="brand" value="{{ $product->brand }}">
-                    @endif
+      <section id="ingreso-mercaderia" class="inventory-stock-view" hidden>
+        <header class="inventory-view-heading">
+          <button class="inventory-back-link" type="button" aria-label="Cerrar apartado">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m15 18-6-6 6-6M9 12h12" />
+            </svg>
+          </button>
+          <div>
+            <p class="inventory-section-kicker">Inventario</p>
+            <h2>Ingresar producto</h2>
+          </div>
+        </header>
 
-                    @if(in_array('modelo', $selectedComponents, true))
-                      <label>
-                        Modelo
-                        <input name="model" maxlength="120" value="{{ $product->model }}">
-                      </label>
-                    @else
-                      <input type="hidden" name="model" value="{{ $product->model }}">
-                    @endif
+        <form method="POST" action="{{ route('products.add-stock', $business) }}" class="inventory-stock-form">
+          @csrf
+          <label class="inventory-stock-product">
+            Seleccionar producto
+            <select name="product_id" required>
+              <option value="">Producto</option>
+              @foreach($business->products as $product)
+                <option value="{{ $product->id }}">
+                  #{{ $product->id }} - {{ $product->name }} (stock actual:
+                  {{ number_format((float) ($product->quantity ?? 1), 2, ',', '.') }}
+                  {{ $product->unit === 'kilo' ? 'Kg' : ($product->unit === 'litro' ? 'Lt' : 'Unidad') }})
+                </option>
+              @endforeach
+            </select>
+          </label>
+          </label>
+          <label class="inventory-field inventory-stock-quantity">
+            Cantidad
+            <span class="inventory-input-stepper inventory-stepper-control">
+              <button type="button" data-step="-1" aria-label="Restar cantidad">−</button>
+              <input id="inventory-incoming-quantity" type="number" name="incoming_quantity" min="0.01" step="0.01"
+                value="1" required>
+              <button type="button" data-step="1" aria-label="Sumar cantidad">+</button>
+            </span>
+          </label>
 
-                    @if(in_array('unidad', $selectedComponents, true))
-                      <label>
-                        Unidad
-                        <select name="unit" required>
-                          <option value="kilo" @selected($product->unit === 'kilo')>Kg</option>
-                          <option value="litro" @selected($product->unit === 'litro')>Lt</option>
-                          <option value="unidad" @selected(($product->unit ?? 'unidad') === 'unidad')>Unidad</option>
-                        </select>
-                      </label>
-                    @else
-                      <input type="hidden" name="unit" value="{{ $product->unit ?? 'unidad' }}">
-                    @endif
+          <div class="inventory-stock-summary">
+            <h3>Cambios extras</h3>
+            <p>El ingreso se suma al stock actual. Para modificar precio o datos del producto, usa la opción “Modificar”
+              en el listado.</p>
+          </div>
 
-                    @if(in_array('cantidad', $selectedComponents, true))
-                      <label>
-                        Cantidad
-                        <input type="number" name="quantity" min="0.01" step="0.01" value="{{ $product->quantity ?? 1 }}"
-                          required>
-                      </label>
-                    @else
-                      <input type="hidden" name="quantity" value="{{ $product->quantity ?? 1 }}">
-                    @endif
+          <div class="inventory-form-actions">
+            <button class="inventory-cancel-button" type="button" data-inventory-close>Cancelar</button>
+            <button class="inventory-submit-button" type="submit">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3v12m-5-5 5 5 5-5M4 17v3h16v-3" />
+              </svg>
+              Ingresar producto
+            </button>
+          </div>
+        </form>
+      </section>
 
-                    @if(in_array('precio', $selectedComponents, true))
-                      <label>
-                        Precio
-                        <input type="number" name="price" min="0" step="0.01" value="{{ $product->price ?? 0 }}" required>
-                      </label>
-                    @else
-                      <input type="hidden" name="price" value="{{ $product->price ?? 0 }}">
-                    @endif
+      <section id="registros" class="inventory-list-view" hidden>
+        <div class="db-table-head">
+          <div class="inventory-list-title">
+            <p class="inventory-section-kicker">Inventario</p>
+            <h2>Lista de productos</h2>
+          </div>
+          <label class="inventory-search-field">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="10.8" cy="10.8" r="6.8" />
+              <path d="m16 16 5 5" />
+            </svg>
+            <input id="db-search" class="search-input" placeholder="Buscar producto">
+          </label>
+        </div>
 
-                    @if(in_array('categoria', $selectedComponents, true))
-                      <label>
-                        Categoria
-                        <input name="category" maxlength="100" value="{{ $product->category }}">
-                      </label>
-                    @else
-                      <input type="hidden" name="category" value="{{ $product->category }}">
-                    @endif
-
-                    <div class="db-edit-actions">
-                      <button class="button button-small">Guardar cambios</button>
-                      <button type="button" class="button secondary button-small"
-                        data-edit-toggle="row-{{ $product->id }}">Cancelar</button>
-                    </div>
-                  </form>
-                </td>
-              </tr>
-            @empty
+        <div class="db-table-wrap">
+          <table class="db-table">
+            <thead>
               <tr>
-                <td colspan="{{ 2 + count($selectedComponents) }}" class="muted">No hay registros cargados.</td>
+                <th>ID</th>
+                @if(in_array('producto', $selectedComponents, true))
+                <th>Producto</th>@endif
+                @if(in_array('marca', $selectedComponents, true))
+                <th>Marca</th>@endif
+                @if(in_array('modelo', $selectedComponents, true))
+                <th>Modelo</th>@endif
+                @if(in_array('unidad', $selectedComponents, true))
+                <th>Unidad</th>@endif
+                @if(in_array('cantidad', $selectedComponents, true))
+                <th>Cantidad (por unidad)</th>@endif
+                @if(in_array('precio', $selectedComponents, true))
+                <th>Precio (por unidad)</th>@endif
+                @if(in_array('categoria', $selectedComponents, true))
+                <th>Categoria</th>@endif
+                <th>Accion</th>
               </tr>
-            @endforelse
-          </tbody>
-        </table>
-      </div>
-    </section>
+            </thead>
+            <tbody>
+              @forelse($business->products as $product)
+                <tr data-db-row
+                  data-filter-text="{{ Str::lower(($product->name ?? '') . ' ' . ($product->brand ?? '') . ' ' . ($product->model ?? '') . ' ' . ($product->category ?? '') . ' ' . ($product->unit ?? '')) }}">
+                  <td>{{ $product->catalog_number }}</td>
+                  @if(in_array('producto', $selectedComponents, true))
+                  <td>{{ $product->name }}</td>@endif
+                  @if(in_array('marca', $selectedComponents, true))
+                  <td>{{ $product->brand ?: '-' }}</td>@endif
+                  @if(in_array('modelo', $selectedComponents, true))
+                  <td>{{ $product->model ?: '-' }}</td>@endif
+                  @if(in_array('unidad', $selectedComponents, true))
+                  <td>{{ $product->unit === 'kilo' ? 'Kg' : ($product->unit === 'litro' ? 'Lt' : 'Unidad') }}</td>@endif
+                  @if(in_array('cantidad', $selectedComponents, true))
+                  <td>{{ number_format((float) ($product->quantity ?? 1), 2, ',', '.') }}</td>@endif
+                  @if(in_array('precio', $selectedComponents, true))
+                  <td>$ {{ number_format((float) ($product->price ?? 0), 2, ',', '.') }}</td>@endif
+                  @if(in_array('categoria', $selectedComponents, true))
+                  <td>{{ $product->category ?: '-' }}</td>@endif
+                  <td>
+                    <div class="db-actions">
+                      <button type="button" class="plain-button"
+                        data-edit-toggle="row-{{ $product->id }}">Modificar</button>
+                      <form method="POST" action="{{ route('products.destroy', [$business, $product]) }}"
+                        onsubmit="return confirm('¿Eliminar este registro?')">
+                        @csrf
+                        @method('DELETE')
+                        <button class="plain-button">Eliminar</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="row-{{ $product->id }}" class="db-edit-row" hidden>
+                  <td colspan="{{ 2 + count($selectedComponents) }}">
+                    <form method="POST" action="{{ route('products.update', [$business, $product]) }}" class="db-edit-form">
+                      @csrf
+                      @method('PUT')
+                      <label>
+                        N°
+                        <input value="{{ $product->catalog_number }}" disabled>
+                      </label>
+
+                      @if(in_array('producto', $selectedComponents, true))
+                        <label>
+                          Producto
+                          <input name="name" maxlength="120" value="{{ $product->name }}" required>
+                        </label>
+                      @else
+                        <input type="hidden" name="name" value="{{ $product->name }}">
+                      @endif
+
+                      @if(in_array('marca', $selectedComponents, true))
+                        <label>
+                          Marca
+                          <input name="brand" maxlength="120" value="{{ $product->brand }}">
+                        </label>
+                      @else
+                        <input type="hidden" name="brand" value="{{ $product->brand }}">
+                      @endif
+
+                      @if(in_array('modelo', $selectedComponents, true))
+                        <label>
+                          Modelo
+                          <input name="model" maxlength="120" value="{{ $product->model }}">
+                        </label>
+                      @else
+                        <input type="hidden" name="model" value="{{ $product->model }}">
+                      @endif
+
+                      @if(in_array('unidad', $selectedComponents, true))
+                        <label>
+                          Unidad
+                          <select name="unit" required>
+                            <option value="kilo" @selected($product->unit === 'kilo')>Kg</option>
+                            <option value="litro" @selected($product->unit === 'litro')>Lt</option>
+                            <option value="unidad" @selected(($product->unit ?? 'unidad') === 'unidad')>Unidad</option>
+                          </select>
+                        </label>
+                      @else
+                        <input type="hidden" name="unit" value="{{ $product->unit ?? 'unidad' }}">
+                      @endif
+
+                      @if(in_array('cantidad', $selectedComponents, true))
+                        <label>
+                          Cantidad
+                          <input type="number" name="quantity" min="0.01" step="0.01" value="{{ $product->quantity ?? 1 }}"
+                            required>
+                        </label>
+                      @else
+                        <input type="hidden" name="quantity" value="{{ $product->quantity ?? 1 }}">
+                      @endif
+
+                      @if(in_array('precio', $selectedComponents, true))
+                        <label>
+                          Precio
+                          <input type="number" name="price" min="0" step="0.01" value="{{ $product->price ?? 0 }}" required>
+                        </label>
+                      @else
+                        <input type="hidden" name="price" value="{{ $product->price ?? 0 }}">
+                      @endif
+
+                      @if(in_array('categoria', $selectedComponents, true))
+                        <label>
+                          Categoria
+                          <input name="category" maxlength="100" value="{{ $product->category }}">
+                        </label>
+                      @else
+                        <input type="hidden" name="category" value="{{ $product->category }}">
+                      @endif
+
+                      <div class="db-edit-actions">
+                        <button class="button button-small">Guardar cambios</button>
+                        <button type="button" class="button secondary button-small"
+                          data-edit-toggle="row-{{ $product->id }}">Cancelar</button>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+              @empty
+                <tr>
+                  <td colspan="{{ 2 + count($selectedComponents) }}" class="muted">No hay registros cargados.</td>
+                </tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
 
     <nav class="inventory-mobile-bottom-nav" aria-label="Navegación del emprendimiento">
       <a href="{{ route('user.profile') }}">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 21a8 8 0 0 1 16 0" />
+        </svg>
         <span>{{ auth()->user()->name }}</span>
       </a>
       <a href="{{ route('dashboard', $business) }}">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-7h6v7"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-7h6v7" />
+        </svg>
         <span>Inicio</span>
       </a>
     </nav>
@@ -422,8 +511,8 @@
       gap: 12px;
       align-items: center;
       padding: 12px;
-      border: 1px solid var(--line);
-      background: #f8fbf6;
+      border: 1px solid var(--business-line);
+      background: var(--business-panel);
       border-radius: 4px;
     }
 
@@ -526,8 +615,8 @@
 
     body.inventory-database-page {
       min-height: 100vh;
-      background: #eef3f5;
-      color: #202a2e;
+      background: linear-gradient(135deg, var(--business-primary) 0%, color-mix(in srgb, var(--business-secondary) 24%, var(--business-primary)) 100%);
+      color: var(--business-text);
     }
 
     body.inventory-database-page .nav,
@@ -554,7 +643,7 @@
       align-items: center;
       gap: 10px;
       margin: 0;
-      color: var(--teal);
+      color: var(--business-secondary);
       font-size: 1rem;
       font-weight: 600;
     }
@@ -596,10 +685,10 @@
       gap: 12px;
       min-height: 64px;
       padding: 0 16px;
-      border: 1px solid #cbd2d2;
+      border: 1px solid var(--business-line);
       border-radius: 8px;
-      background: #fff;
-      color: #202a2e;
+      background: rgba(255,255,255,0.76);
+      color: var(--business-text);
       font-size: 1rem;
       font-weight: 500;
       font-family: var(--sans);
@@ -610,8 +699,8 @@
     .inventory-mobile-actions button:hover,
     .inventory-mobile-actions button[aria-expanded="true"] {
       transform: translateY(-1px);
-      border-color: #8fb9af;
-      background: #fbfdfd;
+      border-color: var(--business-secondary);
+      background: rgba(255,255,255,0.9);
     }
 
     .inventory-mobile-actions button:focus-visible,
@@ -630,9 +719,9 @@
       stroke-width: 1.8;
     }
 
-    .inventory-mobile-actions button:first-child > svg:first-child,
-    .inventory-mobile-actions button:nth-child(2) > svg:first-child {
-      color: var(--teal);
+    .inventory-mobile-actions button:first-child>svg:first-child,
+    .inventory-mobile-actions button:nth-child(2)>svg:first-child {
+      color: var(--business-secondary);
       stroke: currentColor;
     }
 
@@ -652,8 +741,15 @@
     }
 
     @keyframes inventory-panel-enter {
-      from { opacity: 0; transform: translateY(-7px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(-7px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     body.inventory-database-page .panel {
@@ -807,10 +903,10 @@
       gap: 8px;
       min-height: 170px;
       overflow: hidden;
-      border: 1px solid #cbd4d5;
+      border: 1px solid var(--business-line);
       border-radius: 7px;
-      background: #f4f7f8;
-      color: #278c68;
+      background: color-mix(in srgb, var(--business-panel) 60%, white 40%);
+      color: var(--business-secondary);
       cursor: pointer;
       text-align: center;
     }
@@ -907,7 +1003,7 @@
       background: #fff;
     }
 
-    .inventory-input-prefix > span {
+    .inventory-input-prefix>span {
       padding-left: 11px;
       color: #7b878c;
       font-size: 0.95rem;
@@ -922,7 +1018,7 @@
       outline: none;
     }
 
-    .inventory-input-stepper > button {
+    .inventory-input-stepper>button {
       align-self: stretch;
       width: 34px;
       border: 0;
@@ -932,7 +1028,7 @@
       font: 500 1.05rem var(--sans);
     }
 
-    .inventory-input-stepper > button:hover {
+    .inventory-input-stepper>button:hover {
       background: #eef7f2;
     }
 
@@ -964,24 +1060,23 @@
       min-width: 150px;
       min-height: 44px;
       padding: 10px 18px;
-      border: 1px solid #36a879;
+      border: 1px solid var(--business-secondary);
       border-radius: 6px;
       background: transparent;
-      color: #278c68;
+      color: var(--business-secondary);
       cursor: pointer;
       font: 600 0.88rem var(--sans);
       text-align: center;
     }
 
     .inventory-submit-button {
-      border-color: #2ba873;
-      background: #2ba873;
-      color: #fff;
+      border-color: var(--business-button);
+      background: var(--business-button);
+      color: white;
     }
 
     .inventory-submit-button:hover {
-      border-color: #18865b;
-      background: #18865b;
+      filter: brightness(0.96);
     }
 
     .inventory-submit-button svg {
@@ -1014,10 +1109,10 @@
     .inventory-stock-product select {
       min-height: 44px;
       padding: 9px 12px;
-      border: 1px solid #bdc9cb;
+      border: 1px solid var(--business-line);
       border-radius: 6px;
-      background: #fff;
-      color: #66747a;
+      background: rgba(255,255,255,0.85);
+      color: var(--business-text);
       font: inherit;
     }
 
@@ -1036,8 +1131,8 @@
     }
 
     .inventory-stepper-control button:hover {
-      background: #eef7f2;
-      color: #21835d;
+      background: color-mix(in srgb, var(--business-secondary) 12%, white 88%);
+      color: var(--business-secondary);
     }
 
     .inventory-stepper-control input {
@@ -1087,7 +1182,7 @@
       height: 17px;
       transform: translateY(-50%);
       fill: none;
-      stroke: #287a62;
+      stroke: var(--business-secondary);
       stroke-linecap: round;
       stroke-width: 1.8;
       pointer-events: none;
@@ -1112,9 +1207,9 @@
     }
 
     .inventory-list-view .db-table th {
-      border-color: #dce4e5;
-      background: #e6edef;
-      color: #287a62;
+      border-color: var(--business-line);
+      background: color-mix(in srgb, var(--business-secondary) 10%, white 90%);
+      color: var(--business-secondary);
       font-size: 0.8rem;
       font-weight: 700;
     }
