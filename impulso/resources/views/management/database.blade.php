@@ -61,7 +61,7 @@
         </svg>
         Inventario
       </p>
-      <h1>Dashboard</h1>
+      <h1>{{ $business->name }}</h1>
       <p class="inventory-mobile-description">Gestiona el stock de {{ $business->name }}.</p>
     </header>
 

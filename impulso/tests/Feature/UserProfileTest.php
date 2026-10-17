@@ -137,6 +137,34 @@ class UserProfileTest extends TestCase
         $this->assertNull($user->fresh()->phone_verified_at);
     }
 
+    public function test_profile_form_does_not_update_password_even_if_browser_sends_autofilled_password_fields(): void
+    {
+        $user = User::factory()->create(['password' => 'existing-password']);
+
+        $this->actingAs($user)->post(route('user.profile.update'), [
+            'first_name' => 'Leandro',
+            'last_name' => 'Sacco',
+            'email' => $user->email,
+            'password' => 'autofilled-password',
+            'password_confirmation' => 'autofilled-password',
+        ])->assertRedirect(route('user.profile'));
+
+        $this->assertTrue(password_verify('existing-password', $user->refresh()->password));
+    }
+
+    public function test_profile_page_has_one_save_button_and_no_password_prompt(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('user.profile'))
+            ->assertOk()
+            ->assertSee('Guardar cambios')
+            ->assertDontSee('Actualizar contraseña')
+            ->assertDontSee('name="current_password"')
+            ->assertDontSee('name="password"');
+    }
+
     public function test_discover_places_create_business_action_above_the_search_controls(): void
     {
         $user = User::factory()->create();

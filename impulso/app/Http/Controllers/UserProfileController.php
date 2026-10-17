@@ -31,18 +31,11 @@ class UserProfileController extends Controller
             'city' => ['nullable', 'string', 'max:120'],
             'province' => ['nullable', Rule::in(ArgentinaProvinces::all())],
             'avatar' => ['nullable', 'image', 'max:5120'],
-            'current_password' => ['required_with:password', 'current_password'],
-            'password' => ['nullable', 'confirmed', 'min:8'],
         ], [
             'document_number.regex' => 'El DNI debe tener entre 7 y 9 números.',
             'document_number.unique' => 'Ese DNI ya está registrado en otra cuenta.',
             'postal_code.regex' => 'El código postal no es válido.',
         ]);
-
-        unset($data['current_password']);
-        if (blank($data['password'] ?? null)) {
-            unset($data['password']);
-        }
 
         $data['name'] = trim($data['first_name'].' '.$data['last_name']);
 

@@ -4,7 +4,6 @@
   ['target' => '[data-help-target="profile-identity"]', 'title' => 'Datos personales', 'body' => 'Completa nombre y apellido por separado y tu DNI. El DNI es único: no puede repetirse en otra cuenta.'],
   ['target' => '[data-help-target="profile-contact"]', 'title' => 'Verificar contacto', 'body' => 'Usa Verificar correo o Verificar teléfono para recibir un enlace. No puedes verificarte tú mismo: solo se confirma al abrir el enlace recibido. Al verificarse aparece un ✓.'],
   ['target' => '[data-help-target="profile-address"]', 'title' => 'Dirección', 'body' => 'Indica dirección, código postal, ciudad y provincia.'],
-  ['target' => '[data-help-target="profile-password"]', 'title' => 'Contraseña', 'body' => 'Déjala vacía si no quieres cambiarla.'],
   ['target' => '.profile-settings-form button[type="submit"]:last-of-type', 'title' => 'Guardar', 'body' => 'Los cambios solo se aplican al guardar. Si cambias correo o teléfono, deberás verificarlos otra vez.'],
 ]])
 <section class="form-page wrap profile-settings-page">
@@ -14,11 +13,11 @@
     <div>
       <p class="eyebrow">Tu cuenta</p>
       <h1>Mi perfil</h1>
-      <p class="muted">Mantén actualizados tus datos y la forma en que te presentas.</p>
+      <p class="muted">Actualiza tu foto y los datos que quieras cambiar. No necesitas ingresar tu contraseña.</p>
     </div>
   </div>
 
-  <form method="POST" enctype="multipart/form-data" action="{{ route('user.profile.update') }}" class="business-form profile-settings-form">
+  <form method="POST" enctype="multipart/form-data" action="{{ route('user.profile.update') }}" class="business-form profile-settings-form" autocomplete="off">
     @csrf
     <div class="profile-settings-avatar">
       <div class="account-avatar" id="account-avatar-preview">
@@ -109,24 +108,6 @@
         @error('province')<small class="error">{{ $message }}</small>@enderror
       </label>
     </div>
-
-    <fieldset class="profile-password-fields" data-help-target="profile-password">
-      <legend>Cambiar contraseña</legend>
-      <p class="muted">Déjala vacía si no quieres cambiarla.</p>
-      <div class="form-grid">
-        <label>Contraseña actual
-          <input type="password" name="current_password" autocomplete="current-password">
-          @error('current_password')<small class="error">{{ $message }}</small>@enderror
-        </label>
-        <label>Nueva contraseña
-          <input type="password" name="password" autocomplete="new-password">
-          @error('password')<small class="error">{{ $message }}</small>@enderror
-        </label>
-        <label>Repetir nueva contraseña
-          <input type="password" name="password_confirmation" autocomplete="new-password">
-        </label>
-      </div>
-    </fieldset>
 
     <button class="button" type="submit">Guardar cambios <span>→</span></button>
   </form>
