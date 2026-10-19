@@ -4,7 +4,7 @@
 
 **Un espacio digital para descubrir, operar y hacer crecer emprendimientos locales.**
 
-[Instalación](#puesta-en-marcha) · [Funcionalidades](#funcionalidades) · [Arquitectura y UML](docs/arquitectura.md) · [Pruebas](#pruebas)
+[Instalación](#puesta-en-marcha) · [Funcionalidades](#funcionalidades) · [Arquitectura y diagramas](docs/arquitectura.md) · [Errores conocidos](ERRORES.md) · [Pruebas](#pruebas)
 
 </div>
 
@@ -28,6 +28,8 @@ Impulso conecta a clientes con emprendimientos y ofrece a cada negocio un escapa
 - Turnos con disponibilidad horaria, confirmación por correo y gestión mediante enlace seguro.
 - Consultas y reseñas de clientes.
 - Panel privado para gestionar pedidos, turnos, consultas, miembros, ingresos y gastos.
+- Perfil personal con verificación de correo y teléfono, además de administración de usuarios y emprendimientos.
+- Vista previa de +Impulso; la contratación y los pagos aún no están habilitados.
 - Acceso por propietario, miembros con roles de negocio y superadministración.
 
 ## Tecnologías
@@ -36,7 +38,7 @@ Impulso conecta a clientes con emprendimientos y ofrece a cada negocio un escapa
 | --- | --- |
 | Aplicación web | PHP 8.2+, Laravel 12 |
 | Interfaz | Blade, Tailwind CSS 4, Vite 7 |
-| Persistencia | Eloquent ORM y base de datos configurada en Laravel |
+| Persistencia | Eloquent ORM, SQLite local por defecto o PostgreSQL compartido opcional |
 | Pruebas | PHPUnit 11 y Laravel Test |
 
 ## Puesta en marcha
@@ -57,7 +59,7 @@ cd impulso
 composer run setup
 ```
 
-El script instala dependencias PHP y JavaScript, crea `.env` desde `.env.example` si falta, genera `APP_KEY`, prepara el enlace `public/storage`, ejecuta migraciones y compila los assets. Antes de usar un motor distinto al configurado en `.env.example`, define sus variables `DB_*` y crea la base de datos.
+El script instala dependencias PHP y JavaScript, crea `.env` desde `.env.example` si falta, genera `APP_KEY`, ejecuta migraciones y compila los assets. La configuración inicial usa SQLite local. Para datos compartidos entre equipos, configura PostgreSQL/Supabase según la [guía de datos compartidos](impulso/docs/shared-data-setup.md) antes de importar datos.
 
 Inicia la aplicación:
 
@@ -67,7 +69,7 @@ php artisan serve
 
 Abre <http://127.0.0.1:8000>.
 
-Las imágenes cargadas se guardan en `impulso/storage/app/public` y se sirven mediante `impulso/public/storage`. Configura las variables `MAIL_*` en `impulso/.env` para habilitar los correos de pedidos y confirmación de turnos.
+Las imágenes se guardan en `impulso/public/uploads` con el disco local. Para producción en Vercel o almacenamiento compartido, configura Supabase Storage/S3 según la guía de datos compartidos. Configura `MAIL_*` en `impulso/.env` para enviar correos; con `MAIL_MAILER=log` los mensajes solo se escriben en los logs.
 
 ## Comandos de desarrollo
 
@@ -106,4 +108,10 @@ docs/                         Documentación de arquitectura y UML
 
 ## Documentación técnica
 
-Consulta la [documentación de arquitectura](docs/arquitectura.md) para conocer los actores y módulos del sistema, el modelo de dominio, los flujos principales y los diagramas UML en Mermaid.
+| Documento | Contenido |
+| --- | --- |
+| [Arquitectura y diagramas](docs/arquitectura.md) | UML, DFD, EDT, modelo de dominio y diccionario de datos. |
+| [Errores conocidos](ERRORES.md) | Incidencias registradas, limitaciones actuales y soluciones de configuración. |
+| [Configuración de datos compartidos](impulso/docs/shared-data-setup.md) | PostgreSQL/Supabase, medios compartidos e importación inicial. |
+| [Manual de usuario](impulso/docs/manual-usuario.docx) | Guía de uso de la aplicación. |
+| [Flujo de datos (documento)](impulso/docs/flujo-de-datos.docx) | Material adicional del flujo de datos. |
