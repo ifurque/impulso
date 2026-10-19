@@ -19,6 +19,7 @@ Impulso conecta a clientes con emprendimientos y ofrece a cada negocio un escapa
 - [Pruebas](#pruebas)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Documentación técnica](#documentación-técnica)
+- [Licencia](#licencia)
 
 ## Funcionalidades
 
@@ -112,6 +113,12 @@ docs/                         Documentación de arquitectura y UML
 | --- | --- |
 | [Arquitectura y diagramas](docs/arquitectura.md) | UML, DFD, EDT, modelo de dominio y diccionario de datos. |
 | [Errores conocidos](ERRORES.md) | Incidencias registradas, limitaciones actuales y soluciones de configuración. |
+| [Despliegue en Vercel](docs/despliegue-vercel.md) | Directorio raíz, build, variables de entorno y comprobaciones de despliegue. |
+| [Seguridad y privacidad](docs/seguridad.md) | Protección de secretos, cuentas, datos personales, medios y operación. |
 | [Configuración de datos compartidos](impulso/docs/shared-data-setup.md) | PostgreSQL/Supabase, medios compartidos e importación inicial. |
 | [Manual de usuario](impulso/docs/manual-usuario.docx) | Guía de uso de la aplicación. |
 | [Flujo de datos (documento)](impulso/docs/flujo-de-datos.docx) | Material adicional del flujo de datos. |
+
+## Licencia
+
+El manifiesto de Composer declara licencia MIT. El texto completo está en [LICENSE](LICENSE); la titularidad de los derechos corresponde a sus autores y contribuyentes según sus aportes.
