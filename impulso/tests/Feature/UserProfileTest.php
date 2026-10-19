@@ -86,6 +86,30 @@ class UserProfileTest extends TestCase
         $this->assertTrue(Storage::disk('public')->exists($user->avatar));
     }
 
+    public function test_user_can_save_profile_changes_with_name_and_email_fields_empty(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'Ana Gómez',
+            'first_name' => 'Ana',
+            'last_name' => 'Gómez',
+            'email' => 'ana@example.test',
+        ]);
+
+        $this->actingAs($user)->post(route('user.profile.update'), [
+            'first_name' => '',
+            'last_name' => '',
+            'email' => '',
+            'city' => 'Rosario',
+        ])->assertRedirect(route('user.profile'));
+
+        $user->refresh();
+        $this->assertSame('Ana Gómez', $user->name);
+        $this->assertSame('Ana', $user->first_name);
+        $this->assertSame('Gómez', $user->last_name);
+        $this->assertSame('ana@example.test', $user->email);
+        $this->assertSame('Rosario', $user->city);
+    }
+
     public function test_document_number_must_be_unique(): void
     {
         User::factory()->create(['document_number' => '30123456']);
@@ -160,6 +184,7 @@ class UserProfileTest extends TestCase
             ->get(route('user.profile'))
             ->assertOk()
             ->assertSee('Guardar cambios')
+            ->assertSee('data-help-target="profile-save"', false)
             ->assertDontSee('Actualizar contraseña')
             ->assertDontSee('name="current_password"')
             ->assertDontSee('name="password"');

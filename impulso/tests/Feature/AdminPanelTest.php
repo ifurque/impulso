@@ -6,6 +6,7 @@ use App\Models\Business;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -37,11 +38,26 @@ class AdminPanelTest extends TestCase
             ->assertOk()
             ->assertSee('&quot;.admin-row&quot;', false)
             ->assertSee('&quot;.admin-row .admin-action-primary&quot;', false);
-
         $this->get(route('admin.users'))
             ->assertOk()
             ->assertSee('&quot;.admin-row&quot;', false)
             ->assertSee('&quot;.admin-row .admin-action-primary&quot;', false);
+    }
+
+    public function test_authenticated_layout_caches_navigation_data_per_user(): void
+    {
+        $user = User::factory()->create();
+        $cache = Cache::store('file');
+        $cacheNamespace = app()->environment().':'.$user->id;
+        $inboxKey = 'layout:global-inbox:v1:'.$cacheNamespace;
+        $plusAccessKey = 'layout:plus-access:v1:'.$cacheNamespace;
+        $cache->forget($inboxKey);
+        $cache->forget($plusAccessKey);
+
+        $this->actingAs($user)->get(route('discover'))->assertOk();
+
+        $this->assertTrue($cache->has($inboxKey));
+        $this->assertTrue($cache->has($plusAccessKey));
     }
 
     public function test_superadmin_can_grant_admin_and_impulso_plus(): void
@@ -63,6 +79,25 @@ class AdminPanelTest extends TestCase
         $this->patch(route('admin.businesses.plus', $business))->assertRedirect();
         $this->assertTrue($business->fresh()->is_plus);
         $this->get(route('discover'))->assertOk()->assertSee('Verificado por +Impulso');
+    }
+
+    public function test_discover_paginates_businesses_before_rendering_them(): void
+    {
+        $owner = User::factory()->create();
+        for ($number = 1; $number <= 10; $number++) {
+            Business::create([
+                'owner_id' => $owner->id,
+                'name' => sprintf('Negocio %02d', $number),
+                'slug' => sprintf('negocio-%02d', $number),
+                'is_public' => true,
+            ]);
+        }
+
+        $firstPage = $this->get(route('discover'))->assertOk();
+        $this->assertSame(9, substr_count($firstPage->getContent(), 'class="business-card"'));
+
+        $secondPage = $this->get(route('discover', ['page' => 2]))->assertOk();
+        $this->assertSame(1, substr_count($secondPage->getContent(), 'class="business-card"'));
     }
 
     public function test_superadmin_can_edit_and_delete_business_and_user(): void

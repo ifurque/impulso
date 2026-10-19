@@ -15,10 +15,13 @@ function closeHelpTour() {
     window.removeEventListener('keydown', activeTour.onKeydown);
     window.removeEventListener('resize', activeTour.position);
     activeTour.shades.forEach((shade) => shade.remove());
+    if (activeTour.scrollEndTimer) {
+        window.clearTimeout(activeTour.scrollEndTimer);
+    }
     if (activeTour.positionFrame) {
         window.cancelAnimationFrame(activeTour.positionFrame);
     }
-    window.removeEventListener('scroll', activeTour.position);
+    document.removeEventListener('scroll', activeTour.onScroll, true);
     activeTour.ring.remove();
     activeTour.card.remove();
     activeTour.trigger.focus();
@@ -80,7 +83,9 @@ function startHelpTour(trigger, steps) {
         ring,
         card,
         position: null,
+        onScroll: null,
         positionFrame: null,
+        scrollEndTimer: null,
         onKeydown: null,
     };
 
@@ -140,18 +145,45 @@ function startHelpTour(trigger, steps) {
         });
     }
 
+    function finishScroll() {
+        if (!activeTour) return;
+        activeTour.scrollEndTimer = null;
+        position();
+        card.classList.add('help-tour-card-visible');
+    }
+
+    activeTour.onScroll = () => {
+        schedulePosition();
+        if (activeTour.scrollEndTimer) {
+            window.clearTimeout(activeTour.scrollEndTimer);
+        }
+        activeTour.scrollEndTimer = window.setTimeout(finishScroll, 140);
+    };
+
     function showStep() {
         const step = activeTour.steps[activeTour.index];
         const target = document.querySelector(step.target);
-        target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center', inline: 'nearest' });
         title.textContent = step.title;
         body.textContent = step.body;
         count.textContent = `${activeTour.index + 1} / ${activeTour.steps.length}`;
         previous.disabled = activeTour.index === 0;
         next.textContent = activeTour.index === activeTour.steps.length - 1 ? 'Terminar' : 'Siguiente';
         card.classList.remove('help-tour-card-visible');
-        schedulePosition();
-        window.requestAnimationFrame(() => card.classList.add('help-tour-card-visible'));
+
+        const rect = target.getBoundingClientRect();
+        const targetIsVisible = rect.top >= 16 && rect.bottom <= window.innerHeight - 16;
+        if (targetIsVisible || reducedMotion) {
+            if (!targetIsVisible) {
+                target.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
+            }
+            position();
+            window.requestAnimationFrame(() => card.classList.add('help-tour-card-visible'));
+            return;
+        }
+
+        target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        position();
+        activeTour.scrollEndTimer = window.setTimeout(finishScroll, 140);
     }
 
     previous.addEventListener('click', () => {
@@ -189,7 +221,7 @@ function startHelpTour(trigger, steps) {
         }
     };
     window.addEventListener('keydown', activeTour.onKeydown);
-    window.addEventListener('scroll', activeTour.position, { passive: true });
+    document.addEventListener('scroll', activeTour.onScroll, { passive: true, capture: true });
     window.addEventListener('resize', activeTour.position);
     showStep();
     close.focus();

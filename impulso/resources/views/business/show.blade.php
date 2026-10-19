@@ -40,7 +40,7 @@
     <div>
       <p class="eyebrow">{{ $business->category }}</p>
       <h1>{{ $business->name }} @if($business->is_plus)<span class="verified-badge" aria-label="Emprendimiento verificado por +Impulso" title="Verificado por +Impulso">✓</span>@endif</h1>
-      <p class="muted">⌖ {{ $business->location }} · Creado por {{ $business->owner->name }}</p>
+      <p class="muted">⌖ {{ $business->location }} · Creado por {{ $business->public_owner_name ?? 'Emprendedor' }}</p>
     </div>
     <div class="profile-rating">
       <strong>★ {{ $business->reviews->count() ? number_format($business->reviews->avg('rating'), 1) : '0,0' }}</strong>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class DiscoveryController extends Controller
@@ -14,23 +15,30 @@ class DiscoveryController extends Controller
         $query = Business::query()->where('is_public', true)
             ->when($request->category, fn ($q, $category) => $q->where('category', $category));
 
-        $businesses = $query->latest()->withCount('products')->withCount(['reviews as visible_reviews_count' => fn ($q) => $q->where('is_visible', true)])->withAvg(['reviews as visible_rating' => fn ($q) => $q->where('is_visible', true)], 'rating')->with('posts')->get();
+        $businessQuery = $query->latest()
+            ->withCount('products')
+            ->withCount(['reviews as visible_reviews_count' => fn ($q) => $q->where('is_visible', true)])
+            ->withAvg(['reviews as visible_rating' => fn ($q) => $q->where('is_visible', true)], 'rating');
 
         if ($request->filled('search')) {
             $search = $this->normalize($request->string('search')->toString());
-            $businesses = $businesses->filter(fn ($business) => $this->matchesSearch($business, $search));
-        }
+            $businesses = $businessQuery->get()->filter(fn (Business $business) => $this->matchesSearch($business, $search));
 
-        $page = LengthAwarePaginator::resolveCurrentPage();
-        $businesses = new LengthAwarePaginator(
-            $businesses->forPage($page, 9)->values(),
-            $businesses->count(),
-            9,
-            $page,
-            ['path' => LengthAwarePaginator::resolveCurrentPath(), 'query' => $request->query()]
-        );
+            $page = LengthAwarePaginator::resolveCurrentPage();
+            $businesses = new LengthAwarePaginator(
+                $businesses->forPage($page, 9)->values(),
+                $businesses->count(),
+                9,
+                $page,
+                ['path' => LengthAwarePaginator::resolveCurrentPath(), 'query' => $request->query()]
+            );
+        } else {
+            $businesses = $businessQuery->simplePaginate(9)->withQueryString();
+        }
         
-        $categories = Business::where('is_public', true)->distinct('category')->pluck('category')->sort();
+        $categories = Cache::store('file')->remember('discover:categories:v1:'.config('database.default'), now()->addMinute(), fn () =>
+            Business::where('is_public', true)->distinct('category')->pluck('category')->sort()->values()
+        );
         $palettes = BusinessController::PUBLIC_PALETTES;
         
         if ($request->ajax() || $request->boolean('ajax')) {

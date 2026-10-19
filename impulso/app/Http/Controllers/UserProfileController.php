@@ -21,10 +21,10 @@ class UserProfileController extends Controller
         $request->merge(['document_number' => filled($document) ? $document : null]);
 
         $data = $request->validate([
-            'first_name' => ['required', 'string', 'max:80'],
-            'last_name' => ['required', 'string', 'max:80'],
+            'first_name' => ['nullable', 'string', 'max:80'],
+            'last_name' => ['nullable', 'string', 'max:80'],
             'document_number' => ['nullable', 'regex:/^\d{7,9}$/', Rule::unique('users', 'document_number')->ignore($user->id)],
-            'email' => ['required', 'email', 'max:180', Rule::unique('users')->ignore($user->id)],
+            'email' => ['nullable', 'email', 'max:180', Rule::unique('users')->ignore($user->id)],
             'phone' => ['nullable', 'string', 'max:40'],
             'address' => ['nullable', 'string', 'max:180'],
             'postal_code' => ['nullable', 'string', 'max:10', 'regex:/^[A-Za-z0-9 \-]{3,10}$/'],
@@ -37,6 +37,10 @@ class UserProfileController extends Controller
             'postal_code.regex' => 'El código postal no es válido.',
         ]);
 
+        [$currentFirstName, $currentLastName] = $user->nameParts();
+        $data['first_name'] = filled($data['first_name'] ?? null) ? trim($data['first_name']) : $currentFirstName;
+        $data['last_name'] = filled($data['last_name'] ?? null) ? trim($data['last_name']) : $currentLastName;
+        $data['email'] = filled($data['email'] ?? null) ? $data['email'] : $user->email;
         $data['name'] = trim($data['first_name'].' '.$data['last_name']);
 
         if ($request->hasFile('avatar')) {

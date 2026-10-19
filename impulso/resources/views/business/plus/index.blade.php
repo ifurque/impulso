@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
 <section class="plus-page wrap">
@@ -6,7 +6,7 @@
   <div class="plus-intro">
     <p class="eyebrow">Membresía mensual</p>
     <h1>Más impulso para tu marca.</h1>
-    <p class="muted">Elegí el emprendimiento para conocer los beneficios de Impulso +.</p>
+    <p class="muted">Elegí el emprendimiento para conocer los beneficios de +Impulso.</p>
   </div>
 
   <div class="plus-business-list">

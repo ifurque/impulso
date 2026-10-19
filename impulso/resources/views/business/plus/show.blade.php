@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
 <section class="plus-page wrap">
@@ -8,7 +8,7 @@
     <div class="plus-hero-copy">
       <p class="plus-kicker">Una membresía mensual para tu negocio</p>
       <h1>Tu marca, con más espacio para crecer.</h1>
-      <p>Impulso + reúne herramientas para llevar la presencia de {{ $business->name }} un paso más allá.</p>
+      <p>+Impulso reúne herramientas para llevar la presencia de {{ $business->name }} un paso más allá.</p>
       <span class="plus-coming-soon">Vista previa · Activación próximamente</span>
     </div>
     <div class="plus-orbit" aria-hidden="true">
@@ -59,14 +59,14 @@
 
   <section class="plus-footer" aria-labelledby="plus-price-title">
     <div class="plus-footer-copy">
-      <p class="eyebrow">Impulso + · {{ $business->name }}</p>
+      <p class="eyebrow">+Impulso · {{ $business->name }}</p>
       <h2 id="plus-price-title">Tu próximo paso empieza acá.</h2>
       <p class="muted">Una membresía mensual para darle más impulso a tu marca.</p>
     </div>
     <div class="plus-price-action">
       <p class="plus-price"><strong>4,99 $</strong><span>/ mes</span></p>
       <details class="plus-cta">
-        <summary class="button">Contratar Impulso + <span>→</span></summary>
+        <summary class="button">Contratar +Impulso <span>→</span></summary>
         <div class="plus-payment-panel">
           <fieldset class="plus-payment-methods">
             <legend>Elegí cómo querés pagar</legend>
@@ -107,7 +107,7 @@
           <p class="plus-cta-note" role="status">Vista de muestra: todavía no se procesan pagos ni se realizan cambios en la membresía.</p>
           <div class="plus-cancel-option">
             <div>
-              <strong>¿Ya no querés Impulso +?</strong>
+              <strong>¿Ya no querés +Impulso?</strong>
               <p>Podés cancelar tu membresía desde esta opción.</p>
             </div>
             <button class="button secondary plus-cancel-button" type="button" disabled aria-describedby="plus-cancel-note">Cancelar membresía</button>

@@ -4,7 +4,7 @@
   ['target' => '[data-help-target="profile-identity"]', 'title' => 'Datos personales', 'body' => 'Completa nombre y apellido por separado y tu DNI. El DNI es único: no puede repetirse en otra cuenta.'],
   ['target' => '[data-help-target="profile-contact"]', 'title' => 'Verificar contacto', 'body' => 'Usa Verificar correo o Verificar teléfono para recibir un enlace. No puedes verificarte tú mismo: solo se confirma al abrir el enlace recibido. Al verificarse aparece un ✓.'],
   ['target' => '[data-help-target="profile-address"]', 'title' => 'Dirección', 'body' => 'Indica dirección, código postal, ciudad y provincia.'],
-  ['target' => '.profile-settings-form button[type="submit"]:last-of-type', 'title' => 'Guardar', 'body' => 'Los cambios solo se aplican al guardar. Si cambias correo o teléfono, deberás verificarlos otra vez.'],
+  ['target' => '[data-help-target="profile-save"]', 'title' => 'Guardar', 'body' => 'Los cambios solo se aplican al guardar. Si cambias correo o teléfono, deberás verificarlos otra vez.'],
 ]])
 <section class="form-page wrap profile-settings-page">
   @include('settings._tabs', ['active' => 'profile'])
@@ -37,11 +37,11 @@
     <div class="form-grid" data-help-target="profile-identity">
       @php [$defaultFirstName, $defaultLastName] = $user->nameParts(); @endphp
       <label>Nombre
-        <input type="text" name="first_name" value="{{ old('first_name', $defaultFirstName) }}" required maxlength="80" autocomplete="given-name">
+        <input type="text" name="first_name" value="{{ old('first_name', $defaultFirstName) }}" maxlength="80" autocomplete="given-name">
         @error('first_name')<small class="error">{{ $message }}</small>@enderror
       </label>
       <label>Apellido
-        <input type="text" name="last_name" value="{{ old('last_name', $defaultLastName) }}" required maxlength="80" autocomplete="family-name">
+        <input type="text" name="last_name" value="{{ old('last_name', $defaultLastName) }}" maxlength="80" autocomplete="family-name">
         @error('last_name')<small class="error">{{ $message }}</small>@enderror
       </label>
       <label>DNI
@@ -53,7 +53,7 @@
     <div class="form-grid" data-help-target="profile-contact">
       <div class="verify-field">
         <label>Correo electrónico
-          <input type="email" name="email" value="{{ old('email', $user->email) }}" required maxlength="180" autocomplete="email">
+          <input type="email" name="email" value="{{ old('email', $user->email) }}" maxlength="180" autocomplete="email">
           @error('email')<small class="error">{{ $message }}</small>@enderror
         </label>
         <div class="verify-status">
@@ -109,7 +109,7 @@
       </label>
     </div>
 
-    <button class="button" type="submit">Guardar cambios <span>→</span></button>
+    <button class="button" type="submit" data-help-target="profile-save">Guardar cambios <span>→</span></button>
   </form>
   <form id="verify-email-form" method="POST" action="{{ route('verification.send') }}" hidden>@csrf</form>
   <form id="verify-phone-form" method="POST" action="{{ route('phone.verification.send') }}" hidden>@csrf</form>

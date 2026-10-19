@@ -6,9 +6,11 @@ use App\Models\Appointment;
 use App\Models\Business;
 use App\Models\Inquiry;
 use App\Models\Order;
+use App\Models\User;
 use App\Services\Sms\LogSmsSender;
 use App\Services\Sms\SmsSender;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\View;
@@ -31,8 +33,24 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('layouts.app', function ($view) {
             $user = Auth::user();
-            if (!$user) {
-                $view->with('globalInbox', null);
+            if (!$user instanceof User) {
+                $view->with(['globalInbox' => null, 'hasImpulsoPlusAccess' => false]);
+                return;
+            }
+
+            $cache = Cache::store('file');
+            $cacheNamespace = app()->environment().':'.$user->id;
+            $hasImpulsoPlusAccess = $cache->remember('layout:plus-access:v1:'.$cacheNamespace, now()->addSeconds(30), fn () =>
+                $user->role === 'superadmin'
+                || $user->ownedBusinesses()->exists()
+                || $user->businesses()->wherePivotIn('role', ['owner', 'administrator'])->exists()
+            );
+            $view->with('hasImpulsoPlusAccess', $hasImpulsoPlusAccess);
+
+            $inboxCacheKey = 'layout:global-inbox:v1:'.$cacheNamespace;
+            $cachedInbox = $cache->get($inboxCacheKey);
+            if ($cachedInbox !== null) {
+                $view->with('globalInbox', $cachedInbox);
                 return;
             }
 
@@ -130,7 +148,7 @@ class AppServiceProvider extends ServiceProvider
                         'created_at' => $inquiry->answered_at ?? $inquiry->updated_at,
                     ]);
 
-            $view->with('globalInbox', [
+            $globalInbox = [
                 'title' => $managesBusinesses ? 'Mensajes' : 'Mi bandeja',
                 'subtitle' => $managesBusinesses ? 'Actividad de tus emprendimientos' : 'Consultas y respuestas',
                 'messages' => $messages,
@@ -138,7 +156,9 @@ class AppServiceProvider extends ServiceProvider
                 'message_tab' => $managesBusinesses ? 'Consultas' : 'Enviadas',
                 'notification_tab' => 'Notificaciones',
                 'total' => $messages->count() + $notifications->count(),
-            ]);
+            ];
+            $cache->put($inboxCacheKey, $globalInbox, now()->addSeconds(20));
+            $view->with('globalInbox', $globalInbox);
         });
     }
 }

@@ -159,9 +159,24 @@ class BusinessController extends Controller
         return redirect()->route('dashboard', $business)->with('success', 'Tu emprendimiento fue creado.');
     }
 
-    public function show(Business $business)
+    public function show(string $business)
     {
-        abort_unless($business->is_public, 404);
-        return view('business.show', ['business' => $business->load(['owner', 'products', 'socialLinks', 'reviews' => fn ($query) => $query->where('is_visible', true)->latest(), 'posts' => fn ($query) => $query->where('is_published', true)->where(fn ($query) => $query->whereNull('starts_at')->orWhereDate('starts_at', '<=', today()))->where(fn ($query) => $query->whereNull('ends_at')->orWhereDate('ends_at', '>=', today()))]), 'palettes' => self::PUBLIC_PALETTES]);
+        $business = Business::query()
+            ->leftJoin('users as business_owners', 'business_owners.id', '=', 'businesses.owner_id')
+            ->select('businesses.*', 'business_owners.name as public_owner_name')
+            ->where('businesses.slug', $business)
+            ->where('businesses.is_public', true)
+            ->with([
+                'products',
+                'socialLinks',
+                'reviews' => fn ($query) => $query->where('is_visible', true)->latest(),
+                'posts' => fn ($query) => $query->where('is_published', true)
+                    ->where(fn ($query) => $query->whereNull('starts_at')->orWhereDate('starts_at', '<=', today()))
+                    ->where(fn ($query) => $query->whereNull('ends_at')->orWhereDate('ends_at', '>=', today()))
+                    ->with('products'),
+            ])
+            ->firstOrFail();
+
+        return view('business.show', ['business' => $business, 'palettes' => self::PUBLIC_PALETTES]);
     }
 }

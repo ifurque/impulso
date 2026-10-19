@@ -26,9 +26,8 @@
 		<a class="brand" href="{{ route('home') }}"><span class="brand-mark">+</span> impulso</a>
 		<div class="nav-links">
 			@auth
-				@php($hasImpulsoPlusAccess = auth()->user()->role === 'superadmin' || auth()->user()->ownedBusinesses()->exists() || auth()->user()->businesses()->wherePivotIn('role', ['owner', 'administrator'])->exists())
 				@if($hasImpulsoPlusAccess)
-					<a class="nav-highlight nav-plus" href="{{ route('business.plus.index') }}">+impulso</a>
+					<a class="nav-highlight nav-plus" href="{{ route('business.plus.index') }}">+Impulso</a>
 				@endif
 				<a href="{{ route('discover') }}">Explorar</a>
 				<a href="{{ route('user.profile') }}">Mi perfil</a>
