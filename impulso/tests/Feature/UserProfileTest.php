@@ -27,7 +27,10 @@ class UserProfileTest extends TestCase
             ->assertOk()
             ->assertSee('Mi perfil')
             ->assertSee('Datos personales')
-            ->assertSee('Personalización');
+            ->assertSee('Personalización')
+            ->assertSee('Usar mi ubicación actual')
+            ->assertSee('id="set-profile-location"', false)
+            ->assertSee('id="profile-location-status"', false);
 
         $this->actingAs($user)
             ->get(route('user.customization'))

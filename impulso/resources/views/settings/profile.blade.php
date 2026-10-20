@@ -3,7 +3,7 @@
 @include('partials.help-tour-trigger', ['label' => 'Guía de mi perfil', 'steps' => [
   ['target' => '[data-help-target="profile-identity"]', 'title' => 'Datos personales', 'body' => 'Completa nombre y apellido por separado y tu DNI. El DNI es único: no puede repetirse en otra cuenta.'],
   ['target' => '[data-help-target="profile-contact"]', 'title' => 'Verificar contacto', 'body' => 'Usa Verificar correo o Verificar teléfono para recibir un enlace. No puedes verificarte tú mismo: solo se confirma al abrir el enlace recibido. Al verificarse aparece un ✓.'],
-  ['target' => '[data-help-target="profile-address"]', 'title' => 'Dirección', 'body' => 'Indica dirección, código postal, ciudad y provincia.'],
+  ['target' => '[data-help-target="profile-address"]', 'title' => 'Dirección', 'body' => 'Indica dirección, código postal, ciudad y provincia. Puedes completar estos datos usando tu ubicación actual.'],
   ['target' => '[data-help-target="profile-save"]', 'title' => 'Guardar', 'body' => 'Los cambios solo se aplican al guardar. Si cambias correo o teléfono, deberás verificarlos otra vez.'],
 ]])
 <section class="form-page wrap profile-settings-page">
@@ -86,20 +86,24 @@
     </div>
 
     <div class="form-grid" data-help-target="profile-address">
+      <div class="profile-location-action wide">
+        <button type="button" class="button secondary" id="set-profile-location">Usar mi ubicación actual</button>
+        <p class="muted" id="profile-location-status" role="status" aria-live="polite">Completa dirección, código postal, ciudad y provincia automáticamente.</p>
+      </div>
       <label class="wide">Dirección
-        <input type="text" name="address" value="{{ old('address', $user->address) }}" maxlength="180" autocomplete="street-address" placeholder="Calle, número, piso y departamento">
+        <input type="text" id="profile-address" name="address" value="{{ old('address', $user->address) }}" maxlength="180" autocomplete="street-address" placeholder="Calle, número, piso y departamento">
         @error('address')<small class="error">{{ $message }}</small>@enderror
       </label>
       <label>Código postal
-        <input type="text" name="postal_code" value="{{ old('postal_code', $user->postal_code) }}" maxlength="10" autocomplete="postal-code">
+        <input type="text" id="profile-postal-code" name="postal_code" value="{{ old('postal_code', $user->postal_code) }}" maxlength="10" autocomplete="postal-code">
         @error('postal_code')<small class="error">{{ $message }}</small>@enderror
       </label>
       <label>Ciudad
-        <input type="text" name="city" value="{{ old('city', $user->city) }}" maxlength="120" autocomplete="address-level2">
+        <input type="text" id="profile-city" name="city" value="{{ old('city', $user->city) }}" maxlength="120" autocomplete="address-level2">
         @error('city')<small class="error">{{ $message }}</small>@enderror
       </label>
       <label>Provincia
-        <select name="province" autocomplete="address-level1">
+        <select id="profile-province" name="province" autocomplete="address-level1">
           <option value="">Selecciona una provincia</option>
           @foreach(\App\Support\ArgentinaProvinces::all() as $province)
             <option value="{{ $province }}" @selected(old('province', $user->province) === $province)>{{ $province }}</option>
@@ -123,6 +127,63 @@
     image.alt = 'Vista previa de tu foto de perfil';
     image.src = URL.createObjectURL(file);
     preview.replaceChildren(image);
+  });
+
+  const profileLocationButton = document.getElementById('set-profile-location');
+  const profileLocationStatus = document.getElementById('profile-location-status');
+  profileLocationButton?.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      profileLocationStatus.textContent = 'Este navegador no permite obtener la ubicación.';
+      return;
+    }
+
+    profileLocationStatus.textContent = 'Obteniendo ubicación...';
+    navigator.geolocation.getCurrentPosition((position) => {
+      const { latitude, longitude } = position.coords;
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`, {
+        headers: { 'Accept-Language': 'es' },
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error('No se pudo consultar la dirección.');
+          return response.json();
+        })
+        .then((data) => {
+          if (!data.address) {
+            profileLocationStatus.textContent = 'No encontramos una dirección para esta ubicación. Puedes completar los datos manualmente.';
+            return;
+          }
+
+          const address = data.address;
+          const street = [address.road, address.house_number].filter(Boolean).join(' ');
+          const addressInput = document.getElementById('profile-address');
+          const postalCodeInput = document.getElementById('profile-postal-code');
+          const cityInput = document.getElementById('profile-city');
+          const provinceInput = document.getElementById('profile-province');
+          const city = address.city || address.town || address.village || address.municipality || '';
+          const province = (address.state || address.region || '').replace(/^Provincia de\s+/i, '').trim();
+
+          if (street) addressInput.value = street;
+          if (address.postcode) postalCodeInput.value = address.postcode;
+          if (city) cityInput.value = city;
+          if (province) {
+            const provinceAliases = {
+              'Ciudad de Buenos Aires': 'Ciudad Autónoma de Buenos Aires',
+              'CABA': 'Ciudad Autónoma de Buenos Aires',
+            };
+            const provinceName = provinceAliases[province] || province;
+            const provinceOption = Array.from(provinceInput.options)
+              .find((option) => option.value.toLocaleLowerCase('es') === provinceName.toLocaleLowerCase('es'));
+            if (provinceOption) provinceInput.value = provinceOption.value;
+          }
+
+          profileLocationStatus.textContent = 'Ubicación completada automáticamente. Puedes editar los datos manualmente.';
+        })
+        .catch(() => {
+          profileLocationStatus.textContent = 'No pudimos completar la dirección. Puedes ingresar los datos manualmente.';
+        });
+    }, () => {
+      profileLocationStatus.textContent = 'No pudimos obtener la ubicación. Revisa el permiso del navegador.';
+    }, { enableHighAccuracy: true, timeout: 10000 });
   });
 </script>
 @endsection
