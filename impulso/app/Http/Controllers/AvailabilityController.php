@@ -7,8 +7,12 @@ use App\Models\BusinessAvailabilityHours;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Configuración de horarios de atención, turnos, envíos y medios de pago de un emprendimiento.
+ */
 class AvailabilityController extends Controller
 {
+    /** Muestra el horario semanal; los días sin registro se completan con 9 a 18 por defecto (sin guardarlos). */
     public function index(Business $business)
     {
         abort_unless($business->canBeManagedBy(Auth::user()), 403);
@@ -36,6 +40,10 @@ class AvailabilityController extends Controller
         ]);
     }
 
+    /**
+     * Guarda la configuración de turnos y entregas junto con el horario de cada día.
+     * Si no se habilitan turnos, todos los días quedan cerrados; si no hay entregas, se limpian sus datos.
+     */
     public function update(Request $request, Business $business)
     {
         abort_unless($business->canBeManagedBy(Auth::user()), 403);

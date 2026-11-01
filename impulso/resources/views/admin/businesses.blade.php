@@ -1,5 +1,7 @@
 @extends('layouts.app')
+{{-- Vista de administración: listado paginado de todos los emprendimientos --}}
 @section('content')
+{{-- Botón de guía interactiva con los pasos del tour de ayuda --}}
 @include('partials.help-tour-trigger', ['label' => 'Guía de administración de emprendimientos', 'steps' => [
   ['target' => $businesses->count() ? '.admin-row' : '.admin-list', 'title' => 'Listado de emprendimientos', 'body' => 'Cada fila muestra el negocio, su propietario y los datos de contacto. Usa la búsqueda del navegador si necesitas localizar uno rápidamente.'],
   ['target' => '.admin-tabs', 'title' => 'Secciones del panel', 'body' => 'Cambia entre Emprendimientos y Usuarios desde estas pestañas.'],
@@ -8,10 +10,14 @@
   ['target' => '.admin-row .button.danger', 'title' => 'Eliminar', 'body' => 'La eliminación es permanente e incluye los datos vinculados. Verifica el nombre antes de confirmar.'],
 ]])
 <section class="form-page wrap admin-page">
+  {{-- Pestañas de navegación del panel de administración --}}
   @include('admin._tabs', ['active' => 'businesses'])
+  {{-- Encabezado con el total de emprendimientos registrados --}}
   <div class="dashboard-top"><div><p class="eyebrow">Panel de administración</p><h1>Emprendimientos</h1><p class="muted">{{ $businesses->total() }} registrados</p></div></div>
+  {{-- Listado: una fila por emprendimiento --}}
   <div class="admin-list">
     @forelse($businesses as $business)
+      {{-- Fila: avatar, datos del negocio y acciones --}}
       <article class="admin-row">
         <span class="admin-avatar">@if($business->profile_photo_url)<img src="{{ $business->profile_photo_url }}" alt="Foto de {{ $business->name }}">@else{{ Str::substr($business->name, 0, 1) }}@endif</span>
         <div class="admin-copy">
@@ -19,6 +25,7 @@
           <p class="admin-meta">{{ $business->location ?: 'Sin zona' }} <span>·</span> {{ $business->category ?: 'Sin clasificación' }}</p>
           <p class="admin-submeta">{{ $business->email ?: 'Sin correo de contacto' }} <span>·</span> {{ $business->phone ?: 'Sin teléfono' }} <span>·</span> {{ $business->owner?->name ?: 'Sin propietario' }}</p>
         </div>
+        {{-- Acciones: modificar, alternar +Impulso y eliminar (con confirmación) --}}
         <div class="admin-actions">
           <a class="button secondary button-small" href="{{ route('admin.businesses.edit', $business) }}">Modificar</a>
           <form method="POST" action="{{ route('admin.businesses.plus', $business) }}">@csrf @method('PATCH')<button class="button secondary button-small admin-action-primary" type="submit">{{ $business->is_plus ? 'Quitar +Impulso' : 'Dar +Impulso' }}</button></form>
@@ -29,6 +36,7 @@
       <p class="empty">Todavía no hay emprendimientos.</p>
     @endforelse
   </div>
+  {{-- Paginación --}}
   {{ $businesses->links() }}
 </section>
 @endsection

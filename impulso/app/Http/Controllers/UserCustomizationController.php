@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+/** Preferencias visuales de la interfaz de cada usuario (tipografía, tema y colores). */
 class UserCustomizationController extends Controller
 {
+    /** Valores por defecto de la interfaz. */
     public const DEFAULTS = [
         'font_family' => 'dm',
         'theme_mode' => 'day',
@@ -16,6 +18,7 @@ class UserCustomizationController extends Controller
         'text_color' => '#182522',
     ];
 
+    /** Muestra las preferencias guardadas combinadas con los valores por defecto. */
     public function edit(Request $request)
     {
         $preferences = array_merge(self::DEFAULTS, $request->user()->ui_preferences ?? []);
@@ -26,6 +29,7 @@ class UserCustomizationController extends Controller
         return view('settings.customization', ['preferences' => $preferences]);
     }
 
+    /** Guarda las preferencias; el modo noche solo se admite con el fondo "paper". */
     public function update(Request $request)
     {
         $data = $request->validate([

@@ -6,11 +6,13 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/** Registro, inicio y cierre de sesión. */
 class AuthController extends Controller
 {
     public function showLogin() { return view('auth.login'); }
     public function showRegister() { return view('auth.register'); }
 
+    /** Crea la cuenta, inicia sesión y lleva al perfil para completarlo. */
     public function register(Request $request)
     {
         $data = $request->validate([
@@ -30,6 +32,7 @@ class AuthController extends Controller
         return redirect()->route('user.profile')->with('success', 'Tu cuenta ya está lista. Completa tu perfil.');
     }
 
+    /** Inicia sesión con correo y contraseña. */
     public function login(Request $request)
     {
         $credentials = $request->validate(['email' => ['required', 'email'], 'password' => ['required']]);
@@ -40,6 +43,7 @@ class AuthController extends Controller
         return redirect()->intended(route('discover'));
     }
 
+    /** Cierra la sesión e invalida el token. */
     public function logout(Request $request)
     {
         Auth::logout();

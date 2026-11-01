@@ -7,16 +7,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
+/** Perfil personal del usuario: datos de contacto, domicilio y avatar. */
 class UserProfileController extends Controller
 {
+    /** Formulario del perfil. */
     public function edit(Request $request)
     {
         return view('settings.profile', ['user' => $request->user()]);
     }
 
+    /** Actualiza el perfil; si cambian correo o teléfono se pierde la verificación y se borra el avatar anterior. */
     public function update(Request $request)
     {
         $user = $request->user();
+        // Se quitan espacios, puntos y guiones del DNI antes de validarlo.
         $document = preg_replace('/[\s.\-]/', '', (string) $request->input('document_number'));
         $request->merge(['document_number' => filled($document) ? $document : null]);
 

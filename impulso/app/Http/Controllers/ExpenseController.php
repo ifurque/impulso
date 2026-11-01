@@ -7,8 +7,10 @@ use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/** Registro de gastos de un emprendimiento. */
 class ExpenseController extends Controller
 {
+    /** Registra un gasto asociado a una categoría y al usuario que lo carga. */
     public function store(Request $request, Business $business)
     {
         abort_unless($business->canBeManagedBy(Auth::user()), 403);
@@ -17,6 +19,7 @@ class ExpenseController extends Controller
         return back()->with('success', 'Gasto registrado.');
     }
 
+    /** Listado paginado de gastos con las categorías disponibles para cargar uno nuevo. */
     public function index(Business $business)
     {
         abort_unless($business->canBeManagedBy(Auth::user()), 403);

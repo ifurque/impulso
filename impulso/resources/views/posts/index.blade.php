@@ -1,7 +1,9 @@
 ﻿@extends('layouts.app')
 
+{{-- Vista: gestión de publicaciones del negocio (redes sociales y listado de publicaciones creadas) --}}
 @section('content')
 <section class="dashboard wrap">
+  {{-- Encabezado con acciones: volver al panel y crear publicación --}}
   <div class="dashboard-top">
     <div>
       <p class="eyebrow">Contenido del emprendimiento</p>
@@ -11,6 +13,7 @@
     <div class="page-actions"><a class="button secondary" href="{{ route('dashboard', $business) }}">Volver al panel</a><a class="button" href="{{ route('posts.create', $business) }}">Crear publicación <span>+</span></a></div>
   </div>
 
+  {{-- Conexiones a redes sociales: formulario para agregar enlaces y lista de los guardados --}}
   <div class="dashboard-grid">
     <div class="panel">
       <p class="eyebrow">Redes sociales</p>
@@ -27,6 +30,7 @@
     </div>
   </div>
 
+  {{-- Listado paginado de publicaciones con edición en línea y eliminación --}}
   <div class="panel recent">
     <div class="panel-head"><div><p class="eyebrow">Tu contenido</p><h2>Publicaciones creadas</h2></div></div>
     <div class="post-list">
@@ -39,6 +43,7 @@
             <strong>$ {{ number_format($post->price, 0, ',', '.') }}</strong>
             @if($post->discountPercentage())<strong class="discount-badge">{{ $post->discountPercentage() }}% OFF</strong>@endif
             <small>{{ $post->is_published ? 'Publicada' : 'Borrador' }} @if($post->share_on_social) · Redes sociales @endif @if($post->ends_at) · hasta {{ $post->ends_at->format('d/m/Y') }} @endif</small>
+            {{-- Edición desplegable de la publicación --}}
             <details><summary>Editar publicación</summary><form method="POST" enctype="multipart/form-data" action="{{ route('posts.update', [$business, $post]) }}" class="form">@csrf @method('PUT')<label>Título<input name="title" value="{{ $post->title }}" required></label><label>Precio<input type="number" step="0.01" min="0" name="price" value="{{ $post->price }}" required></label><label>Descripción<textarea name="body" rows="3" required>{{ $post->body }}</textarea></label><label>Reemplazar fotos <span class="label-hint">Hasta 4 imágenes</span><input type="file" name="photos[]" accept="image/jpeg,image/png,image/webp" multiple></label><div class="publish-options"><label class="check"><input type="checkbox" name="is_published" value="1" @checked($post->is_published)> Publicar ahora</label><label class="check"><input type="checkbox" name="share_on_social" value="1" @checked($post->share_on_social)> Publicar en redes sociales</label></div><button class="button secondary">Guardar cambios</button></form></details>
           </div>
           <form method="POST" action="{{ route('posts.destroy', [$business, $post]) }}">@csrf @method('DELETE')<button class="plain-button">Eliminar</button></form>

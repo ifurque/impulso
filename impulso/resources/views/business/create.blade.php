@@ -1,16 +1,20 @@
 @extends('layouts.app')
 
+{{-- Vista: formulario para registrar un nuevo emprendimiento --}}
 @section('content')
 <section class="form-page wrap">
+  {{-- Encabezado de la página --}}
   <div class="section-heading">
     <p class="eyebrow">Nuevo emprendimiento</p>
     <h1>Cuentanos sobre tu idea.</h1>
     <p class="muted">Esta informacion ayudara a que las personas de tu comunidad te encuentren.</p>
   </div>
 
+  {{-- Formulario de alta (multipart por logo y portada) --}}
   <form method="POST" enctype="multipart/form-data" action="{{ route('business.store') }}" class="business-form">
     @csrf
 
+    {{-- Datos básicos: nombre, categoría, descripción y contacto --}}
     <div class="form-grid">
       <label>
         Nombre del emprendimiento
@@ -42,6 +46,7 @@
         <input type="email" name="email" value="{{ old('email') }}">
       </label>
 
+      {{-- Ubicación escrita a mano o completada con la geolocalización del navegador --}}
       <div class="location-field">
         <label>
           Ubicacion
@@ -51,9 +56,11 @@
         <p class="muted" id="business-location-status">Podés escribirla manualmente o completar una ubicación aproximada.</p>
       </div>
 
+      {{-- Coordenadas ocultas, rellenadas por el script de geolocalización --}}
       <input type="hidden" name="delivery_latitude" id="delivery-latitude" value="{{ old('delivery_latitude') }}">
       <input type="hidden" name="delivery_longitude" id="delivery-longitude" value="{{ old('delivery_longitude') }}">
 
+      {{-- Turnos: activación y duración (los campos se habilitan solo si se activa) --}}
       <label class="wide check">
         <input type="hidden" name="appointments_enabled" value="0">
         <input type="checkbox" id="appointments-enabled" name="appointments_enabled" value="1" @checked(old('appointments_enabled'))>
@@ -71,6 +78,7 @@
         </label>
       </div>
 
+      {{-- Entregas a domicilio: activación, radio, costo y medios de pago del cliente --}}
       <label class="wide check">
         <input type="hidden" name="delivery_enabled" value="0">
         <input type="checkbox" id="delivery-enabled" name="delivery_enabled" value="1" @checked(old('delivery_enabled'))>
@@ -106,6 +114,7 @@
         </div>
       </div>
 
+      {{-- Imágenes del emprendimiento: logo y portada --}}
       <label>
         Logo o foto de perfil <span class="label-hint">JPG, PNG o WEBP · max. 5 MB</span>
         <input type="file" name="profile_photo" accept="image/*">
@@ -117,6 +126,7 @@
       </label>
     </div>
 
+    {{-- Aviso general si la validación falló --}}
     @if($errors->any())
       <div class="notice error-box">Revisa los campos marcados antes de continuar.</div>
     @endif
@@ -126,6 +136,7 @@
 </section>
 
 <style>
+  /* Estilos propios de esta página: ubicación, entregas, pagos y adaptación a móvil */
   .location-field { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:10px 14px; align-items:end; grid-column:1 / -1; }
   .location-field .location-button { white-space:nowrap; margin-bottom:0; }
   .location-field #business-location-status { grid-column:1 / -1; margin:0; font-size:.78rem; }
@@ -154,6 +165,7 @@
 </style>
 
 <script>
+  // Habilita o deshabilita los campos de entregas y turnos según sus casillas
   const deliveryEnabled = document.querySelector('#delivery-enabled');
   const deliveryFields = document.querySelector('#delivery-fields');
   const deliveryInputs = deliveryFields ? deliveryFields.querySelectorAll('input, select, textarea') : [];
@@ -183,6 +195,7 @@
     syncAppointments();
   }
 
+  // Usa la geolocalización y una búsqueda inversa (Nominatim) para completar la ubicación del local
   const locationButton = document.querySelector('#set-business-location');
   const locationStatus = document.querySelector('#business-location-status');
   const latitudeInput = document.querySelector('#delivery-latitude');

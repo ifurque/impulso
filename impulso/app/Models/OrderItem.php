@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/** Línea de un pedido; guarda nombre y precio del producto al momento de la compra. */
 class OrderItem extends Model
 {
     use HasFactory;

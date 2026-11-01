@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+/** Lista de provincias argentinas, usada para validar y mostrar el campo provincia del perfil. */
 class ArgentinaProvinces
 {
     /** @return list<string> */

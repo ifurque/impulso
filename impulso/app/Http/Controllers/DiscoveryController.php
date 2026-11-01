@@ -8,8 +8,12 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
+/**
+ * Explorador público de emprendimientos, con filtro por categoría y búsqueda tolerante a errores.
+ */
 class DiscoveryController extends Controller
 {
+    /** Lista emprendimientos públicos paginados; responde JSON (HTML parcial) cuando se pide por AJAX. */
     public function index(Request $request)
     {
         $query = Business::query()->where('is_public', true)
@@ -20,6 +24,7 @@ class DiscoveryController extends Controller
             ->withCount(['reviews as visible_reviews_count' => fn ($q) => $q->where('is_visible', true)])
             ->withAvg(['reviews as visible_rating' => fn ($q) => $q->where('is_visible', true)], 'rating');
 
+        // Con búsqueda se filtra en memoria (para tolerar acentos y typos) y se pagina a mano.
         if ($request->filled('search')) {
             $search = $this->normalize($request->string('search')->toString());
             $businesses = $businessQuery->get()->filter(fn (Business $business) => $this->matchesSearch($business, $search));
@@ -51,6 +56,7 @@ class DiscoveryController extends Controller
         return view('discover', compact('businesses', 'categories', 'palettes'));
     }
 
+    /** Coincide si alguna palabra del nombre o la descripción empieza con la búsqueda o difiere en a lo sumo una letra. */
     private function matchesSearch(Business $business, string $search): bool
     {
         if ($search === '') {
@@ -74,6 +80,7 @@ class DiscoveryController extends Controller
         return false;
     }
 
+    /** Pasa a minúsculas y sin acentos para comparar textos. */
     private function normalize(string $value): string
     {
         return Str::lower(Str::ascii(trim($value)));

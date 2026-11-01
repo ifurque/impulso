@@ -10,14 +10,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
+/** Publicaciones (ofertas) del emprendimiento y enlaces a sus redes sociales. */
 class PostController extends Controller
 {
+    /** Listado paginado de publicaciones y redes sociales cargadas. */
     public function index(Business $business)
     {
         $this->ownerOnly($business);
         return view('posts.index', ['business' => $business, 'posts' => $business->posts()->latest()->paginate(10), 'socialLinks' => $business->socialLinks()->get()]);
     }
 
+    /** Formulario de nueva publicación, con los productos activos para vincular. */
     public function create(Business $business)
     {
         $this->ownerOnly($business);
@@ -25,6 +28,7 @@ class PostController extends Controller
         return view('posts.create', ['business' => $business, 'socialLinks' => $business->socialLinks()->get(), 'products' => $business->products()->where('is_active', true)->orderBy('name')->get()]);
     }
 
+    /** Crea una oferta con hasta 4 fotos y los productos (con cantidad) que incluye. */
     public function store(Request $request, Business $business)
     {
         $this->ownerOnly($business);
@@ -73,6 +77,7 @@ class PostController extends Controller
         return back()->with('success', 'Publicación creada.');
     }
 
+    /** Edita una publicación: si se suben fotos nuevas reemplaza y borra las anteriores, y rearma sus productos. */
     public function update(Request $request, Business $business, Post $post)
     {
         $this->ownerOnly($business);
@@ -95,6 +100,7 @@ class PostController extends Controller
         return back()->with('success', 'Publicación actualizada.');
     }
 
+    /** Elimina la publicación y sus fotos. */
     public function destroy(Business $business, Post $post)
     {
         $this->ownerOnly($business);
@@ -104,6 +110,7 @@ class PostController extends Controller
         return back()->with('success', 'Publicación eliminada.');
     }
 
+    /** Guarda o actualiza el enlace a una red social del emprendimiento (uno por plataforma). */
     public function social(Request $request, Business $business)
     {
         $this->ownerOnly($business);
@@ -113,6 +120,7 @@ class PostController extends Controller
         return back()->with('success', 'Red social guardada.');
     }
 
+    /** Devuelve [id de producto => cantidad] descartando entradas inválidas o de productos ajenos al emprendimiento. */
     private function normalizeSelectedProducts(Request $request, Business $business): array
     {
         $selectedProducts = [];
@@ -140,6 +148,7 @@ class PostController extends Controller
         return $selectedProducts;
     }
 
+    /** Corta con 403 si el usuario no puede gestionar el emprendimiento. */
     private function ownerOnly(Business $business): void
     {
         abort_unless($business->canBeManagedBy(Auth::user()), 403);

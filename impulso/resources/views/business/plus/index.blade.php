@@ -1,5 +1,6 @@
 ﻿@extends('layouts.app')
 
+{{-- Vista: elegir qué emprendimiento ver en la sección de membresía +Impulso --}}
 @section('content')
 <section class="plus-page wrap">
   <a class="back" href="{{ route('business.panels') }}">← Volver a mis emprendimientos</a>
@@ -9,6 +10,7 @@
     <p class="muted">Elegí el emprendimiento para conocer los beneficios de +Impulso.</p>
   </div>
 
+  {{-- Tarjetas de los emprendimientos; cada una lleva al detalle de +Impulso --}}
   <div class="plus-business-list">
     @foreach($businesses as $business)
       <a class="plus-business-card" href="{{ route('business.plus.show', $business) }}">

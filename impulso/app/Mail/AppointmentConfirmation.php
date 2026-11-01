@@ -9,6 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
+/** Mail al cliente con el enlace para confirmar y gestionar su turno. */
 class AppointmentConfirmation extends Mailable
 {
     use Queueable, SerializesModels;

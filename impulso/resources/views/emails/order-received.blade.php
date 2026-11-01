@@ -1,7 +1,9 @@
 <h1>Nuevo pedido recibido</h1>
+{{-- Email al dueño del negocio: aviso de nuevo pedido con detalle de productos, envío y total --}}
 <p>Hola {{ $order->business->owner->name }}, recibiste un pedido para {{ $order->business->name }}.</p>
 <p><strong>Cliente:</strong> {{ $order->customer_name }}</p>
 <p><strong>Productos:</strong></p>
+{{-- Ítems del pedido; si no hay ítems se usa el producto único del pedido --}}
 <ul>
 	@forelse($order->items as $item)
 		<li>{{ $item->quantity }} × {{ $item->product_name }} — ${{ number_format($item->subtotal, 0, ',', '.') }}</li>

@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Support\MediaUrl;
 
+/**
+ * Publicación del emprendimiento (novedad u oferta) con fotos, precio/descuento y vigencia.
+ * Puede vincular productos (post_products) para descontar stock.
+ */
 class Post extends Model
 {
     protected $fillable = ['business_id', 'created_by', 'title', 'body', 'photo', 'photos', 'type', 'price', 'discount_price', 'starts_at', 'ends_at', 'is_published', 'share_on_social'];
@@ -36,6 +40,7 @@ class Post extends Model
         return $this->hasMany(PostProduct::class, 'post_id', 'id');
     }
 
+    /** Porcentaje de descuento entre price y discount_price, o null si no aplica. */
     public function discountPercentage(): ?int
     {
         if (! $this->price || ! $this->discount_price || (float) $this->price <= 0) {

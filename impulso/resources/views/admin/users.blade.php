@@ -1,5 +1,7 @@
 @extends('layouts.app')
+{{-- Vista de administración: listado paginado de usuarios --}}
 @section('content')
+{{-- Botón de guía interactiva con los pasos del tour de ayuda --}}
 @include('partials.help-tour-trigger', ['label' => 'Guía de administración de usuarios', 'steps' => [
   ['target' => $users->count() ? '.admin-row' : '.admin-list', 'title' => 'Listado de usuarios', 'body' => 'Consulta nombre, contacto, rol y cantidad de emprendimientos. La foto de perfil aparece a la izquierda.'],
   ['target' => '.admin-tabs', 'title' => 'Secciones del panel', 'body' => 'Cambia entre Emprendimientos y Usuarios desde estas pestañas.'],
@@ -8,10 +10,14 @@
   ['target' => '.admin-row .button.danger', 'title' => 'Eliminar usuario', 'body' => 'Esta acción elimina la cuenta y sus emprendimientos asociados. Confirma solo después de revisar la fila.'],
 ]])
 <section class="form-page wrap admin-page">
+  {{-- Pestañas de navegación del panel de administración --}}
   @include('admin._tabs', ['active' => 'users'])
+  {{-- Encabezado con el total de usuarios registrados --}}
   <div class="dashboard-top"><div><p class="eyebrow">Panel de administración</p><h1>Usuarios</h1><p class="muted">{{ $users->total() }} registrados</p></div></div>
+  {{-- Listado: una fila por usuario --}}
   <div class="admin-list">
     @forelse($users as $user)
+      {{-- Fila: avatar, datos del usuario y acciones --}}
       <article class="admin-row">
         <span class="admin-avatar">@if($user->avatar_url)<img src="{{ $user->avatar_url }}" alt="Foto de {{ $user->name }}">@else{{ Str::substr($user->name, 0, 1) }}@endif</span>
         <div class="admin-copy">
@@ -19,6 +25,7 @@
           <p class="admin-meta">{{ $user->email }} <span>·</span> {{ $user->phone ?: 'Sin teléfono' }}</p>
           <p class="admin-submeta">{{ $user->is_entrepreneur ? 'Perfil emprendedor' : 'Cliente' }} <span>·</span> {{ $user->owned_businesses_count }} emprendimientos <span>·</span> Alta {{ $user->created_at->format('d/m/Y') }}</p>
         </div>
+        {{-- Acciones: modificar siempre; cambiar rol admin y eliminar solo sobre otros usuarios --}}
         <div class="admin-actions">
           <a class="button secondary button-small" href="{{ route('admin.users.edit', $user) }}">Modificar</a>
           @if(!$user->is(auth()->user()))
@@ -31,6 +38,7 @@
       <p class="empty">Todavía no hay usuarios.</p>
     @endforelse
   </div>
+  {{-- Paginación --}}
   {{ $users->links() }}
 </section>
 @endsection

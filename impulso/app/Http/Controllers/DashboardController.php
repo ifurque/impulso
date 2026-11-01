@@ -6,8 +6,12 @@ use App\Models\Business;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Tablero principal del emprendimiento con el resumen de los últimos 30 días.
+ */
 class DashboardController extends Controller
 {
+    /** Arma totales de gastos e ingresos, pendientes (turnos, consultas, pedidos) y últimos movimientos. */
     public function __invoke(Business $business)
     {
         abort_unless($business->canBeManagedBy(Auth::user()), 403);

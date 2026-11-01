@@ -7,11 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
+/** Catálogo de productos (inventario) de un emprendimiento. */
 class ProductController extends Controller
 {
     private const PRODUCT_UNITS = ['unidad', 'kilo', 'litro'];
     private const TEXT_MAX_120 = 'max:120';
 
+    /** Reglas de validación compartidas entre alta y edición de productos. */
     private function productRules(): array
     {
         return [
@@ -26,6 +28,7 @@ class ProductController extends Controller
         ];
     }
 
+    /** Crea un producto con foto opcional y le asigna el siguiente número de catálogo (con bloqueo para evitar repetidos). */
     public function store(Request $request, Business $business)
     {
         abort_unless($business->canBeManagedBy(Auth::user()), 403);
@@ -45,6 +48,7 @@ class ProductController extends Controller
         return back()->with('success', 'Registro guardado en la base de datos.');
     }
 
+    /** Suma mercadería entrante al stock de un producto existente. */
     public function addStock(Request $request, Business $business)
     {
         abort_unless($business->canBeManagedBy(Auth::user()), 403);
@@ -60,6 +64,7 @@ class ProductController extends Controller
         return back()->with('success', 'Mercadería ingresada y sumada al stock existente.');
     }
 
+    /** Actualiza los datos de un producto. */
     public function update(Request $request, Business $business, $product)
     {
         abort_unless($business->canBeManagedBy(Auth::user()), 403);
@@ -70,6 +75,7 @@ class ProductController extends Controller
         return back()->with('success', 'Registro actualizado.');
     }
 
+    /** Elimina un producto del emprendimiento. */
     public function destroy(Business $business, $product)
     {
         abort_unless($business->canBeManagedBy(Auth::user()), 403);

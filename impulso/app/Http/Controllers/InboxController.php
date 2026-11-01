@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+/** Bandeja del usuario con las consultas que envió a distintos emprendimientos. */
 class InboxController extends Controller
 {
+    /** Lista paginada de las consultas del usuario, con sus respuestas. */
     public function index(Request $request)
     {
         $inquiries = $request->user()

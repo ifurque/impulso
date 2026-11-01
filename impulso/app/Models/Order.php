@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/** Pedido hecho desde la página pública: datos del comprador, envío/retiro, medio de pago y totales. Sus líneas están en OrderItem. */
 class Order extends Model
 {
     use HasFactory;

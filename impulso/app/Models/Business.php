@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use App\Support\MediaUrl;
 use Illuminate\Support\Str;
 
+/**
+ * Emprendimiento: entidad central de la plataforma. Agrupa productos, turnos, pedidos,
+ * publicaciones, gastos/ingresos y toda la personalización visual de su página pública
+ * (campos public_*). `is_plus` indica si tiene el plan +Impulso.
+ */
 class Business extends Model
 {
     use HasFactory;
@@ -42,6 +47,7 @@ class Business extends Model
         ];
     }
 
+    /** Al crear un emprendimiento sin slug, genera uno único con el nombre más un sufijo aleatorio. */
     protected static function booted(): void
     {
         static::creating(function (Business $business) {
@@ -110,6 +116,7 @@ class Business extends Model
         return $this->hasMany(BusinessAvailabilityHours::class);
     }
 
+    /** Puede gestionarlo el dueño, un superadmin o un miembro con rol owner/administrator. */
     public function canBeManagedBy(?User $user): bool
     {
         if (!$user) {
@@ -121,6 +128,7 @@ class Business extends Model
             || $this->members()->whereKey($user->id)->wherePivotIn('role', ['owner', 'administrator'])->exists();
     }
 
+    // Accessors *_url: convierten la ruta guardada de cada imagen en una URL pública usable en las vistas.
     public function getProfilePhotoUrlAttribute(): ?string
     {
         return $this->resolveMediaUrl($this->profile_photo);

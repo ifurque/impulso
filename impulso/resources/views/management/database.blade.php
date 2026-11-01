@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+{{-- Base de datos (inventario) del emprendimiento: alta de productos, ingreso de mercadería y listado/edición del catálogo --}}
+{{-- Cálculo de la paleta de colores públicos del negocio, usada para tematizar esta pantalla --}}
 @php
   $palette = \App\Http\Controllers\BusinessController::PUBLIC_PALETTES[$business->public_palette ?? 'mint'] ?? \App\Http\Controllers\BusinessController::PUBLIC_PALETTES['mint'];
   $inventoryPrimary = $business->public_primary_color ?: $palette['paper'];
@@ -13,6 +15,7 @@
 @section('body_class', 'inventory-database-page')
 
 @section('content')
+  {{-- Variables CSS de color del negocio aplicadas al body de esta página --}}
   <style>
     body.inventory-database-page {
       --business-primary:
@@ -44,7 +47,9 @@
           64%, white 36%);
     }
   </style>
+  {{-- Contenedor principal de la pantalla de inventario --}}
   <section class="dashboard wrap">
+    {{-- Guía interactiva de la pantalla --}}
     @include('partials.help-tour-trigger', [
       'label' => 'Guía de inventario',
       'steps' => [
@@ -53,6 +58,7 @@
         ['target' => '[data-inventory-toggle="ingreso-mercaderia"]', 'title' => 'Ingresar mercadería', 'body' => 'Selecciona un producto y suma las unidades recibidas; el stock actual no se reemplaza.'],
       ]
     ])
+    {{-- Encabezado de la vista móvil --}}
     <header class="inventory-mobile-header">
       <p class="inventory-mobile-kicker">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -65,6 +71,7 @@
       <p class="inventory-mobile-description">Gestiona el stock de {{ $business->name }}.</p>
     </header>
 
+    {{-- Botones que abren cada apartado: crear producto, listado e ingreso de mercadería (el panel inicial se abre si hubo errores de validación) --}}
     <nav id="inventory-actions" class="inventory-mobile-actions" aria-label="Acciones de inventario"
       data-initial-panel="{{ $errors->has('incoming_quantity') || $errors->has('product_id') ? 'ingreso-mercaderia' : ($errors->any() ? 'nuevo-registro' : '') }}">
       <button type="button" aria-controls="inventory-disclosure-panel" aria-expanded="false"
@@ -103,8 +110,10 @@
         </svg>
       </button>
     </nav>
+    {{-- Contenedor donde el script mueve el apartado activo --}}
     <div id="inventory-disclosure-panel" class="inventory-disclosure-panel" hidden></div>
 
+    {{-- Encabezado de escritorio con accesos a gestión operativa y al panel --}}
     <div class="dashboard-top inventory-desktop-top">
       <div>
         <p class="eyebrow">Administración</p>
@@ -117,7 +126,9 @@
       </div>
     </div>
 
+    {{-- Almacén oculto de los tres apartados; el script los muestra según el botón elegido --}}
     <div id="inventory-panel-storage" hidden>
+      {{-- Apartado: crear producto --}}
       <section id="nuevo-registro" class="inventory-create-view" hidden>
         <header class="inventory-view-heading">
           <button class="inventory-back-link" type="button" aria-label="Cerrar apartado">
@@ -131,6 +142,7 @@
           </div>
         </header>
 
+        {{-- Configuración de las columnas/campos que se usan en la tabla de productos --}}
         <details class="inventory-components">
           <summary>Personalizar campos de la tabla</summary>
           <form method="POST" action="{{ route('management.database.components', $business) }}" class="db-components-form"
@@ -154,9 +166,11 @@
           </form>
         </details>
 
+        {{-- Formulario de alta de producto: foto, descripción, datos principales y datos opcionales (según los campos activados en la estructura) --}}
         <form method="POST" enctype="multipart/form-data" action="{{ route('products.store', $business) }}"
           class="inventory-product-form">
           @csrf
+          {{-- Foto y descripción --}}
           <div class="inventory-product-main">
             <div class="inventory-product-media-fields">
               <label class="inventory-photo-picker" for="inventory-product-photo">
@@ -177,6 +191,7 @@
               </label>
             </div>
 
+            {{-- Campos principales: nombre, marca, precio, stock y unidad; los desactivados se envían como valores ocultos por defecto --}}
             <div class="inventory-product-core">
               @if(in_array('producto', $selectedComponents, true))
                 <label class="inventory-field">
@@ -234,6 +249,7 @@
             </div>
           </div>
 
+          {{-- Datos privados y opcionales: modelo y categoría --}}
           <div class="inventory-product-optional">
             <h3>Datos privados y opcionales</h3>
             <div class="inventory-product-core">
@@ -257,6 +273,7 @@
             </div>
           </div>
 
+          {{-- Botones de cancelar y crear --}}
           <div class="inventory-form-actions">
             <button class="inventory-cancel-button" type="button" data-inventory-close>Cancelar</button>
             <button class="inventory-submit-button" type="submit">Crear producto</button>
@@ -264,6 +281,7 @@
         </form>
       </section>
 
+      {{-- Apartado: ingreso de mercadería (suma unidades al stock actual de un producto) --}}
       <section id="ingreso-mercaderia" class="inventory-stock-view" hidden>
         <header class="inventory-view-heading">
           <button class="inventory-back-link" type="button" aria-label="Cerrar apartado">
@@ -277,6 +295,7 @@
           </div>
         </header>
 
+        {{-- Formulario: elegir producto y cantidad recibida --}}
         <form method="POST" action="{{ route('products.add-stock', $business) }}" class="inventory-stock-form">
           @csrf
           <label class="inventory-stock-product">
@@ -321,6 +340,7 @@
         </form>
       </section>
 
+      {{-- Apartado: listado de productos con búsqueda, modificación y eliminación --}}
       <section id="registros" class="inventory-list-view" hidden>
         <div class="db-table-head">
           <div class="inventory-list-title">
@@ -336,6 +356,7 @@
           </label>
         </div>
 
+        {{-- Tabla de productos; las columnas dependen de los campos seleccionados --}}
         <div class="db-table-wrap">
           <table class="db-table">
             <thead>
@@ -359,6 +380,7 @@
               </tr>
             </thead>
             <tbody>
+              {{-- Una fila por producto con acciones de modificar y eliminar --}}
               @forelse($business->products as $product)
                 <tr data-db-row
                   data-filter-text="{{ Str::lower(($product->name ?? '') . ' ' . ($product->brand ?? '') . ' ' . ($product->model ?? '') . ' ' . ($product->category ?? '') . ' ' . ($product->unit ?? '')) }}">
@@ -390,6 +412,7 @@
                     </div>
                   </td>
                 </tr>
+                {{-- Fila oculta con el formulario de edición del producto (se despliega con "Modificar") --}}
                 <tr id="row-{{ $product->id }}" class="db-edit-row" hidden>
                   <td colspan="{{ 2 + count($selectedComponents) }}">
                     <form method="POST" action="{{ route('products.update', [$business, $product]) }}" class="db-edit-form">
@@ -476,6 +499,7 @@
                     </form>
                   </td>
                 </tr>
+              {{-- Estado vacío de la tabla --}}
               @empty
                 <tr>
                   <td colspan="{{ 2 + count($selectedComponents) }}" class="muted">No hay registros cargados.</td>
@@ -487,6 +511,7 @@
       </section>
     </div>
 
+    {{-- Navegación inferior móvil: perfil de usuario e inicio del panel --}}
     <nav class="inventory-mobile-bottom-nav" aria-label="Navegación del emprendimiento">
       <a href="{{ route('user.profile') }}">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -504,7 +529,9 @@
     </nav>
   </section>
 
+  {{-- Estilos de la pantalla de inventario --}}
   <style>
+    /* Formulario de componentes y tabla de registros */
     .db-components-form {
       display: flex;
       flex-wrap: wrap;
@@ -596,6 +623,7 @@
       align-items: center;
     }
 
+    /* Edición en línea de filas */
     .db-edit-row {
       background: #f9fbf7;
     }
@@ -613,6 +641,7 @@
       align-items: center;
     }
 
+    /* Layout general de la página de inventario: oculta navbar/footer y aplica el fondo del negocio */
     body.inventory-database-page {
       min-height: 100vh;
       background: linear-gradient(135deg, var(--business-primary) 0%, color-mix(in srgb, var(--business-secondary) 24%, var(--business-primary)) 100%);
@@ -632,6 +661,7 @@
       padding-bottom: 116px;
     }
 
+    /* Encabezado y botones de acciones del inventario */
     .inventory-mobile-header {
       display: grid;
       gap: 10px;
@@ -877,6 +907,7 @@
       background: #f5f8f8;
     }
 
+    /* Formulario de creación de producto */
     .inventory-product-form {
       display: grid;
       gap: 22px;
@@ -1224,6 +1255,7 @@
       background: #f8fafb;
     }
 
+    /* Responsive: tablets y móviles */
     @media (max-width: 980px) {
       .db-components-form {
         gap: 10px;
@@ -1402,6 +1434,7 @@
       }
     }
 
+    /* Escritorio: botones de acción en tres columnas */
     @media (min-width: 761px) {
       body.inventory-database-page .inventory-mobile-actions {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1414,7 +1447,9 @@
     }
   </style>
 
+  {{-- Script del inventario: búsqueda, edición en línea, vista previa de foto, steppers numéricos y apertura/cierre de apartados --}}
   <script>
+    // Filtro en vivo de la tabla de productos
     const dbSearchInput = document.querySelector('#db-search');
     const dbRows = document.querySelectorAll('[data-db-row]');
 
@@ -1426,6 +1461,7 @@
       });
     });
 
+    // Muestra u oculta la fila de edición de cada producto
     document.querySelectorAll('[data-edit-toggle]').forEach((button) => {
       button.addEventListener('click', () => {
         const target = document.getElementById(button.dataset.editToggle);
@@ -1434,6 +1470,7 @@
       });
     });
 
+    // Vista previa de la imagen elegida para el producto
     const photoInput = document.querySelector('#inventory-product-photo');
     const photoPreview = document.querySelector('#inventory-photo-preview');
 
@@ -1444,6 +1481,7 @@
       photoPreview.hidden = false;
     });
 
+    // Botones + / − de los campos numéricos (respetan el mínimo)
     document.querySelectorAll('.inventory-input-stepper [data-step]').forEach((button) => {
       button.addEventListener('click', () => {
         const input = button.parentElement.querySelector('input');
@@ -1455,6 +1493,7 @@
       });
     });
 
+    // Apartados desplegables: el panel activo se mueve del almacén oculto al contenedor visible
     const inventoryActions = document.querySelector('#inventory-actions');
     const inventoryPanelStorage = document.querySelector('#inventory-panel-storage');
     const inventoryDisclosurePanel = document.querySelector('#inventory-disclosure-panel');
@@ -1496,6 +1535,7 @@
       });
     });
 
+    // Botones de volver/cancelar cierran el apartado
     document.querySelectorAll('.inventory-back-link').forEach((button) => {
       button.addEventListener('click', closeInventoryPanel);
     });
@@ -1504,6 +1544,7 @@
       button.addEventListener('click', closeInventoryPanel);
     });
 
+    // Abre automáticamente el apartado indicado (p. ej. tras errores de validación)
     const initialPanelId = inventoryActions?.dataset.initialPanel;
     const initialToggle = initialPanelId && document.querySelector(`[data-inventory-toggle="${initialPanelId}"]`);
     if (initialToggle) openInventoryPanel(initialToggle);

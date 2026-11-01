@@ -1,11 +1,14 @@
 @extends('layouts.app')
 @section('content')
+{{-- Explorador público de emprendimientos con búsqueda y filtro por rubro --}}
+{{-- Guía interactiva de la pantalla --}}
 @include('partials.help-tour-trigger', ['label' => 'Guía para descubrir emprendimientos', 'steps' => [
   ['target' => '.search-input', 'title' => 'Buscar', 'body' => 'Escribe un nombre o una descripción para filtrar los resultados.'],
   ['target' => '.category-filter', 'title' => 'Filtrar por rubro', 'body' => 'Elige un rubro para ver solo esa categoría.'],
   ['target' => '.discover-create', 'title' => 'Crear emprendimiento', 'body' => 'Publica el tuyo para que la comunidad lo encuentre.'],
   ['target' => '#business-grid .business-card, #business-grid > *', 'title' => 'Resultados', 'body' => 'Abre cualquier tarjeta para ver el perfil completo.'],
 ]])
+{{-- Cabecera: título, botón de crear emprendimiento y controles de búsqueda/filtro --}}
 <section class="discover wrap">
   <div class="discover-head">
     <div>
@@ -36,6 +39,7 @@
     </div>
   </div>
 
+  {{-- Contenedor de resultados (se reemplaza por AJAX): grilla y paginación, o estado vacío --}}
   <div id="businesses-container">
     @if($businesses->count())
       <div class="business-grid" id="business-grid">
@@ -59,6 +63,7 @@
   </div>
 </section>
 
+{{-- Script de búsqueda en vivo: consulta /explorar por AJAX con debounce y reemplaza los resultados --}}
 <script>
   const searchInput = document.getElementById('search-input');
   const categoryFilter = document.getElementById('category-filter');

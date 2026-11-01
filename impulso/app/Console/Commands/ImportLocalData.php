@@ -10,6 +10,9 @@ use Illuminate\Support\Str;
 use RuntimeException;
 use Throwable;
 
+/**
+ * Comando de única vez para migrar los datos locales (SQLite) y las subidas a un entorno compartido PostgreSQL/S3 vacío.
+ */
 class ImportLocalData extends Command
 {
     protected $signature = 'app:import-local-data
@@ -20,10 +23,14 @@ class ImportLocalData extends Command
 
     protected $description = 'Imports the local SQLite data and uploads into an empty shared PostgreSQL/S3 setup.';
 
+    /** Tablas técnicas de Laravel que no se copian. */
     private const SKIPPED_TABLES = [
         'migrations', 'cache', 'cache_locks', 'jobs', 'job_batches', 'failed_jobs', 'sessions',
     ];
 
+    /**
+     * Ejecuta la importación. Exige --confirm; con --dry-run solo valida el destino sin copiar nada.
+     */
     public function handle(): int
     {
         if (! $this->option('confirm')) {
@@ -75,6 +82,10 @@ class ImportLocalData extends Command
         return self::SUCCESS;
     }
 
+    /**
+     * Verifica que el destino tenga todas las tablas y esté vacío, y devuelve las tablas ordenadas
+     * de modo que las tablas padre (claves foráneas) se copien antes que las hijas.
+     */
     private function prepareTableOrder($source, $target): array
     {
         $sourceTables = collect($source->select("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"))
@@ -136,6 +147,7 @@ class ImportLocalData extends Command
         return $ordered;
     }
 
+    /** Copia las filas en una transacción, por lotes, y reajusta las secuencias de ids de PostgreSQL. */
     private function copyDatabase($source, $target, array $tables): void
     {
         $target->transaction(function () use ($source, $target, $tables): void {
@@ -160,6 +172,7 @@ class ImportLocalData extends Command
         });
     }
 
+    /** Sube a S3 los archivos de public/uploads, salteando los que ya existen en el destino. */
     private function copyUploads(): void
     {
         if (config('filesystems.disks.public.driver') !== 's3') {

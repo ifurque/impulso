@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/** Consulta de un cliente a un emprendimiento; el emprendimiento puede responderla (bandeja). */
 class Inquiry extends Model
 {
     protected $fillable = ['business_id', 'client_id', 'subject', 'message', 'response', 'status', 'answered_at'];

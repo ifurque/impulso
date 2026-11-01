@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Support\MediaUrl;
 
+/** Producto o servicio del catálogo de un emprendimiento, con stock, precio y datos de catálogo. */
 class Product extends Model
 {
     protected $fillable = ['business_id', 'catalog_number', 'name', 'brand', 'model', 'description', 'photo', 'type', 'category', 'unit', 'quantity', 'price', 'duration', 'is_active'];

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/** Tabla pivote entre publicación y producto, con la cantidad de unidades vinculadas. */
 class PostProduct extends Model
 {
     public $timestamps = true;

@@ -1,7 +1,10 @@
 @extends('layouts.app')
+{{-- Vista: personalización visual de la cuenta (fuente, fondo y colores de toda la plataforma) --}}
 @section('content')
 <section class="form-page wrap">
+  {{-- Pestañas de "Mi perfil" --}}
   @include('settings._tabs', ['active' => 'customization'])
+  {{-- Encabezado de la página --}}
   <div class="dashboard-top">
     <div>
       <p class="eyebrow">Tu cuenta</p>
@@ -10,9 +13,11 @@
     </div>
   </div>
 
+  {{-- Formulario de preferencias; los cambios se previsualizan en vivo con el script del final --}}
   <form method="POST" action="{{ route('user.customization.update') }}" class="customization-form">
     @csrf
 
+    {{-- Presets: combinaciones predefinidas que completan el resto de los campos --}}
     <fieldset>
       <legend>Presets rápidos</legend>
       <div class="preset-grid" id="user-preset-grid">
@@ -35,6 +40,7 @@
       </div>
     </fieldset>
 
+    {{-- Selección de tipografía --}}
     <fieldset>
       <legend>Tipografía</legend>
       <div class="customization-options font-options">
@@ -49,8 +55,10 @@
       </div>
     </fieldset>
 
+    {{-- Modo visual (día/noche) guardado en un campo oculto; lo cambian los presets --}}
     <input id="theme-mode-value" type="hidden" name="theme_mode" value="{{ $preferences['theme_mode'] }}">
 
+    {{-- Selección de fondo de pantalla --}}
     <fieldset>
       <legend>Fondo de pantalla</legend>
       <div class="customization-options">
@@ -65,6 +73,7 @@
       </div>
     </fieldset>
 
+    {{-- Colores: fondo, patrón, barra de navegación y texto --}}
     <fieldset>
       <legend>Colores</legend>
       <div class="form-inline">
@@ -96,6 +105,7 @@
 </section>
 
 <script>
+  // Al elegir un preset se completan los campos del formulario y se aplica la vista previa
   const userPresetGrid = document.getElementById('user-preset-grid');
   userPresetGrid?.querySelectorAll('.preset-card').forEach((card) => {
     card.addEventListener('click', () => {
@@ -131,6 +141,7 @@
     text: document.querySelector('input[name="text_color"]'),
   };
 
+  // Aplica a <body> las clases y variables CSS según las opciones elegidas (vista previa sin guardar)
   function applyUserPreview() {
     const selectedFont = document.querySelector('input[name="font_family"]:checked')?.value || 'dm';
     const selectedMode = document.querySelector('#theme-mode-value')?.value || 'day';
@@ -147,6 +158,7 @@
     userBody.style.setProperty('--user-text-color', document.querySelector('input[name="text_color"]')?.value || '#182522');
   }
 
+  // Actualiza la vista previa ante cualquier cambio de fuente, fondo o color
   document.querySelectorAll('input[name="font_family"], input[name="screen_background"], input[type="color"]').forEach((input) => {
     input.addEventListener('change', applyUserPreview);
   });

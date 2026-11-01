@@ -1,3 +1,4 @@
+{{-- Burbuja flotante de bandeja global con pestañas de mensajes y notificaciones --}}
 @if(!empty($globalInbox))
 <details class="business-inbox" data-global-inbox>
   <summary aria-label="Abrir bandeja de mensajes y notificaciones">
@@ -15,6 +16,7 @@
       <span class="inbox-close">×</span>
     </div>
 
+    {{-- Pestañas para alternar entre mensajes y notificaciones --}}
     <div class="inbox-tabs" role="tablist">
       <button class="inbox-tab is-active" type="button" data-inbox-tab="messages">
         {{ $globalInbox['message_tab'] }} <b>{{ $globalInbox['messages']->count() }}</b>
@@ -24,6 +26,7 @@
       </button>
     </div>
 
+    {{-- Panel de mensajes --}}
     <div class="inbox-pane is-active" data-inbox-pane="messages">
       @forelse($globalInbox['messages'] as $message)
         <a href="{{ $message['href'] }}" class="inbox-conversation">
@@ -43,6 +46,7 @@
       @endforelse
     </div>
 
+    {{-- Panel de notificaciones --}}
     <div class="inbox-pane" data-inbox-pane="notifications">
       @forelse($globalInbox['notifications'] as $notification)
         <a href="{{ $notification['href'] }}" class="inbox-notification">
@@ -63,6 +67,7 @@
   </div>
 </details>
 
+{{-- Script que cambia entre las pestañas de la bandeja --}}
 <script>
   (() => {
     const inbox = document.querySelector('[data-global-inbox]');

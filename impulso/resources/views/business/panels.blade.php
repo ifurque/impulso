@@ -1,5 +1,7 @@
 @extends('layouts.app')
+{{-- Vista: selector de "Mis emprendimientos" del usuario para entrar a administrarlos --}}
 @section('content')
+{{-- Botón de guía interactiva con los pasos del tour de ayuda --}}
 @include('partials.help-tour-trigger', ['label' => 'Guía de mis emprendimientos', 'steps' => [
   ['target' => '.dashboard-top .button', 'title' => 'Crear emprendimiento', 'body' => 'Registra un nuevo emprendimiento en pocos pasos.'],
   ['target' => '.business-owner-list .admin-row', 'title' => 'Tus emprendimientos', 'body' => 'Cada fila resume zona, rubro, contacto y si la agenda está activa.'],
@@ -7,7 +9,9 @@
   ['target' => '.business-owner-list .admin-actions > a:last-child', 'title' => 'Ver perfil', 'body' => 'Mira cómo ve tu emprendimiento el público.'],
 ]])
 <section class="dashboard wrap">
+  {{-- Pestañas de "Mi perfil" --}}
   @include('settings._tabs', ['active' => 'businesses'])
+  {{-- Encabezado con acceso para crear un emprendimiento --}}
   <div class="dashboard-top">
     <div>
       <p class="eyebrow">Tu espacio de trabajo</p>
@@ -17,8 +21,10 @@
     <a class="button" href="{{ route('business.create') }}">Crear emprendimiento <span>+</span></a>
   </div>
 
+  {{-- Listado de emprendimientos propios --}}
   <div class="admin-list business-owner-list">
     @forelse($businesses as $business)
+      {{-- Fila: logo, datos del negocio (incluye estado de la agenda) y acciones --}}
       <article class="admin-row">
         <span class="admin-avatar">
           @if($business->profile_photo_url)
@@ -41,6 +47,7 @@
         </div>
       </article>
     @empty
+      {{-- Estado vacío: invita a crear el primer emprendimiento --}}
       <div class="panel">
         <h2>Todavía no tenés emprendimientos.</h2>
         <a class="button" href="{{ route('business.create') }}">Crear emprendimiento <span>→</span></a>

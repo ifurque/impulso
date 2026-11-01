@@ -12,12 +12,17 @@ use Illuminate\Support\Str;
 use App\Mail\AppointmentConfirmation;
 use Carbon\Carbon;
 
+/**
+ * Panel de gestión del emprendimiento: turnos, pedidos, consultas, base de datos de productos y miembros.
+ * Incluye también los endpoints públicos para sacar y administrar turnos con token.
+ */
 class ManagementController extends Controller
 {
     private const DATE_NOT_PAST_RULE = 'after_or_equal:today';
     private const SLOT_UNAVAILABLE_MESSAGE = 'El horario seleccionado ya no está disponible.';
     private const DATABASE_OPTIONAL_COMPONENTS = ['producto', 'marca', 'modelo', 'unidad', 'cantidad', 'precio', 'categoria'];
 
+    /** Resumen de gestión: últimos turnos, pedidos (envío y retiro) y consultas. */
     public function index(Business $business)
     {
         $this->ownerOnly($business);
@@ -30,6 +35,7 @@ class ManagementController extends Controller
         ]);
     }
 
+    /** Muestra la tabla de productos con las columnas (componentes) que el dueño eligió ver. */
     public function database(Business $business)
     {
         $this->ownerOnly($business);
@@ -46,6 +52,7 @@ class ManagementController extends Controller
         ]);
     }
 
+    /** Guarda qué columnas opcionales se muestran en la base de datos de productos. */
     public function updateDatabaseComponents(Request $request, Business $business)
     {
         $this->ownerOnly($business);
@@ -62,6 +69,7 @@ class ManagementController extends Controller
         return back()->with('success', 'Componentes de la base de datos actualizados.');
     }
 
+    /** Lista los miembros asociados al emprendimiento. */
     public function members(Business $business)
     {
         $this->ownerOnly($business);
@@ -69,6 +77,10 @@ class ManagementController extends Controller
         return view('management.members', ['business' => $business->load('members')]);
     }
 
+    /**
+     * Solicita un turno. Si hay sesión queda pendiente; si es invitado queda a la espera de
+     * confirmación por mail. Se revalida el horario dentro de una transacción con bloqueo para evitar dobles reservas.
+     */
     public function appointment(Request $request, Business $business)
     {
         $rules = ['product_id' => ['nullable', 'exists:products,id'], 'appointment_date' => ['required', 'date', self::DATE_NOT_PAST_RULE], 'start_time' => ['required', 'date_format:H:i'], 'notes' => ['nullable', 'string', 'max:500']];
@@ -107,6 +119,7 @@ class ManagementController extends Controller
         return back()->with('success', 'Revisa tu correo para confirmar el turno.');
     }
 
+    /** Devuelve en JSON los horarios libres de un emprendimiento para una fecha. */
     public function availableSlots(Business $business, Request $request)
     {
         abort_unless($business->is_public && $business->appointments_enabled, 404);
@@ -115,6 +128,7 @@ class ManagementController extends Controller
         return response()->json(['slots' => $this->availableSlotTimes($business, Carbon::parse($data['date']))]);
     }
 
+    /** Confirma el turno de un invitado a partir del enlace que recibió por mail. */
     public function confirmAppointment(string $token)
     {
         $appointment = \App\Models\Appointment::where('confirmation_token', $token)->firstOrFail();
@@ -122,12 +136,14 @@ class ManagementController extends Controller
         return redirect()->route('business.show', $appointment->business)->with('success', 'Turno confirmado. El emprendimiento recibió tu solicitud.');
     }
 
+    /** Pantalla para que el cliente vea, cancele o reprograme su turno con el token de gestión. */
     public function manageAppointment(string $token)
     {
         $appointment = \App\Models\Appointment::where('management_token', $token)->firstOrFail();
         return view('appointments.manage', compact('appointment'));
     }
 
+    /** Cancela el turno desde el enlace de gestión del cliente. */
     public function cancelAppointment(string $token)
     {
         $appointment = \App\Models\Appointment::where('management_token', $token)->firstOrFail();
@@ -135,6 +151,7 @@ class ManagementController extends Controller
         return redirect()->route('appointments.manage', $token)->with('success', 'El turno fue cancelado.');
     }
 
+    /** Cambia fecha y hora del turno, validando que el nuevo horario esté libre (ignorando el propio turno). */
     public function rescheduleAppointment(Request $request, string $token)
     {
         $appointment = \App\Models\Appointment::where('management_token', $token)->firstOrFail();
@@ -152,6 +169,7 @@ class ManagementController extends Controller
         return redirect()->route('appointments.manage', $token)->with('success', 'El turno fue reprogramado.');
     }
 
+    /** El dueño actualiza el estado de un turno. */
     public function appointmentStatus(Request $request, Business $business, $appointment)
     {
         $this->ownerOnly($business);
@@ -160,6 +178,7 @@ class ManagementController extends Controller
         return back()->with('success', 'Estado del turno actualizado.');
     }
 
+    /** Un usuario con sesión envía una consulta al emprendimiento. */
     public function inquiry(Request $request, Business $business)
     {
         abort_unless($request->user(), 403);
@@ -168,6 +187,7 @@ class ManagementController extends Controller
         return back()->with('success', 'Consulta enviada.');
     }
 
+    /** El dueño responde o cambia el estado de una consulta; para marcarla respondida exige texto de respuesta. */
     public function inquiryStatus(Request $request, Business $business, $inquiry)
     {
         $this->ownerOnly($business);
@@ -193,6 +213,7 @@ class ManagementController extends Controller
         return back()->with('success', 'Consulta actualizada.');
     }
 
+    /** El dueño actualiza el estado de un pedido. */
     public function orderStatus(Request $request, Business $business, $order)
     {
         $this->ownerOnly($business);
@@ -201,6 +222,7 @@ class ManagementController extends Controller
         return back()->with('success', 'Estado del pedido actualizado.');
     }
 
+    /** Asocia un usuario existente (por email) al emprendimiento con un rol. */
     public function member(Request $request, Business $business)
     {
         $this->ownerOnly($business);
@@ -210,11 +232,16 @@ class ManagementController extends Controller
         return back()->with('success', 'Miembro asociado al emprendimiento.');
     }
 
+    /** Corta con 403 si el usuario actual no puede gestionar este emprendimiento. */
     private function ownerOnly(Business $business): void
     {
         abort_unless($business->canBeManagedBy(Auth::user()), 403);
     }
 
+    /**
+     * Calcula los horarios de inicio libres de un día según el horario de atención (por defecto 9 a 18),
+     * la duración del turno y los turnos ya reservados no cancelados.
+     */
     private function availableSlotTimes(Business $business, Carbon $date, ?int $excludeAppointmentId = null): array
     {
         $day = strtolower($date->format('l'));
@@ -245,6 +272,7 @@ class ManagementController extends Controller
 
             $slotStart = $slot->format('H:i');
             $slotEnd = $slot->copy()->addMinutes($duration);
+            // Dos turnos se pisan si sus rangos se solapan.
             $isBooked = $booked->contains(function ($appointment) use ($slot, $slotEnd) {
                 $bookedStart = Carbon::parse($appointment->start_time);
                 $bookedEnd = $appointment->end_time

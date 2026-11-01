@@ -8,8 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use Throwable;
 
+/**
+ * Verificación de la cuenta del usuario: correo (enlace firmado de Laravel) y teléfono (enlace firmado enviado por SMS).
+ */
 class AccountVerificationController extends Controller
 {
+    /** Envía el correo con el enlace de verificación, salvo que ya esté verificado. */
     public function sendEmail(Request $request)
     {
         $user = $request->user();
@@ -29,6 +33,7 @@ class AccountVerificationController extends Controller
         return back()->with('success', 'Te enviamos un correo con el enlace para verificar tu dirección.');
     }
 
+    /** Marca el correo como verificado al abrir el enlace firmado. */
     public function verifyEmail(EmailVerificationRequest $request)
     {
         $request->fulfill();
@@ -36,6 +41,7 @@ class AccountVerificationController extends Controller
         return redirect()->route('user.profile')->with('success', 'Tu correo quedó verificado.');
     }
 
+    /** Manda por SMS un enlace firmado (válido 60 minutos) para verificar el teléfono guardado. */
     public function sendPhone(Request $request, SmsSender $sms)
     {
         $user = $request->user();
@@ -64,6 +70,7 @@ class AccountVerificationController extends Controller
         return back()->with('success', 'Te enviamos un mensaje con el enlace para verificar tu teléfono.');
     }
 
+    /** Verifica el teléfono: el id y el hash del enlace deben corresponder al usuario y a su número actual. */
     public function verifyPhone(Request $request, string $id, string $hash)
     {
         $user = $request->user();

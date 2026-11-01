@@ -15,10 +15,13 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\View;
 
+/**
+ * Registra los servicios de la app y comparte con el layout principal los datos de la bandeja y notificaciones.
+ */
 class AppServiceProvider extends ServiceProvider
 {
     /**
-     * Register any application services.
+     * Registra los servicios de la aplicación.
      */
     public function register(): void
     {
@@ -27,7 +30,8 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap any application services.
+     * Inicializa la app: un view composer del layout calcula el acceso a +Impulso y la bandeja global.
+     * Quien administra emprendimientos ve consultas y turnos/pedidos pendientes; el resto ve sus consultas y respuestas.
      */
     public function boot(): void
     {
@@ -38,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
 
+            // Resultados cacheados por usuario unos segundos para no repetir consultas en cada página.
             $cache = Cache::store('file');
             $cacheNamespace = app()->environment().':'.$user->id;
             $hasImpulsoPlusAccess = $cache->remember('layout:plus-access:v1:'.$cacheNamespace, now()->addSeconds(30), fn () =>
@@ -54,6 +59,7 @@ class AppServiceProvider extends ServiceProvider
                 return;
             }
 
+            // Emprendimientos que el usuario administra (dueño, o miembro owner/administrator).
             $managedBusinesses = Business::query()
                 ->select(['id', 'name', 'slug'])
                 ->where('owner_id', $user->id)
@@ -65,6 +71,7 @@ class AppServiceProvider extends ServiceProvider
             $managedIds = $managedBusinesses->pluck('id');
             $managesBusinesses = $managedIds->isNotEmpty();
 
+            // Mensajes: consultas pendientes (administrador) o consultas enviadas (cliente).
             $messages = $managesBusinesses
                 ? Inquiry::query()
                     ->with(['client:id,name', 'business:id,name,slug'])
@@ -96,6 +103,7 @@ class AppServiceProvider extends ServiceProvider
                         'badge' => $inquiry->status === 'answered' ? 'Respondida' : 'Enviada',
                     ]);
 
+            // Notificaciones: turnos y pedidos pendientes (administrador) o respuestas recibidas (cliente).
             $notifications = $managesBusinesses
                 ? Appointment::query()
                     ->with(['client:id,name', 'business:id,name,slug'])

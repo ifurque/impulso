@@ -1,5 +1,7 @@
 @extends('layouts.app')
+{{-- Vista: personalización del perfil público del negocio (presets, bordes, botones, fuente, fondo, foto y colores) con vista previa en vivo --}}
 @section('content')
+{{-- Botón de guía interactiva con los pasos del tour de ayuda --}}
 @include('partials.help-tour-trigger', ['label' => 'Guía de personalización', 'steps' => [
   ['target' => '#business-preset-grid', 'title' => 'Empezar con un preset', 'body' => 'El preset aplica una combinación inicial de fondo, tipografía, bordes y botones. Luego puedes ajustar cada opción.'],
   ['target' => '.border-options', 'title' => 'Bordes y tarjetas', 'body' => 'Define cuánto se destacan las tarjetas y qué forma tendrán en tu perfil público.'],
@@ -9,6 +11,7 @@
   ['target' => '.customization-color-grid', 'title' => 'Colores y contraste', 'body' => 'Ajusta fondos, texto, publicaciones y botones; revisa la vista previa y guarda al final.'],
 ]])
 <section class="form-page wrap">
+  {{-- Encabezado con acceso al perfil público --}}
   <div class="dashboard-top">
     <div>
       <p class="eyebrow">Perfil público de {{ $business->name }}</p>
@@ -18,9 +21,11 @@
     <a class="button secondary" href="{{ route('business.show', $business) }}">Ver perfil <span>↗</span></a>
   </div>
 
+  {{-- Área de trabajo: formulario a la izquierda y vista previa a la derecha --}}
   <div class="customization-workspace">
   <form method="POST" enctype="multipart/form-data" action="{{ route('business.customization.update', $business) }}" class="customization-form">
     @csrf
+    {{-- Presets: combinaciones predefinidas que completan el resto de los campos --}}
     <fieldset>
       <legend>Presets rápidos del perfil público</legend>
       <div class="preset-grid" id="business-preset-grid">
@@ -31,6 +36,7 @@
       </div>
     </fieldset>
 
+    {{-- Estilo de borde de las cards --}}
     <fieldset>
       <legend>Bordes de las cards</legend>
       <div class="customization-options border-options">
@@ -41,6 +47,7 @@
       </div>
     </fieldset>
 
+    {{-- Estilo de los botones del perfil público --}}
     <fieldset>
       <legend>Estilo de botones</legend>
       <div class="customization-options button-options">
@@ -55,6 +62,7 @@
       </div>
     </fieldset>
 
+    {{-- Forma de las cards --}}
     <fieldset>
       <legend>Forma de las cards</legend>
       <div class="customization-options card-shape-options">
@@ -69,6 +77,7 @@
       </div>
     </fieldset>
 
+    {{-- Tipografía del perfil público --}}
     <fieldset>
       <legend>Tipografía</legend>
       <div class="customization-options font-options">
@@ -83,6 +92,7 @@
       </div>
     </fieldset>
 
+    {{-- Fondo de página: texturas predefinidas o imagen propia (completa o como patrón) --}}
     <fieldset>
       <legend>Fondo</legend>
       <div class="customization-options background-options">
@@ -115,6 +125,7 @@
         </label>
       </div>
     </fieldset>
+    {{-- Foto de perfil: subida, forma y encuadre (posición y zoom) --}}
     <fieldset>
       <legend>Foto de perfil del emprendimiento</legend>
       <div class="profile-photo-customizer">
@@ -146,6 +157,7 @@
       </div>
     </fieldset>
 
+    {{-- Colores: fondo, patrón, navbar, publicaciones, texto y botones --}}
     <fieldset>
       <legend>Colores</legend>
       <div class="form-inline customization-color-grid">
@@ -162,6 +174,7 @@
     <button class="button" type="submit">Guardar personalización <span>→</span></button>
   </form>
 
+  {{-- Vista previa en vivo del perfil público (actualizada por el script de abajo) --}}
   <aside class="customization-preview-shell">
     <div class="preview-label"><span>Vista previa</span><i></i></div>
     <div class="customization-preview public-page public-background-{{ $business->public_background ?? 'plain' }}{{ $business->public_pattern_image ? ' public-has-pattern-layer' : '' }} public-font-{{ $business->public_font_family ?? 'dm' }} public-border-{{ in_array($business->public_border_type, ['subtle', 'standard', 'bold', 'rounded']) ? $business->public_border_type : 'standard' }} public-button-{{ $business->public_button_style ?? 'solid' }} public-card-{{ $business->public_card_shape ?? 'standard' }}" id="business-preview" @if($business->public_background_image || $business->public_pattern_image) style="--public-custom-image: url('{{ $business->public_background_image_url ?? '' }}'); --public-pattern-image: url('{{ $business->public_pattern_image_url ?? '' }}');" @endif>
@@ -174,6 +187,7 @@
   </div>
 </section>
 <script>
+  // Al elegir un preset se completan los campos del formulario y se actualiza la vista previa
   const businessPresetGrid = document.getElementById('business-preset-grid');
   businessPresetGrid?.querySelectorAll('.preset-card').forEach((card) => {
     card.addEventListener('click', () => {
@@ -202,6 +216,7 @@
     });
   });
 
+  // Referencias a los elementos de la foto de perfil y de la vista previa
   const businessPreview = document.getElementById('business-preview');
   const profilePhotoCropFrame = document.getElementById('profile-photo-crop-frame');
   const profilePhotoCropImage = document.getElementById('profile-photo-crop-image');
@@ -215,6 +230,7 @@
   const profilePhotoPositionYValue = document.getElementById('profile-photo-position-y-value');
   const profilePhotoZoomValue = document.getElementById('profile-photo-zoom-value');
 
+  // Calcula el desplazamiento y escala de la foto según encuadre y zoom
   function setProfilePhotoTransform(image, positionX, positionY, zoom) {
     if (!image) return;
     const scale = Number(zoom);
@@ -225,6 +241,7 @@
     image.style.transform = `translate(${translateX}%, ${translateY}%) scale(${scale})`;
   }
 
+  // Aplica forma, encuadre y zoom de la foto al editor y a la vista previa
   function applyProfilePhotoPreview() {
     const style = document.querySelector('input[name="profile_photo_style"]:checked')?.value || 'circle';
     const positionX = profilePhotoPositionX?.value || '50';
@@ -261,6 +278,7 @@
     }
   }
 
+  // Aplica clases y variables CSS a la vista previa según las opciones elegidas
   function applyBusinessPreview() {
     if (!businessPreview) return;
     const font = document.querySelector('input[name="public_font_family"]:checked')?.value || 'dm';
@@ -286,12 +304,14 @@
     if (imageInput?.files?.[0]) businessPreview.style.setProperty('--public-custom-image', `url('${URL.createObjectURL(imageInput.files[0])}')`);
   }
 
+  // Eventos: cualquier cambio del formulario refresca la vista previa
   document.querySelectorAll('.customization-form input').forEach((input) => {
     input.addEventListener('input', applyBusinessPreview);
     input.addEventListener('change', applyBusinessPreview);
   });
   document.querySelectorAll('#public-background-image-mode, #public-background-pattern-size').forEach((input) => input.addEventListener('change', applyBusinessPreview));
   document.querySelectorAll('input[name="profile_photo_style"], #profile-photo-position-x, #profile-photo-position-y, #profile-photo-zoom').forEach((input) => input.addEventListener('input', applyProfilePhotoPreview));
+  // Al subir una foto se muestra en el editor y en la vista previa
   profilePhotoInput?.addEventListener('change', () => {
     const file = profilePhotoInput.files?.[0];
     if (!file || !profilePhotoCropImage) return;
@@ -305,6 +325,7 @@
     }
     applyProfilePhotoPreview();
   });
+  // Al elegir imagen de fondo se selecciona automáticamente la opción "Fondo propio"
   document.querySelector('#public-background-image')?.addEventListener('change', () => {
     const customBackground = document.querySelector('input[name="public_background"][value="custom"]');
     if (customBackground) customBackground.checked = true;

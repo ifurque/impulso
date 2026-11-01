@@ -12,6 +12,7 @@
 
         <!-- Styles / Scripts -->
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+            {{-- Usa los assets compilados de Vite; si no existen, cae al CSS de Tailwind embebido --}}
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
             <style>
@@ -19,7 +20,9 @@
             </style>
         @endif
     </head>
+    {{-- Página de bienvenida por defecto de Laravel (plantilla original) --}}
     <body class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] flex p-6 lg:p-8 items-center lg:justify-center min-h-screen flex-col">
+        {{-- Cabecera con enlaces de acceso/registro según el estado de sesión --}}
         <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
             @if (Route::has('login'))
                 <nav class="flex items-center justify-end gap-4">
@@ -49,6 +52,7 @@
                 </nav>
             @endif
         </header>
+        {{-- Contenido principal: guía de inicio e ilustración del logo --}}
         <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
             <main class="flex max-w-[335px] w-full flex-col-reverse lg:max-w-4xl lg:flex-row">
                 <div class="text-[13px] leading-[20px] flex-1 p-6 pb-12 lg:p-20 bg-white dark:bg-[#161615] dark:text-[#EDEDEC] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d] rounded-bl-lg rounded-br-lg lg:rounded-tl-lg lg:rounded-br-none">

@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
+{{-- Vista: editor para crear una publicación (oferta, producto o novedad) con vista previa en vivo --}}
 @section('content')
   <section class="publication-editor wrap">
+    {{-- Encabezado con el nombre del negocio y botón para cancelar --}}
     <div class="editor-top">
       <div>
         <p class="eyebrow">{{ $business->name }}</p>
@@ -10,10 +12,13 @@
       </div><a class="button secondary" href="{{ route('posts.index', $business) }}">Cancelar</a>
     </div>
 
+    {{-- Formulario de la publicación (multipart por las fotos) --}}
     <form method="POST" enctype="multipart/form-data" action="{{ route('posts.store', $business) }}"
       class="publication-composer">
       @csrf
+      {{-- Columna de campos, organizada en 4 pasos --}}
       <section class="editor-fields">
+        {{-- Paso 01: título, descripción, precios y vigencia --}}
         <div class="editor-section"><span class="editor-step">01</span>
           <div class="editor-section-copy">
             <p class="eyebrow">Mensaje principal</p>
@@ -33,6 +38,7 @@
           <label>Válida hasta<input type="date" name="ends_at"></label>
         </div>
 
+        {{-- Paso 02: selección de productos del stock y cantidades --}}
         <div class="editor-section compact"><span class="editor-step">02</span>
           <div class="editor-section-copy">
             <p class="eyebrow">Productos del stock</p>
@@ -55,6 +61,7 @@
           </div>
         @endif
 
+        {{-- Paso 03: subida de hasta cuatro fotos con miniaturas --}}
         <div class="editor-section compact"><span class="editor-step">03</span>
           <div class="editor-section-copy">
             <p class="eyebrow">Imágenes</p>
@@ -66,6 +73,7 @@
             multiple><span class="photo-upload-button">Elegir fotos</span></label>
         <div id="photo-previews" class="editor-photo-previews" aria-live="polite"></div>
 
+        {{-- Paso 04: alcance (publicar ahora y/o en redes sociales) y botón de envío --}}
         <div class="editor-section compact"><span class="editor-step">04</span>
           <div class="editor-section-copy">
             <p class="eyebrow">Alcance</p>
@@ -80,6 +88,7 @@
         <button class="button editor-submit">Publicar <span>→</span></button>
       </section>
 
+      {{-- Vista previa en vivo de la publicación (actualizada por el script de abajo) --}}
       <aside class="publication-preview">
         <div class="preview-label"><span>Vista previa</span><i></i></div>
         <article class="offer-preview">
@@ -94,10 +103,12 @@
     </form>
   </section>
   <script>
+    // Refleja título, descripción y precio en la vista previa mientras se escribe
     const mirror = (source, target, fallback) => document.getElementById(source).addEventListener('input', (event) => document.getElementById(target).textContent = event.target.value || fallback);
     mirror('post-title', 'preview-title', 'Tu título aparece acá');
     mirror('post-body', 'preview-body', 'La descripción ayudará a que tus clientes entiendan rápido tu propuesta.');
     document.getElementById('post-price').addEventListener('input', (event) => document.getElementById('preview-price').textContent = `$ ${Number(event.target.value || 0).toLocaleString('es-AR')}`);
+    // Muestra miniaturas de hasta 4 fotos y usa la primera como imagen de la vista previa
     document.getElementById('post-photos').addEventListener('change', (event) => {
       const previews = document.getElementById('photo-previews');
       const image = document.getElementById('preview-image');

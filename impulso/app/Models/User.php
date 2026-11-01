@@ -9,6 +9,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Support\MediaUrl;
 
+/**
+ * Usuario de la plataforma. `role` puede ser client, entrepreneur o superadmin.
+ * Guarda datos de identidad, verificación de correo/teléfono y preferencias de interfaz.
+ */
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */

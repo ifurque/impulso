@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use Illuminate\Http\Request;
 
+/** Reseñas de clientes sobre un emprendimiento. */
 class ReviewController extends Controller
 {
+    /** Guarda una reseña (también de visitantes); un usuario con sesión solo puede opinar una vez. */
     public function store(Request $request, Business $business)
     {
         if ($request->user() && $business->reviews()->where('user_id', $request->user()->id)->exists()) {

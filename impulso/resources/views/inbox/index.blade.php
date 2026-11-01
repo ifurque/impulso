@@ -1,7 +1,9 @@
 @extends('layouts.app')
 
+{{-- Bandeja de consultas del usuario: mensajes enviados y respuestas de los emprendimientos --}}
 @section('content')
 <section class="dashboard wrap">
+  {{-- Encabezado de la página --}}
   <div class="dashboard-top">
     <div>
       <p class="eyebrow">Mi cuenta</p>
@@ -11,6 +13,7 @@
   </div>
 
   <section class="panel" style="max-width: 980px;">
+    {{-- Listado de consultas; cada una muestra la respuesta o que aún no la tiene --}}
     <div class="expense-list">
       @forelse($inquiries as $inquiry)
         <article class="inquiry-item">
@@ -31,6 +34,7 @@
       @endforelse
     </div>
 
+    {{-- Paginación --}}
     <div style="margin-top: 20px;">
       {{ $inquiries->links() }}
     </div>

@@ -1,3 +1,4 @@
+{{-- Grilla de tarjetas de emprendimientos (portada, logo, categoría, rating y enlace); se muestra un estado vacío si no hay resultados --}}
 @forelse($businesses as $business)
   @php($palette = ($palettes ?? \App\Http\Controllers\BusinessController::PUBLIC_PALETTES)[$business->public_palette ?? 'mint'] ?? \App\Http\Controllers\BusinessController::PUBLIC_PALETTES['mint'])
   @php($businessPrimary = $business->public_primary_color ?: $palette['paper'])
@@ -22,6 +23,7 @@
     </div>
   </article>
 @empty
+  {{-- Estado vacío cuando no hay coincidencias --}}
   <div class="empty" style="grid-column: 1/-1;">
     <span>✦</span>
     <h2>No encontramos coincidencias.</h2>

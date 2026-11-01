@@ -9,8 +9,12 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
+/**
+ * Administración de la plataforma: gestión de emprendimientos y usuarios. Solo para superadmins.
+ */
 class AdminController extends Controller
 {
+    /** Listado paginado de todos los emprendimientos. */
     public function businesses(Request $request)
     {
         $this->authorizeAdmin($request);
@@ -18,6 +22,7 @@ class AdminController extends Controller
         return view('admin.businesses', ['businesses' => Business::with('owner')->latest()->paginate(20)]);
     }
 
+    /** Listado paginado de usuarios con la cantidad de emprendimientos que tiene cada uno. */
     public function users(Request $request)
     {
         $this->authorizeAdmin($request);
@@ -25,6 +30,7 @@ class AdminController extends Controller
         return view('admin.users', ['users' => User::withCount('ownedBusinesses')->latest()->paginate(20)]);
     }
 
+    /** Formulario de edición de un emprendimiento. */
     public function editBusiness(Request $request, Business $business)
     {
         $this->authorizeAdmin($request);
@@ -32,6 +38,7 @@ class AdminController extends Controller
         return view('admin.business-edit', ['business' => $business, 'users' => User::orderBy('name')->get()]);
     }
 
+    /** Actualiza un emprendimiento; si cambia el nombre regenera el slug y borra las fotos reemplazadas. */
     public function updateBusiness(Request $request, Business $business)
     {
         $this->authorizeAdmin($request);
@@ -65,6 +72,7 @@ class AdminController extends Controller
         return redirect()->route('admin.businesses')->with('success', 'Emprendimiento actualizado.');
     }
 
+    /** Elimina un emprendimiento junto con sus archivos (fotos, fondos, productos y publicaciones). */
     public function deleteBusiness(Request $request, Business $business)
     {
         $this->authorizeAdmin($request);
@@ -84,6 +92,7 @@ class AdminController extends Controller
         return back()->with('success', 'Emprendimiento eliminado.');
     }
 
+    /** Activa o quita el plan +Impulso de un emprendimiento. */
     public function togglePlus(Request $request, Business $business)
     {
         $this->authorizeAdmin($request);
@@ -92,6 +101,7 @@ class AdminController extends Controller
         return back()->with('success', $business->is_plus ? '+Impulso activado.' : '+Impulso quitado.');
     }
 
+    /** Formulario de edición de un usuario. */
     public function editUser(Request $request, User $user)
     {
         $this->authorizeAdmin($request);
@@ -99,6 +109,7 @@ class AdminController extends Controller
         return view('admin.user-edit', compact('user'));
     }
 
+    /** Actualiza un usuario; si cambia el correo o el teléfono, invalida su verificación. */
     public function updateUser(Request $request, User $user)
     {
         $this->authorizeAdmin($request);
@@ -136,6 +147,7 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('success', 'Usuario actualizado.');
     }
 
+    /** Elimina un usuario y sus emprendimientos (con archivos); protege la cuenta propia y al último superadmin. */
     public function deleteUser(Request $request, User $user)
     {
         $this->authorizeAdmin($request);
@@ -158,6 +170,7 @@ class AdminController extends Controller
         return back()->with('success', 'Usuario y sus emprendimientos eliminados.');
     }
 
+    /** Alterna el rol de un usuario entre superadmin y cliente, sin dejar la plataforma sin administradores. */
     public function toggleAdmin(Request $request, User $user)
     {
         $this->authorizeAdmin($request);
@@ -168,6 +181,7 @@ class AdminController extends Controller
         return back()->with('success', $user->role === 'superadmin' ? 'Administrador habilitado.' : 'Permisos de administrador quitados.');
     }
 
+    /** Responde 403 si quien consulta no es superadmin. */
     private function authorizeAdmin(Request $request): void
     {
         abort_unless($request->user()?->role === 'superadmin', 403);

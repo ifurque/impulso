@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/** Ingreso (venta) de un emprendimiento, opcionalmente asociado a un producto. */
 class Income extends Model
 {
     protected $fillable = ['business_id', 'created_by', 'product_id', 'description', 'amount', 'income_date', 'source'];

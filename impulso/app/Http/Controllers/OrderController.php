@@ -10,10 +10,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Recibe los pedidos que hacen los clientes desde la página pública de un emprendimiento.
+ */
 class OrderController extends Controller
 {
     private const EARTH_RADIUS_KM = 6371;
 
+    /**
+     * Valida y registra un pedido: controla stock y cobertura de entrega, descuenta el inventario
+     * y avisa por mail al dueño del emprendimiento.
+     */
     public function store(Request $request, Business $business)
     {
         $data = $request->validate([
@@ -29,6 +36,7 @@ class OrderController extends Controller
             'customer_longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'payment_method' => ['required', 'in:efectivo,transferencia,qr,tarjeta'],
         ]);
+        // Acepta un carrito en JSON o, si no viene, un único producto con su cantidad.
         $itemsInput = !empty($data['items']) ? json_decode($data['items'], true) : [[
             'product_id' => $data['product_id'] ?? null,
             'quantity' => $data['quantity'] ?? null,
@@ -60,6 +68,7 @@ class OrderController extends Controller
         }
         abort_if($data['delivery_method'] === 'delivery' && ! $business->delivery_enabled, 422, 'Este emprendimiento no está habilitado para entregas.');
 
+        // Si el emprendimiento definió una zona de entrega, el cliente debe estar dentro del radio.
         if ($data['delivery_method'] === 'delivery' && $business->delivery_latitude !== null && $business->delivery_longitude !== null) {
             if ($data['customer_latitude'] === null || $data['customer_longitude'] === null) {
                 return back()->withErrors(['customer_location' => 'Necesitamos tu ubicación actual para comprobar si estás dentro del rango de entrega.'])->withInput();
@@ -82,6 +91,7 @@ class OrderController extends Controller
         $deliveryCost = $data['delivery_method'] === 'delivery' ? (float) ($business->delivery_cost ?? 0) : 0;
         $total = $subtotal + $deliveryCost;
 
+        // Transacción: el descuento de stock y la creación del pedido se hacen juntos o no se hacen.
         $order = DB::transaction(function () use ($business, $data, $firstItem, $subtotal, $deliveryCost, $total, $orderItems) {
             foreach ($orderItems as $item) {
                 $product = $item['product'];
@@ -120,6 +130,9 @@ class OrderController extends Controller
         return back()->with('success', 'Pedido enviado correctamente. El emprendimiento recibió la solicitud y podrá revisarla desde su panel.');
     }
 
+    /**
+     * Distancia en km entre dos coordenadas (fórmula de haversine).
+     */
     private function distanceInKilometers(float $latitudeA, float $longitudeA, float $latitudeB, float $longitudeB): float
     {
         $latitudeDelta = deg2rad($latitudeB - $latitudeA);

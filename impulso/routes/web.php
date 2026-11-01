@@ -20,25 +20,33 @@ use App\Http\Controllers\UserCustomizationController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 
+// Rutas públicas: portada, explorador de emprendimientos y perfil público de cada uno.
 Route::view('/', 'home')->name('home');
 Route::get('/explorar', [DiscoveryController::class, 'index'])->name('discover');
 Route::get('/emprendimientos/{business:slug}', [BusinessController::class, 'show'])->name('business.show');
+// Acciones públicas de clientes: solicitar turnos y pedidos, y consultar horarios libres.
 Route::post('/emprendimientos/{business:slug}/turnos', [ManagementController::class, 'appointment'])->name('appointments.store');
 Route::post('/emprendimientos/{business:slug}/pedidos', [OrderController::class, 'store'])->name('orders.store');
 Route::get('/emprendimientos/{business:slug}/turnos-disponibles', [ManagementController::class, 'availableSlots'])->name('appointments.available');
+// Gestión de un turno por parte del cliente mediante su token (confirmar, cancelar, reprogramar).
 Route::get('/turnos/confirmar/{token}', [ManagementController::class, 'confirmAppointment'])->name('appointments.confirm');
 Route::get('/turnos/gestionar/{token}', [ManagementController::class, 'manageAppointment'])->name('appointments.manage');
 Route::post('/turnos/gestionar/{token}/cancelar', [ManagementController::class, 'cancelAppointment'])->name('appointments.cancel');
 Route::post('/turnos/gestionar/{token}/reprogramar', [ManagementController::class, 'rescheduleAppointment'])->name('appointments.reschedule');
+// Reseñas de clientes sobre un emprendimiento.
 Route::post('/emprendimientos/{business:slug}/reseñas', [ReviewController::class, 'store'])->name('reviews.store');
+// Login y registro: solo para visitantes sin sesión iniciada.
 Route::middleware('guest')->group(function () {
     Route::get('/ingresar', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/ingresar', [AuthController::class, 'login'])->name('login.store');
     Route::get('/registrarse', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/registrarse', [AuthController::class, 'register'])->name('register.store');
 });
+// Cierre de sesión.
 Route::post('/salir', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+// Rutas que requieren usuario autenticado.
 Route::middleware('auth')->group(function () {
+    // Panel de administración de la plataforma (el controlador valida que sea admin).
     Route::prefix('administracion')->name('admin.')->controller(AdminController::class)->group(function () {
         Route::get('/emprendimientos', 'businesses')->name('businesses');
         Route::get('/emprendimientos/{business}/editar', 'editBusiness')->name('businesses.edit');
@@ -51,47 +59,57 @@ Route::middleware('auth')->group(function () {
         Route::delete('/usuarios/{user}', 'deleteUser')->name('users.delete');
         Route::patch('/usuarios/{user}/admin', 'toggleAdmin')->name('users.admin');
     });
+    // Bandeja de entrada y perfil/personalización del usuario.
     Route::get('/bandeja', [InboxController::class, 'index'])->name('inbox.index');
     Route::get('/mi-perfil', [UserProfileController::class, 'edit'])->name('user.profile');
     Route::post('/mi-perfil', [UserProfileController::class, 'update'])->name('user.profile.update');
     Route::get('/mi-perfil/personalizacion', [UserCustomizationController::class, 'edit'])->name('user.customization');
     Route::post('/mi-perfil/personalizacion', [UserCustomizationController::class, 'update'])->name('user.customization.update');
     Route::redirect('/personalizacion', '/mi-perfil/personalizacion');
+    // Verificación de correo y teléfono (envío limitado y enlaces firmados).
     Route::post('/mi-perfil/verificar-correo', [AccountVerificationController::class, 'sendEmail'])->middleware('throttle:3,1')->name('verification.send');
     Route::get('/verificar-correo/{id}/{hash}', [AccountVerificationController::class, 'verifyEmail'])->middleware('signed')->name('verification.verify');
     Route::post('/mi-perfil/verificar-telefono', [AccountVerificationController::class, 'sendPhone'])->middleware('throttle:3,1')->name('phone.verification.send');
     Route::get('/verificar-telefono/{id}/{hash}', [AccountVerificationController::class, 'verifyPhone'])->middleware('signed')->name('phone.verification.verify');
+    // Alta de emprendimientos, listado de paneles propios y plan +Impulso.
     Route::get('/crear-emprendimiento', [BusinessController::class, 'create'])->name('business.create');
     Route::post('/crear-emprendimiento', [BusinessController::class, 'store'])->name('business.store');
     Route::get('/paneles', [BusinessController::class, 'panels'])->name('business.panels');
     Route::get('/impulso-plus', [BusinessPlusController::class, 'index'])->name('business.plus.index');
     Route::get('/panel/{business:slug}/impulso-plus', [BusinessPlusController::class, 'show'])->name('business.plus.show');
+    // Panel del emprendimiento: personalización y tablero principal.
     Route::get('/panel/{business:slug}/personalizacion', [BusinessController::class, 'customization'])->name('business.customization');
     Route::post('/panel/{business:slug}/personalizacion', [BusinessController::class, 'updateCustomization'])->name('business.customization.update');
     Route::get('/panel/{business:slug}', DashboardController::class)->name('dashboard');
+    // Productos e inventario.
     Route::post('/panel/{business:slug}/productos', [ProductController::class, 'store'])->name('products.store');
     Route::post('/panel/{business:slug}/productos/ingreso', [ProductController::class, 'addStock'])->name('products.add-stock');
     Route::put('/panel/{business:slug}/productos/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/panel/{business:slug}/productos/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    // Finanzas: gastos, ingresos y movimientos.
     Route::get('/panel/{business:slug}/gastos', [ExpenseController::class, 'index'])->name('expenses.index');
     Route::post('/panel/{business:slug}/gastos', [ExpenseController::class, 'store'])->name('expenses.store');
     Route::get('/panel/{business:slug}/movimientos', [IncomeController::class, 'index'])->name('movements.index');
     Route::post('/panel/{business:slug}/ingresos', [IncomeController::class, 'store'])->name('incomes.store');
+    // Gestión: vista general, base de datos de clientes, miembros y horarios de atención.
     Route::get('/panel/{business:slug}/gestion', [ManagementController::class, 'index'])->name('management.index');
     Route::get('/panel/{business:slug}/base-datos', [ManagementController::class, 'database'])->name('management.database');
     Route::post('/panel/{business:slug}/base-datos/componentes', [ManagementController::class, 'updateDatabaseComponents'])->name('management.database.components');
     Route::get('/panel/{business:slug}/miembros', [ManagementController::class, 'members'])->name('members.index');
     Route::get('/panel/{business:slug}/horarios', [AvailabilityController::class, 'index'])->name('availability.index');
     Route::post('/panel/{business:slug}/horarios', [AvailabilityController::class, 'update'])->name('availability.update');
+    // Publicaciones del emprendimiento.
     Route::get('/panel/{business:slug}/publicaciones', [PostController::class, 'index'])->name('posts.index');
     Route::get('/panel/{business:slug}/publicaciones/crear', [PostController::class, 'create'])->name('posts.create');
     Route::post('/panel/{business:slug}/publicaciones', [PostController::class, 'store'])->name('posts.store');
     Route::put('/panel/{business:slug}/publicaciones/{post}', [PostController::class, 'update'])->name('posts.update');
     Route::delete('/panel/{business:slug}/publicaciones/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+    // Cambio de estado de turnos, pedidos y consultas; redes sociales y alta de miembros.
     Route::post('/panel/{business:slug}/turnos/{appointment}/estado', [ManagementController::class, 'appointmentStatus'])->name('appointments.status');
     Route::post('/panel/{business:slug}/pedidos/{order}/estado', [ManagementController::class, 'orderStatus'])->name('orders.status');
     Route::post('/panel/{business:slug}/consultas/{inquiry}/estado', [ManagementController::class, 'inquiryStatus'])->name('inquiries.status');
     Route::post('/panel/{business:slug}/redes', [PostController::class, 'social'])->name('social.store');
     Route::post('/panel/{business:slug}/miembros', [ManagementController::class, 'member'])->name('members.store');
+    // Envío de consultas a un emprendimiento (requiere sesión).
     Route::post('/emprendimientos/{business:slug}/consultas', [ManagementController::class, 'inquiry'])->name('inquiries.store');
 });

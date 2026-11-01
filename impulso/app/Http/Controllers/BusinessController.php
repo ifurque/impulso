@@ -8,8 +8,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+/**
+ * Alta, personalización visual y página pública de los emprendimientos.
+ */
 class BusinessController extends Controller
 {
+    /** Paletas de colores disponibles para la página pública. */
     public const PUBLIC_PALETTES = [
         'mint' => ['label' => 'Menta', 'accent' => '#176b61', 'soft' => '#e3f3e9', 'ink' => '#18352e', 'paper' => '#f6faf6', 'line' => '#d3e5da'],
         'sun' => ['label' => 'Sol', 'accent' => '#9a4d12', 'soft' => '#fff0cf', 'ink' => '#3b2517', 'paper' => '#fffaf1', 'line' => '#ead9b9'],
@@ -17,6 +21,7 @@ class BusinessController extends Controller
         'ocean' => ['label' => 'Océano', 'accent' => '#176889', 'soft' => '#e0f1f6', 'ink' => '#17313d', 'paper' => '#f5fbfc', 'line' => '#d1e4ea'],
     ];
 
+    /** Estilos de fondo disponibles para la página pública. */
     public const PUBLIC_BACKGROUNDS = [
         'plain' => 'Liso',
         'grid' => 'Cuadrícula suave',
@@ -28,12 +33,14 @@ class BusinessController extends Controller
         'custom' => 'Fondo propio',
     ];
 
+    /** Pantalla para personalizar el aspecto de la página pública (solo quienes gestionan el emprendimiento). */
     public function customization(Business $business, Request $request)
     {
         abort_unless($business->canBeManagedBy($request->user()), 403);
         return view('business.customization', ['business' => $business, 'palettes' => self::PUBLIC_PALETTES, 'backgrounds' => self::PUBLIC_BACKGROUNDS]);
     }
 
+    /** Guarda colores, fuentes, fondo y foto de perfil de la página pública, completando valores por defecto y limpiando imágenes reemplazadas. */
     public function updateCustomization(Request $request, Business $business)
     {
         abort_unless($business->canBeManagedBy($request->user()), 403);
@@ -82,6 +89,7 @@ class BusinessController extends Controller
         return redirect()->route('business.customization', $business)->with('success', 'Personalización guardada.');
     }
 
+    /** Lista los emprendimientos que el usuario administra (como dueño, o miembro owner/administrator). */
     public function panels(Request $request)
     {
         return view('business.panels', [
@@ -98,6 +106,7 @@ class BusinessController extends Controller
 
     public function create() { return view('business.create'); }
 
+    /** Crea un emprendimiento, lo asocia al usuario como dueño y deja listos horarios y categorías de gasto iniciales. */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -137,6 +146,7 @@ class BusinessController extends Controller
         ]);
         $business->members()->attach($request->user()->id, ['role' => 'owner', 'joined_at' => now()]);
 
+        // Si usa turnos, arranca con horario de lunes a domingo de 9 a 18.
         if ($business->appointments_enabled) {
             foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
                 $business->availabilityHours()->create([
@@ -159,6 +169,7 @@ class BusinessController extends Controller
         return redirect()->route('dashboard', $business)->with('success', 'Tu emprendimiento fue creado.');
     }
 
+    /** Página pública del emprendimiento (por slug), solo con reseñas visibles y publicaciones vigentes. */
     public function show(string $business)
     {
         $business = Business::query()

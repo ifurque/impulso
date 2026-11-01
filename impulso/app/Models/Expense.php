@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/** Gasto registrado por un emprendimiento, clasificado por categoría. */
 class Expense extends Model
 {
     protected $fillable = ['business_id', 'expense_category_id', 'created_by', 'description', 'amount', 'expense_date'];

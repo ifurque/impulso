@@ -1,6 +1,8 @@
 @extends('layouts.app')
+{{-- Vista: configuración de entregas, pagos, turnos y horarios de atención del negocio --}}
 @section('content')
 <section class="dashboard wrap">
+  {{-- Encabezado con botón para volver al panel --}}
   <div class="dashboard-top">
     <div>
       <p class="eyebrow">Panel de {{ $business->name }}</p>
@@ -10,10 +12,12 @@
     <a class="button secondary" href="{{ route('dashboard', $business) }}">Volver al panel</a>
   </div>
 
+  {{-- Formulario único con toda la configuración --}}
   <div class="panel" style="max-width: 800px;">
     <form method="POST" action="{{ route('availability.update', $business) }}" class="form">
       @csrf
       
+      {{-- Activar/desactivar entregas a domicilio --}}
       <div class="form-section">
         <label class="check">
           <input type="hidden" name="delivery_enabled" value="0">
@@ -22,6 +26,7 @@
         </label>
       </div>
 
+      {{-- Ajustes de entrega: radio, costo y ubicación del local (se deshabilitan si no hay entregas) --}}
       <div class="form-section delivery-grid" id="delivery-settings">
         <label>
           Radio de entrega (km)
@@ -39,6 +44,7 @@
         </div>
       </div>
 
+      {{-- Medios de pago: los que acepta el cliente y los que usa el emprendedor --}}
       <div class="form-section payment-grid" id="payment-settings">
         <div>
           <p style="margin: 0; font-weight: 600;">Pagos que acepta el cliente</p>
@@ -64,6 +70,7 @@
         </div>
       </div>
 
+      {{-- Activar/desactivar turnos y citas --}}
       <div class="form-section appointment-settings">
         <label class="check">
           <input type="hidden" name="appointments_enabled" value="0">
@@ -73,6 +80,7 @@
         <p class="muted" style="font-size: 0.85rem; margin-top: 8px;">Los clientes podrán solicitar turnos cuando esta opción esté habilitada.</p>
       </div>
 
+      {{-- Duración de cada turno de la agenda --}}
       <div class="form-section slot-duration-field" id="appointments-settings">
         <label for="appointment_slot_duration">Duración de cada turno</label>
         <select id="appointment_slot_duration" name="appointment_slot_duration" required>
@@ -85,6 +93,7 @@
 
       <hr>
 
+      {{-- Horarios por día: apertura, cierre y opción "Cerrado" --}}
       <h3 style="margin: 20px 0 16px;">Días y horarios de atención</h3>
 
       @foreach($days as $dayKey => $dayLabel)
@@ -132,6 +141,7 @@
 </section>
 
 <style>
+  /* Estilos propios de esta página: grillas, estados deshabilitados y horarios */
   .form-section { margin-bottom: 20px; }
   .delivery-grid, .payment-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; }
   .check { display: flex !important; align-items: center; font-size: 0.9rem !important; font-weight: 400 !important; gap: 10px; }
@@ -153,6 +163,7 @@
 </style>
 
 <script>
+  // Referencias a las secciones que se habilitan/deshabilitan según los interruptores
   const deliveryCheckbox = document.querySelector('#delivery-enabled');
   const deliverySettings = document.querySelector('#delivery-settings');
   const paymentSettings = document.querySelector('#payment-settings');
@@ -161,6 +172,7 @@
   const appointmentsSettings = document.querySelector('#appointments-settings');
   const hoursSections = document.querySelectorAll('[data-hours-section]');
 
+  // Habilita o deshabilita todos los campos de una sección
   const setSectionState = (section, enabled) => {
     if (!section) return;
     section.classList.toggle('section-disabled', !enabled);
@@ -169,6 +181,7 @@
     });
   };
 
+  // Mantiene deshabilitadas las horas de los días marcados como cerrados
   const setHoursState = (enabled) => {
     hoursSections.forEach((section) => {
       section.classList.toggle('section-disabled', !enabled);
@@ -187,6 +200,7 @@
     });
   };
 
+  // Sincronizan el estado de la interfaz con los interruptores de entregas y turnos
   const syncDelivery = () => {
     const enabled = !!deliveryCheckbox?.checked;
     setSectionState(deliverySettings, enabled);
@@ -202,6 +216,7 @@
   deliveryCheckbox?.addEventListener('change', syncDelivery);
   appointmentsCheckbox?.addEventListener('change', syncAppointments);
 
+  // Obtiene la ubicación del navegador para calcular la cobertura de entrega
   const locationButton = document.querySelector('#set-business-location');
   const locationStatus = document.querySelector('#business-location-status');
   const latitudeInput = document.querySelector('#delivery-latitude');
@@ -221,6 +236,7 @@
     }, { enableHighAccuracy: true, timeout: 10000 });
   });
 
+  // Al marcar un día como cerrado se deshabilitan sus campos de horario
   document.querySelectorAll('.closed-check input').forEach((checkbox, index) => {
     const section = checkbox.closest('.hours-section');
     const timeInputs = section.querySelectorAll('.time-input input');

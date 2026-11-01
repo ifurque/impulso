@@ -1,9 +1,11 @@
 ﻿@extends('layouts.app')
 
+{{-- Vista: presentación de la membresía +Impulso para un emprendimiento (aún de muestra) --}}
 @section('content')
 <section class="plus-page wrap">
   <a class="back" href="{{ route('dashboard', $business) }}">← Volver al panel de {{ $business->name }}</a>
 
+  {{-- Portada con mensaje principal --}}
   <header class="plus-hero">
     <div class="plus-hero-copy">
       <p class="plus-kicker">Una membresía mensual para tu negocio</p>
@@ -18,6 +20,7 @@
     </div>
   </header>
 
+  {{-- Beneficios de la membresía --}}
   <div class="plus-benefits-heading">
     <div>
       <p class="eyebrow">Beneficios de la membresía</p>
@@ -26,6 +29,7 @@
     <p class="muted">Pensado para que cada punto de contacto hable de tu emprendimiento.</p>
   </div>
 
+  {{-- Tarjetas de beneficios: dominio propio, sin anuncios, sincronización de redes y animaciones --}}
   <div class="plus-benefit-grid">
     <article class="plus-benefit-card plus-benefit-featured">
       <span class="plus-benefit-icon" aria-hidden="true">↗</span>
@@ -57,6 +61,7 @@
     </article>
   </div>
 
+  {{-- Cierre: precio, selección de método de pago y opción de cancelar (solo de muestra, no procesa pagos) --}}
   <section class="plus-footer" aria-labelledby="plus-price-title">
     <div class="plus-footer-copy">
       <p class="eyebrow">+Impulso · {{ $business->name }}</p>
@@ -68,6 +73,7 @@
       <details class="plus-cta">
         <summary class="button">Contratar +Impulso <span>→</span></summary>
         <div class="plus-payment-panel">
+          {{-- Métodos de pago disponibles --}}
           <fieldset class="plus-payment-methods">
             <legend>Elegí cómo querés pagar</legend>
             <label class="plus-payment-card">
@@ -105,6 +111,7 @@
             </label>
           </fieldset>
           <p class="plus-cta-note" role="status">Vista de muestra: todavía no se procesan pagos ni se realizan cambios en la membresía.</p>
+          {{-- Opción para cancelar la membresía (deshabilitada por ahora) --}}
           <div class="plus-cancel-option">
             <div>
               <strong>¿Ya no querés +Impulso?</strong>

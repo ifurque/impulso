@@ -1,5 +1,7 @@
 @extends('layouts.app')
+{{-- Vista: perfil público de un emprendimiento (publicaciones, servicios, reseñas, turnos, consultas y carrito) --}}
 @section('body_class', 'business-public')
+{{-- Variables de personalización visual: paleta y valores elegidos por el dueño, con valores por defecto --}}
 @php($palette = $palettes[$business->public_palette ?? 'mint'] ?? $palettes['mint'])
 @php($publicNavBg = $business->public_navbar_color ?: $palette['soft'])
 @php($publicPostBg = $business->public_posts_background ?: $palette['soft'])
@@ -10,8 +12,10 @@
 @php($publicButton = $business->public_button_style ?: 'solid')
 @php($publicCardShape = $business->public_card_shape ?: 'standard')
 @php($publicButtonColor = $business->public_button_color ?: $palette['accent'])
+{{-- Estilos que colorean la barra de navegación, el footer y las publicaciones con la personalización del negocio --}}
 @push('head')
 <style>
+  /* Colores personalizados del negocio aplicados a navbar, footer y publicaciones */
   body.business-public .nav {
     background: {{ $publicNavBg }};
   }
@@ -24,8 +28,10 @@
 </style>
 @endpush
 @section('content')
+{{-- Contenedor del perfil público; las clases y variables CSS aplican la personalización del negocio --}}
 <section class="profile public-page public-background-{{ $business->public_background ?? 'plain' }}{{ $business->public_background === 'custom' && $business->public_background_image_mode === 'pattern' ? ' public-background-custom-pattern' : '' }} public-font-{{ $business->public_font_family ?? 'dm' }} public-border-{{ in_array($publicBorder, ['subtle', 'standard', 'bold', 'rounded']) ? $publicBorder : 'standard' }} public-button-{{ $publicButton }} public-card-{{ $publicCardShape }} wrap" style="--public-accent: {{ $palette['accent'] }}; --public-button-color: {{ $publicButtonColor }}; --public-soft: {{ $palette['soft'] }}; --public-ink: {{ $publicText }}; --public-paper: {{ $publicPrimary }}; --public-secondary: {{ $publicSecondary }}; --public-post-bg: {{ $publicPostBg }}; @if($business->public_background === 'custom' && $business->public_background_image) --public-custom-image: url('{{ $business->public_background_image_url }}'); @endif">
   <a class="back" href="{{ route('discover') }}">← Volver a explorar</a>
+  {{-- Cabecera: portada, foto de perfil, nombre, ubicación y calificación promedio --}}
   <div class="profile-hero{{ $business->cover_photo_url ? ' profile-hero-has-cover' : '' }}">
     @if($business->cover_photo_url)
       <img class="profile-cover-image" src="{{ $business->cover_photo_url }}" alt="" aria-hidden="true" onerror="this.remove()">
@@ -47,10 +53,13 @@
       <span>({{ $business->reviews->count() }} {{ $business->reviews->count() === 1 ? 'opinión' : 'opiniones' }})</span>
     </div>
   </div>
+  {{-- Cuerpo en dos columnas: contenido principal y barra lateral de contacto --}}
   <div class="profile-grid">
     <div>
+      {{-- Descripción del emprendimiento --}}
       <h2>Sobre el emprendimiento</h2>
       <p class="large-text">{{ $business->description }}</p>
+      {{-- Publicaciones y productos, con buscador --}}
       <h2>Publicaciones</h2>
       <p class="muted">Productos y servicios del emprendimiento</p>
       <label for="public-product-search" style="display:block; margin: 0 0 10px;">
@@ -58,6 +67,7 @@
         <input id="public-product-search" class="search-input" placeholder="Ej. pan, litro, limpieza, asesoria">
       </label>
       @include('business._posts')
+      {{-- Servicios (y otros ítems que no son productos de stock) con botón de carrito --}}
       @php($publicServices = $business->products->where('type', '!=', 'product')->where('is_active', true))
       <div class="product-list">
         @forelse($publicServices as $product)
@@ -84,6 +94,7 @@
         @endforelse
       </div>
 
+      {{-- Datos de entrega y medios de pago --}}
       <h2>Servicio y atención</h2>
       <div class="info-cards">
         <div class="info-card">
@@ -99,6 +110,7 @@
         </div>
       </div>
 
+      {{-- Enlaces a redes sociales --}}
       <h2>Redes y contacto</h2>
       <div class="actions">
         @foreach($business->socialLinks as $link)
@@ -106,6 +118,7 @@
         @endforeach
       </div>
 
+      {{-- Listado de reseñas con su calificación --}}
       <h2>Reseñas <span class="rating">★ {{ number_format($business->reviews->avg('rating') ?: 0, 1) }}</span></h2>
       <div class="review-list">
         @forelse($business->reviews as $review)
@@ -120,7 +133,9 @@
       </div>
     </div>
 
+    {{-- Barra lateral: turnos, reseñas, consultas y acceso al carrito --}}
     <aside class="contact-box">
+      {{-- Solicitud de turno (solo si la agenda está habilitada); los horarios se cargan por JS --}}
       @if($business->appointments_enabled)
       <h3>Solicitar turno</h3>
       <form method="POST" action="{{ route('appointments.store', $business) }}" class="form" id="appointment-form">
@@ -155,6 +170,7 @@
 
       <hr>
 
+      {{-- Formulario para dejar una reseña --}}
       <h3>Dejar una reseña</h3>
       <form method="POST" action="{{ route('reviews.store', $business) }}" class="form">
         @csrf
@@ -175,6 +191,7 @@
 
       <hr>
 
+      {{-- Consultas al emprendimiento (requiere sesión iniciada) --}}
       <h3>Hacer una consulta</h3>
       @auth
         <form method="POST" action="{{ route('inquiries.store', $business) }}" class="form">
@@ -188,6 +205,7 @@
         <a class="button full" href="{{ route('login') }}">Ingresar</a>
       @endauth
 
+      {{-- Botón para abrir el carrito (si hay productos activos) --}}
       @if($business->products->where('is_active', true)->isNotEmpty())
         <hr>
         <button type="button" class="button full" id="open-cart">Ver carrito <span class="cart-count">0</span> <span>→</span></button>
@@ -196,6 +214,7 @@
     </aside>
   </div>
 
+  {{-- Carrito lateral: ítems, subtotal y formulario de pedido (entrega, pago y datos del cliente) --}}
   @if($business->products->where('is_active', true)->isNotEmpty())
     <div class="cart-drawer" id="cart-drawer" hidden>
       <div class="cart-drawer-backdrop" data-close-cart></div>
@@ -224,6 +243,7 @@
     </div>
   @endif
 </section>
+{{-- Script de turnos: consulta los horarios disponibles según la fecha elegida --}}
 @if($business->appointments_enabled)
 <script>
   const appointmentDate = document.querySelector('#appointment-date');
@@ -245,7 +265,9 @@
   });
 </script>
 @endif
+{{-- Script principal: buscador, entrega a domicilio y carrito --}}
 <script>
+  // Filtra publicaciones y productos según el texto buscado
   const publicProductSearch = document.querySelector('#public-product-search');
   const publicProductCards = document.querySelectorAll('[data-public-product]');
   publicProductSearch?.addEventListener('input', () => {
@@ -256,6 +278,7 @@
     });
   });
 
+  // Muestra los campos de dirección solo si se elige envío a domicilio
   const deliveryMethod = document.querySelector('#delivery-method');
   const deliveryFields = document.querySelector('#delivery-fields');
   if (deliveryMethod && deliveryFields) {
@@ -264,6 +287,7 @@
     updateDeliveryFields();
   }
 
+  // Comprueba si el cliente está dentro del radio de entrega (distancia haversine al local)
   const orderForm = document.querySelector('#order-form');
   const coverageButton = document.querySelector('#check-delivery-coverage');
   const coverageStatus = document.querySelector('#delivery-coverage-status');
@@ -300,6 +324,7 @@
     }, { enableHighAccuracy: true, timeout: 10000 });
   });
 
+    // Carrito: estado en memoria, renderizado, agregar/quitar ítems y apertura/cierre del panel
     const cartDrawer = document.querySelector('#cart-drawer');
     const cartItemsContainer = document.querySelector('#cart-items');
     const cartItemsInput = document.querySelector('#cart-items-input');

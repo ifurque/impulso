@@ -1,5 +1,7 @@
 @extends('layouts.app')
+{{-- Vista: "Mi perfil" del usuario (foto, datos personales, verificación de contacto y dirección) --}}
 @section('content')
+{{-- Botón de guía interactiva; los pasos apuntan a los bloques data-help-target --}}
 @include('partials.help-tour-trigger', ['label' => 'Guía de mi perfil', 'steps' => [
   ['target' => '[data-help-target="profile-identity"]', 'title' => 'Datos personales', 'body' => 'Completa nombre y apellido por separado y tu DNI. El DNI es único: no puede repetirse en otra cuenta.'],
   ['target' => '[data-help-target="profile-contact"]', 'title' => 'Verificar contacto', 'body' => 'Usa Verificar correo o Verificar teléfono para recibir un enlace. No puedes verificarte tú mismo: solo se confirma al abrir el enlace recibido. Al verificarse aparece un ✓.'],
@@ -7,8 +9,10 @@
   ['target' => '[data-help-target="profile-save"]', 'title' => 'Guardar', 'body' => 'Los cambios solo se aplican al guardar. Si cambias correo o teléfono, deberás verificarlos otra vez.'],
 ]])
 <section class="form-page wrap profile-settings-page">
+  {{-- Pestañas de "Mi perfil" --}}
   @include('settings._tabs', ['active' => 'profile'])
 
+  {{-- Encabezado de la página --}}
   <div class="dashboard-top profile-settings-heading">
     <div>
       <p class="eyebrow">Tu cuenta</p>
@@ -17,8 +21,10 @@
     </div>
   </div>
 
+  {{-- Formulario principal del perfil (multipart por el avatar) --}}
   <form method="POST" enctype="multipart/form-data" action="{{ route('user.profile.update') }}" class="business-form profile-settings-form" autocomplete="off">
     @csrf
+    {{-- Foto de perfil con vista previa --}}
     <div class="profile-settings-avatar">
       <div class="account-avatar" id="account-avatar-preview">
         @if($user->avatar)
@@ -34,6 +40,7 @@
       @error('avatar')<small class="error">{{ $message }}</small>@enderror
     </div>
 
+    {{-- Datos personales: nombre, apellido y DNI --}}
     <div class="form-grid" data-help-target="profile-identity">
       @php [$defaultFirstName, $defaultLastName] = $user->nameParts(); @endphp
       <label>Nombre
@@ -50,6 +57,7 @@
       </label>
     </div>
 
+    {{-- Contacto: correo y teléfono, con estado de verificación y botones para verificar --}}
     <div class="form-grid" data-help-target="profile-contact">
       <div class="verify-field">
         <label>Correo electrónico
@@ -85,6 +93,7 @@
       <p class="muted verify-hint wide">Te enviaremos un enlace por correo o mensaje de texto: la verificación solo se completa desde ese enlace. Si cambias el correo o el teléfono, deberás verificarlo de nuevo.</p>
     </div>
 
+    {{-- Dirección postal: calle, código postal, ciudad y provincia --}}
     <div class="form-grid" data-help-target="profile-address">
       <div class="profile-location-action wide">
         <button type="button" class="button secondary" id="set-profile-location">Usar mi ubicación actual</button>
@@ -115,10 +124,12 @@
 
     <button class="button" type="submit" data-help-target="profile-save">Guardar cambios <span>→</span></button>
   </form>
+  {{-- Formularios ocultos que envían los enlaces de verificación (referenciados por los botones vía form="...") --}}
   <form id="verify-email-form" method="POST" action="{{ route('verification.send') }}" hidden>@csrf</form>
   <form id="verify-phone-form" method="POST" action="{{ route('phone.verification.send') }}" hidden>@csrf</form>
 </section>
 <script>
+  // Muestra la foto elegida como vista previa del avatar antes de guardar
   document.getElementById('account-avatar-input')?.addEventListener('change', (event) => {
     const file = event.target.files?.[0];
     if (!file) return;

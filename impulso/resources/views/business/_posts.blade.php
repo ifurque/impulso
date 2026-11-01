@@ -1,6 +1,8 @@
+{{-- Parcial: publicaciones públicas del negocio (productos del stock + posts), mostradas en su perfil --}}
 @php($publishedProducts = $business->products->where('is_active', true))
 @if($business->posts->count() || $publishedProducts->isNotEmpty())
     <div class="public-posts" style="--public-post-bg: {{ $publicPostBg ?? 'var(--public-soft)' }};">
+        {{-- Productos activos del stock, con botón para agregar al carrito --}}
         @foreach($publishedProducts as $product)
             <article class="stock-product-publication" data-public-product
                 data-filter-text="{{ Str::lower($product->name . ' ' . ($product->brand ?? '') . ' ' . ($product->description ?? '') . ' producto') }}"
@@ -30,6 +32,7 @@
             </article>
         @endforeach
 
+        {{-- Publicaciones (ofertas, productos o novedades) con precio, descuento y productos incluidos --}}
         @foreach($business->posts as $post)
             <article data-public-product
                 data-filter-text="{{ Str::lower($post->title . ' ' . $post->body . ' ' . ($post->type === 'offer' ? 'oferta' : ($post->type === 'product' ? 'producto' : 'novedad'))) }}"
