@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('content')
+{{-- Registro: formulario de alta con aceptación de términos y nota lateral decorativa --}}
 <section class="auth-page">
 	<div class="auth-panel">
 		<p class="eyebrow">Tu próximo paso</p>

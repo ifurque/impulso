@@ -1,7 +1,9 @@
 @extends('layouts.app')
 @section('body_class', 'home-page-fixed')
 @section('content')
+{{-- Portada pública: hero, cinta animada, introducción y herramientas desplegables --}}
 <div class="home-page">
+	{{-- Hero: título, llamadas a la acción y tablero de actividad decorativo --}}
 	<section class="home-hero wrap">
 		<div class="home-hero-copy">
 			<p class="eyebrow">Herramientas para emprender</p>
@@ -20,6 +22,7 @@
 		</div>
 	</section>
 
+	{{-- Cinta animada con las palabras clave (el segundo grupo duplica el primero para el bucle) --}}
 	<section class="home-marquee" aria-label="Lo que puedes hacer con Impulso">
 		<div class="home-marquee-track">
 			<div class="home-marquee-group"><span>organiza</span><b>+</b><span>comparte</span><b>+</b><span>vende</span><b>+</b><span>conecta</span><b>+</b><span>crece</span><b>+</b></div>
@@ -32,6 +35,7 @@
 		<p>Conoce cada herramienta y elige la que necesitas hoy.</p>
 	</section>
 
+	{{-- Herramientas: una tarjeta desplegable por funcionalidad --}}
 	<section class="home-tools wrap">
 		<details class="home-tool home-tool-wide">
 			<summary><span class="tool-index">01 / VISIBILIDAD</span><strong>Muestra lo que haces.</strong><span class="home-tool-toggle">Quiero saber más <span class="tool-arrow" aria-hidden="true">⌄</span></span></summary>

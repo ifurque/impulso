@@ -8,6 +8,7 @@
 	@vite(['resources/css/app.css', 'resources/js/app.js'])
 	@stack('head')
 </head>
+{{-- Layout base: cabecera, preferencias de interfaz del usuario, navbar, contenido, burbuja de bandeja y footer --}}
 @php
 	$ui = auth()->user()?->ui_preferences ?? [];
 	$uiFont = $ui['font_family'] ?? 'dm';
@@ -22,6 +23,7 @@
 	class="user-font-{{ $uiFont }} user-mode-{{ $uiMode }} user-bg-{{ $uiBackground }} @yield('body_class')"
 	style="--user-primary: {{ $uiPrimary }}; --user-secondary: {{ $uiSecondary }}; --user-navbar-bg: {{ $uiNavbar }}; --user-text-color: {{ $uiText }};"
 >
+	{{-- Navbar: marca y enlaces según sesión (+Impulso, perfil, administración, salir / ingresar, crear cuenta) --}}
 	<nav class="nav">
 		<a class="brand" href="{{ route('home') }}"><span class="brand-mark">+</span> impulso</a>
 		<div class="nav-links">
@@ -46,6 +48,7 @@
 		</div>
 	</nav>
 
+	{{-- Contenido de cada página y mensaje flash de éxito --}}
 	<main class="site-main">
 		@if(session('success'))
 			<div class="notice success">{{ session('success') }}</div>
@@ -57,6 +60,7 @@
 		@include('partials.inbox-bubble')
 	@endauth
 
+	{{-- Footer global --}}
 	<footer>
 		<span class="brand"><span class="brand-mark">+</span> impulso</span>
 		<span>Herramientas simples para ideas que crecen.</span>
